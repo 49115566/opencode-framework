@@ -4,7 +4,7 @@ mode: all
 permission:
   edit:
     "*": deny
-    "work/**": allow
+    "**/work/**": allow
   bash:
     "*": allow
     "git push*": ask

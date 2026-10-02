@@ -4,9 +4,9 @@ mode: primary
 permission:
   edit:
     "*": deny
-    "work/**": allow
-    "tests/**": allow
-    "test/**": allow
+    "**/work/**": allow
+    "**/tests/**": allow
+    "**/test/**": allow
     "**/__tests__/**": allow
     "**/*.test.ts": allow
     "**/*.test.tsx": allow

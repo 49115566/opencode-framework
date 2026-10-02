@@ -4,7 +4,7 @@ mode: primary
 permission:
   edit:
     "*": deny
-    "work/**": allow
+    "**/work/**": allow
   bash:
     "*": deny
     "git log*": allow

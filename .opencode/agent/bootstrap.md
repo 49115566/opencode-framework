@@ -4,10 +4,10 @@ mode: primary
 permission:
   edit:
     "*": deny
-    "AGENTS.md": allow
-    "opencode.json": allow
-    ".gitignore": allow
-    "work/**": allow
+    "**/AGENTS.md": allow
+    "**/opencode.json": allow
+    "**/.gitignore": allow
+    "**/work/**": allow
   bash:
     "*": allow
     "git push*": ask
