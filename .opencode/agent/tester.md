@@ -4,19 +4,33 @@ mode: primary
 permission:
   edit:
     "*": deny
+    "work/**": allow
     "**/work/**": allow
+    "tests/**": allow
     "**/tests/**": allow
+    "test/**": allow
     "**/test/**": allow
+    "__tests__/**": allow
     "**/__tests__/**": allow
+    "*.test.ts": allow
     "**/*.test.ts": allow
+    "*.test.tsx": allow
     "**/*.test.tsx": allow
+    "*.spec.ts": allow
     "**/*.spec.ts": allow
+    "*.spec.tsx": allow
     "**/*.spec.tsx": allow
+    "*.test.js": allow
     "**/*.test.js": allow
+    "*.spec.js": allow
     "**/*.spec.js": allow
+    "test_*.py": allow
     "**/test_*.py": allow
+    "*_test.py": allow
     "**/*_test.py": allow
+    "conftest.py": allow
     "**/conftest.py": allow
+    "*_test.go": allow
     "**/*_test.go": allow
   bash:
     "*": allow
