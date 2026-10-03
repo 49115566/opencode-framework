@@ -43,8 +43,9 @@ MCP is for interactive inspection; the runner is for repeatable assertions.
 1. **Ensure a server is running.** Check `AGENTS.md` for the dev command and any
    URL. If nothing responds, start the documented server in the background and
    wait for it to be ready:
-   `npm run dev > /tmp/dev-server.log 2>&1 &` then poll the URL. Stop it when
-   done. Ask the user if the command or port is unknown.
+   `npm run dev > scratch/dev-server.log 2>&1 &` then poll the URL. Stop it when
+   done. Ask the user if the command or port is unknown. `scratch/` is
+   gitignored and created on demand — create it if it does not exist.
 2. **Snapshot first.** Navigate, then take an accessibility snapshot. It is
    cheaper, deterministic, and reveals structure, roles, and names that a
    screenshot hides. Reach for screenshots to judge appearance.

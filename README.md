@@ -140,25 +140,35 @@ Each phase reads the previous artifact and writes its own. Full details in
 | `/ship [slug]`     | `shipper`   | Branch, conventional commits, PR                         |
 | `/fix <bug>`       | `builder`   | Lightweight reproduce → fix → test path                  |
 | `/status`          | `status`    | Report each work item's phase (read-only)                |
+| `/doctor`          | `doctor`    | Read-only framework drift check: inventories, counts, permissions, ignore rules |
 | `/bootstrap`       | `bootstrap` | Adopt the framework into the current repository          |
 
 ## Agents
 
-| Agent       | Mode      | Can edit                  | Can run bash          |
-| ----------- | --------- | ------------------------- | --------------------- |
-| `product`   | primary   | `work/**` only            | read-only allowlist   |
-| `architect` | primary   | `work/**` only            | read-only allowlist   |
-| `builder`   | primary   | any source                | allow                 |
-| `tester`    | primary   | test files + `work/**`    | allow                 |
-| `visual`    | all       | `work/**` only            | allow                 |
-| `reviewer`  | all       | `work/**` only            | read-only allowlist   |
-| `shipper`   | primary   | none                      | git/gh allowlist      |
-| `bootstrap` | primary   | config files + `work/**`  | allow                 |
-| `status`    | primary   | none                      | read-only allowlist   |
-| `scout`     | subagent  | none                      | allow                 |
-| `scribe`    | subagent  | `work/**` only            | none                  |
+| Agent       | Mode      | Can edit                                | Can run bash          |
+| ----------- | --------- | --------------------------------------- | --------------------- |
+| `product`   | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
+| `architect` | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
+| `builder`   | primary   | any source                              | allow                 |
+| `tester`    | primary   | test files + `work/**` + `**/work/**`   | allow                 |
+| `visual`    | all       | `work/**` + `**/work/**`                | allow                 |
+| `reviewer`  | all       | `work/**` + `**/work/**`                | read-only allowlist   |
+| `shipper`   | primary   | none                                    | git/gh allowlist      |
+| `bootstrap` | primary   | config files + `work/**` + `**/work/**` | allow                 |
+| `status`    | primary   | none                                    | read-only allowlist   |
+| `scout`     | subagent  | none                                    | allow                 |
+| `scribe`    | subagent  | `work/**` + `**/work/**`                | none                  |
+| `ask`       | primary   | none                                    | none                  |
+| `doctor`    | primary   | none                                    | read-only allowlist   |
 
-Permissions are enforced by opencode, not just requested in prose.
+Permissions are enforced by opencode, not just requested in prose. In opencode,
+the `edit` permission covers **create, write, and patch** — there is no separate
+`write` grant — and tool paths reach the check in both relative
+(`work/<slug>/spec.md`) and absolute (`/repo/work/<slug>/spec.md`) forms.
+Artifact-writing agents therefore declare **both** `work/**` and `**/work/**`;
+declaring only one leaves the other form to fall through to the catch-all deny.
+See [`docs/customization.md`](docs/customization.md) for the full permission
+model.
 
 ## Skills
 
@@ -179,8 +189,8 @@ Permissions are enforced by opencode, not just requested in prose.
 
 ```
 .opencode/
-  agent/     # 11 role prompts
-  command/   # 10 slash commands
+  agent/     # 13 role prompts
+  command/   # 11 slash commands
   skill/     # 10 knowledge skills
 docs/
   workflow.md               # lifecycle, phases, state, routing
@@ -189,6 +199,7 @@ docs/
 AGENTS.md                   # always-loaded workflow contract + project profile
 opencode.json               # model, default agent, permissions, instructions, MCP
 work/                       # per-feature artifacts (git-ignored)
+scratch/                    # temporary files and background logs (git-ignored)
 ```
 
 ## Configuration

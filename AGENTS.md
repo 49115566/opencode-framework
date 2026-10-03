@@ -46,9 +46,11 @@ browser and writes `visual.md` plus screenshots. Review must consider it when
 present. Non-UI projects skip it.
 
 Supporting commands: `/fix <bug>` (lightweight fix), `/status` (phase report),
-`/bootstrap` (adopt into a project), `/visual [url|slug]` (browser QA).
+`/bootstrap` (adopt into a project), `/visual [url|slug]` (browser QA),
+`/doctor` (read-only drift diagnostic).
 Supporting agents: `scout` (recon), `scribe` (artifact editing), `bootstrap`
-(provisioning), `status` (read-only reporting), `visual` (browser inspection).
+(provisioning), `status` (read-only reporting), `visual` (browser inspection),
+`ask` (read-only Q&A), `doctor` (read-only consistency diagnostic).
 
 The authoritative description of each phase, its inputs, and its exit criteria
 lives in `docs/workflow.md`. The exact artifact formats live in
@@ -110,6 +112,9 @@ and report it rather than working around it.
   behavior changes use the full lifecycle. When unsure, ask.
 - **Evidence over assertion.** Cite `file:line`, paste command output, link
   artifact paths.
+- **Scratch space.** Write temporary files and background process logs to the
+  in-repo, gitignored `scratch/` directory, created on demand. Never write a
+  temporary file outside the workspace.
 - **The user owns decisions.** Agents recommend; the user approves. Present
   options with trade-offs when a decision is non-obvious.
 

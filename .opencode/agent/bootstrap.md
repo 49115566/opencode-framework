@@ -4,9 +4,13 @@ mode: primary
 permission:
   edit:
     "*": deny
+    "AGENTS.md": allow
     "**/AGENTS.md": allow
+    "opencode.json": allow
     "**/opencode.json": allow
+    ".gitignore": allow
     "**/.gitignore": allow
+    "work/**": allow
     "**/work/**": allow
   bash:
     "*": allow
