@@ -165,6 +165,9 @@ content:
 - **Full lifecycle** — new features, behavior changes, cross-cutting work,
   anything touching public interfaces, data, or security.
 - **`/status`** — when unsure where things stand.
+- **`/doctor`** — a read-only consistency check of the framework's documented
+  inventories, counts, permission blocks, and ignore rules. It reports drift and
+  never edits; safe to run at any time, including before release.
 - **`/visual [url or slug]`** — to inspect a running user-facing frontend in a
   real browser for layout, interaction, responsiveness, and accessibility. Use
   for UI-bearing work; harmless to skip for backend-only work.
