@@ -104,6 +104,37 @@ permission:
     "git diff*": allow
 ```
 
+`edit` governs every file mutation: it covers **create, write, and patch**.
+There is no separate `write` key, and none is needed — an agent that can `edit`
+a path can create a new file there as well as update one that already exists.
+
+Permission checks see tool paths in two forms: relative to the repository root
+(for example `work/<slug>/spec.md`) and absolute (for example
+`/repo/work/<slug>/spec.md`). One pattern matches only one form, so
+artifact-writing agents must declare **both** `work/**` and `**/work/**`:
+
+```yaml
+permission:
+  edit:
+    "*": deny
+    "work/**": allow
+    "**/work/**": allow
+```
+
+Read-only agents set `edit: deny` with no `work/` allow, making the intent
+explicit even though the catch-all already denies.
+
+Confirm the resolved result for any agent before relying on it:
+
+```
+opencode debug agent <name>
+```
+
+These blocks restrict opencode's own file tools; they are not a sandbox for
+`bash`. Agents with broad bash access (`bootstrap`, `scout`, `tester`, `visual`)
+can still modify files through shell commands even when their `edit` permission
+is restricted.
+
 ## MCP servers
 
 Optional integrations live under `mcp:` in `opencode.json`. An enabled MCP
