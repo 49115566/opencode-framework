@@ -77,10 +77,10 @@ echo "== AC5/AC6: readiness algorithm, single definition, boundary handling =="
 for tok in 'satisfied(dep_local_id):' 'if child_dir/ship.md exists' 'and its verdict == "approve"' \
            'A child with no dependencies is `ready`' 'A child in a cycle is never `ready`'; do
   need "$WF" "$tok" "AC5/6 workflow algorithm token '$tok'"
-  need "$AGENT_DIR/status.md" "$tok" "AC5/6 status algorithm token '$tok'"
 done
 need "$WF" 'a `request-changes` verdict' "AC6 workflow: request-changes not satisfied"
-need "$AGENT_DIR/status.md" 'Only a `review.md` verdict of `approve`' "AC6 status: only approve/ship satisfies"
+need "$AGENT_DIR/status.md" 'Dependencies and readiness' "AC6 status defers to the workflow authority"
+need "$CMD_DIR/status.md" 'Dependencies and readiness' "AC6 command defers to the workflow authority"
 need "$AGENT_DIR/product.md" 'run the readiness algorithm' "AC9 product gate reuses readiness algorithm"
 
 echo "== AC7: roadmap reported separately with ready count + phase tally =="
@@ -130,7 +130,7 @@ need "$WF" 'Phase commands accept either form' "AC11 workflow: one-segment refer
 spec_block="$(awk '/^### `spec\.md` \(product\)/{f=1} f&&/^### /&&!/spec\.md/{exit} f' "$CONV")"
 printf '%s' "$spec_block" | grep -qF 'parent:' && bad "AC11 spec template gained a parent field" || ok "AC11 spec template still has no parent field"
 # Standalone derived-state rows must survive verbatim.
-for row in '`spec.md` missing' '`review.md` verdict `approve`, no branch/PR recorded' '`ship.md` present with PR URL'; do
+for row in '`spec.md` missing' '`review.md` verdict `approve`, no `ship.md`' '`ship.md` present'; do
   need "$WF" "$row" "AC11 standalone derived-state row retained"
 done
 
@@ -216,10 +216,10 @@ for f in "$SKILL_DIR/conventional-commits/SKILL.md" "$CMD_DIR/ship.md" "$AGENT_D
   need "$f" 'NNNN-slug-MMMM-slug' "AC8 $(basename "$f") maps nested ref to a single branch ref"
 done
 
-echo "== AC5/AC6: PR-detection branch of readiness (review m2) =="
-need "$WF" 'if a PR is detected for the child' "AC6 workflow: detected PR satisfies a dependency"
-need "$AGENT_DIR/status.md" 'if a PR is detected for the child' "AC6 status: detected PR satisfies a dependency"
-need "$WF" 'or a PR detected for' "AC6 workflow: shipped via detected PR"
+echo "== AC5/AC6: shipped-state signal is ship.md presence (review m2) =="
+need "$WF" 'child_dir/ship.md exists' "AC6 workflow: ship.md presence satisfies a dependency"
+need "$WF" 'presence is the sole shipped signal' "AC6 workflow: presence is the sole shipped signal"
+needE "$WF" '^\| `ship\.md` present +\| shipped' "AC6 workflow: ship.md present row maps to shipped"
 
 echo "== AC4: multi-dependency delimiter documented (review m3) =="
 need "$WF" 'comma-separated when there are two or more' "AC4 workflow: multi-dep delimiter stated"
@@ -230,13 +230,47 @@ for w in '"git add' '"git commit' '"git push' '"rm ' '"mv ' '"mkdir' '"touch' '"
   grep -qF -- "$w" "$AGENT_DIR/roadmap.md" && bad "AC12 roadmap has write-capable token: $w" || ok "AC12 roadmap has no write token: $w"
 done
 
-echo "== AC11 regression: existing agent permission blocks unchanged =="
-if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
-  perm_changes="$(git -C "$ROOT" diff HEAD -- .opencode/agent 2>/dev/null | grep -E '^[+-][[:space:]]*("[^"]+":|permission:|edit:|bash:)' | grep -vE '^(\+\+\+|---)' | wc -l | tr -d ' ')"
-  [ "$perm_changes" = "0" ] && ok "AC11 no existing agent permission block changed vs HEAD" \
-    || bad "AC11 $perm_changes permission-block line(s) changed vs HEAD"
+echo "== AC11 regression: shipper work grant present, read-only agents still deny work/ =="
+fm "$AGENT_DIR/shipper.md" | grep -qF '"work/**": allow' && ok "AC11 shipper edit grants work/**" || bad "AC11 shipper edit grants work/**"
+fm "$AGENT_DIR/shipper.md" | grep -qF '"**/work/**": allow' && ok "AC11 shipper edit grants **/work/**" || bad "AC11 shipper edit grants **/work/**"
+for a in status doctor ask scout; do
+  if fm "$AGENT_DIR/$a.md" | grep -qF '"work/**"'; then bad "AC11 read-only agent $a grants work/"; else ok "AC11 read-only agent $a does not grant work/"; fi
+done
+
+echo "== AC9: one authoritative readiness definition =="
+# (i) Exactly one live surface states the algorithm, and it is docs/workflow.md.
+# Scans only an explicit candidate list; work/ history is never inspected.
+algo_hits=0; algo_file=""
+for f in "$WF" "$AGENT_DIR/status.md" "$CMD_DIR/status.md" "$AGENT_DIR/product.md" "$CONV" "$SKILL_DIR/workflow-lifecycle/SKILL.md"; do
+  if has "$f" 'satisfied(dep_local_id):'; then algo_hits=$((algo_hits+1)); algo_file="$f"; fi
+done
+[ "$algo_hits" -eq 1 ] && [ "$algo_file" = "$WF" ] \
+  && ok "AC9 algorithm stated exactly once, in $WF" \
+  || bad "AC9 algorithm appears in $algo_hits candidate file(s): ${algo_file:-none}"
+# (ii) The other readiness surfaces defer to the authority by name.
+for f in "$AGENT_DIR/status.md" "$CMD_DIR/status.md" "$AGENT_DIR/product.md"; do
+  need "$f" 'Dependencies and readiness' "AC9 $f defers to the authority"
+done
+# (iii) The authority states approved-but-unshipped as satisfied.
+need "$WF" 'even if unshipped' "AC9 workflow states approved-but-unshipped is satisfied"
+# (iv) No live surface credits a detected PR as a shipped signal.
+pr_hits=0
+for f in "$WF" "$AGENT_DIR/status.md" "$CMD_DIR/status.md" "$AGENT_DIR/product.md" "$CONV" "$SKILL_DIR/workflow-lifecycle/SKILL.md" README.md; do
+  if grep -qiE -- 'PR is detected|PR detected|detected PR' "$f"; then bad "AC9 $f still credits a detected PR"; pr_hits=$((pr_hits+1)); fi
+done
+[ "$pr_hits" -eq 0 ] && ok "AC9 no live surface credits a detected PR"
+# (v) No surface contradicts approved-but-unshipped semantics.
+contra=0
+for f in "$WF" "$AGENT_DIR"/*.md "$CMD_DIR"/*.md; do
+  if grep -qiE -- 'approved-but-unshipped.*not satisfied|not satisfied.*approved-but-unshipped' "$f"; then bad "AC9 $f contradicts approved-but-unshipped"; contra=$((contra+1)); fi
+done
+[ "$contra" -eq 0 ] && ok "AC9 no surface contradicts approved-but-unshipped"
+# (vi) The lifecycle skill routes the ship transition on ship.md, not a PR.
+need "$SKILL_DIR/workflow-lifecycle/SKILL.md" 'no ship.md?' "AC9 skill routes the ship transition on ship.md"
+if grep -qE -- 'no PR\?' "$SKILL_DIR/workflow-lifecycle/SKILL.md"; then
+  bad "AC9 skill still routes the ship transition on a PR"
 else
-  printf 'note  AC11 permission regression not checked (not a git repo)\n'
+  ok "AC9 skill no longer routes on a PR"
 fi
 
 printf '\nTOTAL: %s passed, %s failed\n' "$pass" "$fail"
