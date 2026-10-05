@@ -36,7 +36,7 @@ all tasks checked, no verify.md? → /test
 UI work, before /review?         → /visual [url or item-ref]   (optional)
 verify.md, no review.md?         → /review
 review.md verdict request-changes→ /build <item-ref>   (rework blockers)
-review.md verdict approve, no PR?→ /ship
+review.md verdict approve, no ship.md?→ /ship
 Blocked child (dependency unmet)?→ wait, or override explicitly; /status
 Unclear?                         → /status
 ```

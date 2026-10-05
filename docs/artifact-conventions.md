@@ -394,7 +394,7 @@ Severity meanings:
 - **Minor** — worth fixing; not merge-blocking.
 - **Nit** — style or preference; take it or leave it.
 
-### `ship.md` (shipper, optional but recommended)
+### `ship.md` (shipper) — the shipped-state record
 
 ```markdown
 ---
@@ -408,9 +408,13 @@ updated: YYYY-MM-DD
 # Ship record — <Feature title>
 
 - Branch: `<branch>`
-- PR: <url>
+- PR: <url or "not created">
 - Commits: <short hashes + subjects>
 ```
+
+Its **presence** is the one shipped signal consumed by readiness — defined in
+`docs/workflow.md` → "Dependencies and readiness" — and is keyed on the file
+existing, never on its contents.
 
 ## Sequence allocation
 

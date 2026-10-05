@@ -21,8 +21,12 @@ Follow your Ship agent instructions exactly. In particular:
   content for secrets first.
 - Push (this requires approval), then open a PR using the `pr-workflow` template,
   linking the spec, design, verification, and review artifacts.
-- Optionally write `work/<item-ref>/ship.md` with the branch, commit hashes, and
-  PR URL.
+- Write `work/<item-ref>/ship.md` with the branch, commit subjects, and PR URL (or
+  "not created"), then stage and commit it (`docs(work): record ship state for
+  <item-ref>`) and push the branch (this requires approval). This is required: its
+  presence is the sole shipped signal, so commit it even when `gh` is unavailable
+  and only local commits exist. Leave no uncommitted `ship.md` — the signal must
+  travel on the branch.
 
 If `$ARGUMENTS` is empty, ask which work item to ship, or list candidates from
 `work/`.

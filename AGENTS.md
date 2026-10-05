@@ -32,14 +32,14 @@ Work flows through fixed phases. Each phase reads the previous phase's
 artifact and writes its own. Phases are driven by slash commands, and each
 command runs as the named agent.
 
-| Phase       | Command            | Agent       | Reads                    | Writes                    |
-| ----------- | ------------------ | ----------- | ------------------------ | ------------------------- |
-| Requirements| `/spec <feature>`  | `product`   | repo, request            | `spec.md`                 |
-| Design      | `/plan <feature>`  | `architect` | `spec.md`                | `design.md`, `tasks.md`   |
-| Build       | `/build [task-id]` | `builder`   | `design.md`, `tasks.md`  | code, updated `tasks.md`  |
-| Test        | `/test`            | `tester`    | `spec.md`, `tasks.md`    | tests, `verify.md` †      |
-| Review      | `/review`          | `reviewer`  | diff, `spec.md`, `tasks.md` | `review.md`            |
-| Ship        | `/ship`            | `shipper`   | `review.md`              | branch, commits, PR       |
+| Phase       | Command            | Agent       | Reads                    | Writes                         |
+| ----------- | ------------------ | ----------- | ------------------------ | ------------------------------ |
+| Requirements| `/spec <feature>`  | `product`   | repo, request            | `spec.md`                      |
+| Design      | `/plan <feature>`  | `architect` | `spec.md`                | `design.md`, `tasks.md`        |
+| Build       | `/build [task-id]` | `builder`   | `design.md`, `tasks.md`  | code, updated `tasks.md`       |
+| Test        | `/test`            | `tester`    | `spec.md`, `tasks.md`    | tests, `verify.md` †           |
+| Review      | `/review`          | `reviewer`  | diff, `spec.md`, `tasks.md` | `review.md`                 |
+| Ship        | `/ship`            | `shipper`   | `review.md`              | branch, commits, PR, `ship.md` |
 
 † For work with a user-facing UI, an optional `/visual` pass drives a real
 browser and writes `visual.md` plus screenshots. Review must consider it when
