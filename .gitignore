@@ -2,10 +2,8 @@
 # opencode-framework
 # ---------------------------------------------------------------------------
 
-# Workflow artifacts are working state, not source. One directory per feature
-# lives under work/. Keep the directory itself so `work/` always exists.
-work/*
-!work/.gitkeep
+# Workflow artifacts under work/ are committed working state. Do not ignore
+# them. Only scratch/ and tooling output below are ignored.
 
 # opencode local state (auto-generated when opencode runs; never ship these)
 .opencode/node_modules/
