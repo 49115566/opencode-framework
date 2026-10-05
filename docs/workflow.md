@@ -28,21 +28,104 @@ deployment are human decisions owned by the user and CI.
 
 ```
 work/
-  0001-add-dark-mode/
+  0001-add-dark-mode/          # standalone work item
     spec.md       # requirements            (product)
     design.md     # technical design        (architect)
     tasks.md      # ordered, checkable work (architect; builder ticks boxes)
     verify.md     # test evidence + gaps    (tester)
     review.md     # findings + verdict      (reviewer)
+  0002-billing/                # roadmap parent work item
+    roadmap.md    # initiative + children   (roadmap)
+    0001-model/   # nested child work item
+      spec.md     # requirements            (product)
+      ...
+    0002-api/     # nested child work item
+      spec.md
+      ...
 ```
 
 - `NNNN` is the next zero-padded sequence number across the whole `work/` tree.
   Allocate it by finding the highest existing directory name and adding one.
 - `slug` is a short kebab-case handle derived from the request (e.g.
   `add-dark-mode`). Prefer 2–4 words. It is immutable once created.
+- A **canonical reference** is an item's path relative to `work/`: `NNNN-slug`
+  for a standalone item, or `NNNN-slug/MMMM-slug` for a nested roadmap child.
+  Phase commands accept either form; a one-segment reference behaves exactly as
+  before. See "Roadmaps" for the nested layout.
 - Artifacts are git-ignored. They are working state, not deliverables.
 - A phase may be skipped only by explicit user request. If skipped, say so in
   the next artifact's frontmatter `notes`.
+
+## Roadmaps
+
+A **roadmap** is a parent work item that plans a broad, multi-feature initiative
+before any child is specified. It lives in the same tree as ordinary items: the
+parent directory `work/<NNNN-slug>/` holds a single `roadmap.md` and one nested
+child work-item directory per feature, `work/<NNNN-slug>/<MMMM-slug>/`. The
+parent has no spec, design, tasks, verification, or review of its own; each child
+later runs the ordinary per-feature lifecycle unchanged. Artifact shapes and the
+reference grammar are defined in `docs/artifact-conventions.md`.
+
+The `/roadmap` command authors the parent artifact and creates each child
+directory containing only a `.gitkeep`, then stops. It writes no child specs and
+performs no child phase work. Child numbering is local to the parent and
+independent of the flat top-level sequence and of other roadmaps.
+
+### Dependencies and readiness
+
+The `Children` table in `roadmap.md` is the single machine-readable source for
+the child set and the dependency graph. The `Depends on` cell holds another
+child's **local id**, comma-separated when there are two or more, or `—` when the
+child has none. A dependency may not name its own row, dependencies are
+intra-roadmap only, and the stored graph must be acyclic. If an initiative's
+dependencies are cyclic, the roadmap records the cycle under `## Open issues` and
+leaves the stored graph acyclic.
+
+Readiness is derived live from files at status time; it is never stored:
+
+```
+satisfied(dep_local_id):
+  child_dir = work/<parent>/<dep_local_id>/
+  if child_dir does not exist        -> dangling; not satisfied
+  if child_dir/ship.md exists        -> satisfied        # shipped
+  if a PR is detected for the child  -> satisfied        # shipped
+  if child_dir/review.md exists
+       and its verdict == "approve"  -> satisfied        # approved, even if unshipped
+  otherwise                          -> not satisfied
+
+ready(child)      = every dependency of child is satisfied AND child is not in a cycle
+blocked_by(child) = [dep_local_id for each unsatisfied dependency]
+```
+
+A child with no dependencies is `ready`. Only a `review.md` verdict of `approve`
+or a shipped child — an optional `ship.md` recording the PR, or a PR detected for
+the child — satisfies a dependency: a `request-changes` verdict, no review yet,
+and an approved-but-unshipped boundary are all covered by the same rule.
+A child in a cycle is never `ready`.
+
+### Status reporting
+
+`/status` reports a roadmap parent separately from its children. The roadmap row
+shows `<ready>/<total> ready` plus a distribution tally of its children across
+phases (`<phase> <n>, ...`), so a roadmap is never presented as a single-feature
+item. Each child row shows its own phase and readiness; a blocked child names the
+specific children blocking it. Status is read-only and modifies nothing.
+
+Status also reports integrity findings rather than failing:
+
+- `DANGLING-DEP` — a `Depends on` local id with no child directory or no table row.
+- `MISSING-CHILD` — a table row whose canonical reference/directory is absent.
+- `UNLISTED-CHILD` — a child directory present under the parent but absent from the Children table (possible rename).
+- `CYCLIC-DEP` — a cycle in a manually edited graph; cycle members are never reported ready.
+
+### Starting a blocked child
+
+When `/spec` is invoked for a nested child, the product agent resolves the parent
+`roadmap.md` and evaluates readiness first. If the child is blocked, it reports
+the specific blocking children and stops before writing `spec.md`. It proceeds
+only on an explicit user override, and then records the override and the blocking
+dependencies in the new `spec.md` frontmatter `notes`. Refusing touches no
+existing file, and status still reports the child's dependency state afterwards.
 
 ## Phases
 
@@ -60,8 +143,8 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 - **Exit**: `spec.md` has a problem statement, goals, non-goals, at least one
   user story, and numbered acceptance criteria in Given/When/Then form. Open
   questions are either resolved or explicitly marked as deferred.
-- **Artifact**: `work/<NNNN-slug>/spec.md`, frontmatter `phase: spec`.
-- **Next**: `/plan <slug>`.
+- **Artifact**: `work/<item-ref>/spec.md`, frontmatter `phase: spec`.
+- **Next**: `/plan <item-ref>`.
 
 ### 2. Design — `/plan <feature>`
 
@@ -105,12 +188,12 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 - **Exit**: Every acceptance criterion is covered by at least one passing test
   or is explicitly flagged as manual/untestable with a reason. Failures are
   reported, not hidden.
-- **Artifact**: test files plus `work/<slug>/verify.md`, frontmatter
+- **Artifact**: test files plus `work/<item-ref>/verify.md`, frontmatter
   `phase: test`.
 - **Next**: `/review`. If defects were found, `/build` to fix them first.
 - **Optional visual pass**: if the work item has a user-facing UI, run `/visual`
   (or have the tester delegate to the `visual` subagent). It drives a real
-  browser, produces `work/<slug>/visual.md` plus screenshots, and feeds its
+  browser, produces `work/<item-ref>/visual.md` plus screenshots, and feeds its
   findings into review. It is optional so that non-UI projects never need a
   browser; when present, review must consider it.
 
@@ -124,7 +207,7 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   findings with `file:line` references and a verdict.
 - **Exit**: `review.md` states a verdict of `approve` or `request-changes`, and
   every finding has a severity, a location, and an actionable recommendation.
-- **Artifact**: `work/<slug>/review.md`, frontmatter `phase: review`.
+- **Artifact**: `work/<item-ref>/review.md`, frontmatter `phase: review`.
 - **Next**: `/ship` if `approve`; otherwise `/build` to address blockers.
 
 ### 6. Ship — `/ship`
@@ -146,6 +229,7 @@ content:
 
 | Observed state                                             | Phase        |
 | ---------------------------------------------------------- | ------------ |
+| `roadmap.md` present (check before `spec.md`)              | roadmap      |
 | `spec.md` missing                                          | not started  |
 | `spec.md` present, `design.md` missing                     | spec         |
 | `design.md` present, `tasks.md` missing                    | design       |
@@ -157,6 +241,11 @@ content:
 | `review.md` verdict `approve`, no branch/PR recorded       | ship         |
 | `ship.md` present with PR URL, or PR detected              | shipped      |
 
+A directory containing `roadmap.md` is a roadmap parent and is derived as
+`roadmap` before the single-feature rows. A roadmap child is derived like any
+other item: a child holding only its `.gitkeep` has no phase artifacts and is
+`not started`.
+
 ## Routing heuristics
 
 - **`/fix <bug>`** — for defects where the desired behavior is already clear and
@@ -164,6 +253,11 @@ content:
   report. Fixes never introduce new behavior.
 - **Full lifecycle** — new features, behavior changes, cross-cutting work,
   anything touching public interfaces, data, or security.
+- **`/roadmap <initiative>`** — decompose a broad, multi-feature initiative into
+  a parent roadmap item and nested child work items, sequencing them and
+  recording intra-roadmap dependencies. Use before `/spec` when a request spans
+  several interdependent features; a single, self-contained feature still goes
+  straight to `/spec`.
 - **`/status`** — when unsure where things stand.
 - **`/doctor`** — a read-only consistency check of the framework's documented
   inventories, counts, permission blocks, and ignore rules. It reports drift and
@@ -183,7 +277,7 @@ commit unless the user asks.
 
 ## Resuming and interruption
 
-Because state is file-based, resuming is just re-reading `work/<slug>/`. If a
+Because state is file-based, resuming is just re-reading `work/<item-ref>/`. If a
 session ends mid-phase, the next session reads the artifacts and continues. If
 an artifact is stale relative to the code, reconcile before proceeding and note
 what changed.

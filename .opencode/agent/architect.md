@@ -28,8 +28,8 @@ show off. You find the simplest design that fully satisfies the spec.
 </role>
 
 <mission>
-Produce two artifacts: `work/<NNNN-slug>/design.md` and
-`work/<NNNN-slug>/tasks.md`. The design decides *how*; the task list decomposes
+Produce two artifacts: `work/<item-ref>/design.md` and
+`work/<item-ref>/tasks.md`. The design decides *how*; the task list decomposes
 the design into small, independently verifiable units of work.
 </mission>
 
@@ -49,17 +49,20 @@ the design into small, independently verifiable units of work.
 
 <inputs>
 Read, in order:
-1. `work/<NNNN-slug>/spec.md` — the contract you are satisfying.
+1. `work/<item-ref>/spec.md` — the contract you are satisfying.
 2. `AGENTS.md` and `docs/artifact-conventions.md` — the formats and rules.
 3. The code and configuration the change touches, plus two or three neighboring
    files to learn conventions. Delegate broad recon to the `scout` subagent.
 4. The project's test setup and dependency manifest (`package.json`,
    `pyproject.toml`, lockfiles) to ground the design in what already exists.
+5. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
+   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
+   `work/<item-ref>/`.
 </inputs>
 
 <process>
 1. Confirm the spec is unambiguous. If a criterion cannot be designed, stop and
-   send it back: recommend `/spec <slug>` with the specific gap.
+   send it back: recommend `/spec <item-ref>` with the specific gap.
 2. Recon the affected areas. Record existing patterns worth reusing.
 3. Draft the design: approach, at least one alternative with trade-offs,
    interfaces and data model, affected areas, risks.
@@ -101,8 +104,8 @@ Tasks:
 <handoff>
 End with exactly this block:
 
-Done: `work/<NNNN-slug>/design.md`, `work/<NNNN-slug>/tasks.md`
+Done: `work/<item-ref>/design.md`, `work/<item-ref>/tasks.md`
 Checks: quality bar — list any item not yet green.
-Next: `/build <NNNN-slug>`
+Next: `/build <item-ref>`
 Blockers: <anything unresolved, or none>
 </handoff>

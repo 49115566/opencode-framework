@@ -63,7 +63,7 @@ MCP is for interactive inspection; the runner is for repeatable assertions.
    and color contrast on key text. Compute contrast with `browser_evaluate` on
    the relevant elements.
 7. **Capture evidence.** Save screenshots per viewport and per defect into
-   `work/<NNNN-slug>/visual/`. Keep the snapshot and logs for the worst states.
+   `work/<item-ref>/visual/`. Keep the snapshot and logs for the worst states.
 8. **Clean up.** Stop any server you started.
 
 ## Vision-aware judgement
@@ -90,7 +90,7 @@ MCP is for interactive inspection; the runner is for repeatable assertions.
 - [ ] Three viewports checked for overflow/clipping/overlap.
 - [ ] Labels, focus order, and contrast checked.
 - [ ] Every UI-relevant acceptance criterion marked met / partial / not met.
-- [ ] Evidence saved under `work/<slug>/visual/` and referenced in the artifact.
+- [ ] Evidence saved under `work/<item-ref>/visual/` and referenced in the artifact.
 - [ ] Any server you started is stopped.
 
 ## Common pitfalls

@@ -1,8 +1,9 @@
 # Artifact conventions
 
-Every workflow artifact is a Markdown file under `work/<NNNN-slug>/` with YAML
-frontmatter. Agents must follow these formats exactly so that other phases and
-`/status` can parse them deterministically.
+Every workflow artifact is a Markdown file under `work/<NNNN-slug>/` — or, for a
+nested roadmap child, `work/<NNNN-slug>/<MMMM-slug>/` — with YAML frontmatter.
+Agents must follow these formats exactly so that other phases and `/status` can
+parse them deterministically.
 
 ## Frontmatter
 
@@ -10,23 +11,60 @@ Every artifact begins with:
 
 ```yaml
 ---
-feature: 0001-add-dark-mode   # <NNNN-slug>, matches the directory name
-phase: spec                   # spec | design | tasks | test | visual | review | ship
+feature: 0001-add-dark-mode   # canonical reference: <NNNN-slug>, or <NNNN-slug>/<MMMM-slug> for a nested child
+phase: spec                   # spec | design | roadmap | tasks | test | visual | review | ship
 status: draft                 # draft | final | blocked
 created: 2026-01-31           # ISO-8601 date, first creation
 updated: 2026-02-04           # ISO-8601 date, last edit
 notes: ""                     # optional: skipped phases, caveats
+parent: ""                    # optional: the parent <NNNN-slug> when this item is a nested roadmap child
 ---
 ```
 
 Rules:
 
-- `feature` is always the directory name, not the title.
+- `feature` is the item's canonical reference, not the title: the directory name
+  `<NNNN-slug>` for a standalone item, or `<NNNN-slug>/<MMMM-slug>` for a child
+  nested under a roadmap (see "Work item references").
+- `parent` is optional and set only on a nested child's artifacts to the parent
+  roadmap's `<NNNN-slug>`. Standalone items omit it.
 - `created` never changes; `updated` changes on every edit.
 - `status: final` means the owning agent considers the artifact complete for its
   phase. `blocked` means work cannot proceed without user input; say why in the
   body.
 - Never remove frontmatter. Never edit a file owned by another phase.
+
+## Work item references
+
+A work item is addressed by a **canonical reference** — its path relative to
+`work/`:
+
+```
+item-ref   ::= standalone | child
+standalone ::= NNNN-slug                    e.g. 0007-billing
+child      ::= NNNN-slug "/" MMMM-slug      e.g. 0002-agentic-roadmaps/0001-roadmap-model
+```
+
+Reference regex:
+`^[0-9]{4}-[a-z0-9-]+(/[0-9]{4}-[a-z0-9-]+)?$`.
+
+- `NNNN` is the top-level sequence number. `MMMM` is the child's **local**
+  sequence number, allocated per parent and independent of the top-level
+  sequence and of other roadmaps.
+- Any reference resolves to the directory `work/<item-ref>/`:
+  `work/0007-billing/` for a standalone item, or
+  `work/0002-agentic-roadmaps/0001-roadmap-model/` for a nested child.
+- A **roadmap** is a parent work item identified by its `roadmap.md` artifact.
+  Its child features are nested at `work/<NNNN-slug>/<MMMM-slug>/`. The parent
+  holds only `roadmap.md`; each child later runs the ordinary per-feature
+  lifecycle unchanged.
+- Phase commands accept an `item-ref` wherever a `<slug>` was accepted before. A
+  one-segment reference behaves exactly as it did before nesting existed, and
+  standalone items require no `parent` and no roadmap metadata.
+
+Nested children's artifacts set `feature` to the full canonical reference
+(`<parent-NNNN-slug>/<child-MMMM-slug>`) and MAY set `parent:` to the parent's
+`<NNNN-slug>`.
 
 ## Task IDs
 
@@ -34,6 +72,61 @@ Tasks are `T1`, `T2`, … within an item. Reference them in commit messages and
 in `[depends: T1]` annotations. Check boxes are `- [ ]` / `- [x]`.
 
 ## Templates
+
+### `roadmap.md` (roadmap) — parent item
+
+A roadmap is the first-class planning artifact of a parent work item. It
+enumerates child features and their intra-roadmap dependencies and is authored
+before any child spec. It is not a single-feature artifact: the parent has no
+spec, design, tasks, verification, or review of its own. The `Children` table is
+the machine-readable source of the child set and dependency graph; `/status`
+parses it directly.
+
+```markdown
+---
+feature: NNNN-slug
+phase: roadmap
+status: final
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+
+# Roadmap — <initiative title>
+
+## Initiative
+
+What the initiative is and who it serves.
+
+## Assumptions
+
+- <each assumption the decomposition relied on>
+
+## Children
+
+| Local id | Title | Scope | Depends on | Canonical reference |
+| -------- | ----- | ----- | ---------- | ------------------- |
+| 0001-model | Core model | <scope sufficient to author a spec> | — | NNNN-slug/0001-model |
+| 0002-api   | API layer  | ...                                 | 0001-model | NNNN-slug/0002-api |
+
+## Sequencing
+
+1. 0001-model
+2. 0002-api
+
+## Open issues
+
+- <cycles / non-decomposable initiative / duplicate / single-feature / unresolved>
+```
+
+- **Local id** is the child's directory name, `MMMM-slug`, and is the key used
+  in `Depends on`.
+- **Canonical reference** is the full item-ref; phase commands and `/status`
+  address the child by it.
+- **Depends on** names local ids of other rows in this same table only, as a
+  comma-separated list when there are two or more (`—` when there are none). A
+  dependency may not name its own row, and the stored graph must be acyclic. If
+  the initiative's dependencies form a cycle, record the cycle under
+  `## Open issues` and leave the stored graph acyclic.
 
 ### `spec.md` (product)
 
@@ -187,7 +280,7 @@ updated: YYYY-MM-DD
 ### `visual.md` (visual) — optional, for UI-bearing work
 
 Only produced when the work item has a user-facing surface. Screenshots live
-beside it under `work/<slug>/visual/`.
+beside it under `work/<item-ref>/visual/`.
 
 ```markdown
 ---
@@ -239,7 +332,7 @@ updated: YYYY-MM-DD
 
 ## Evidence
 
-- `work/<slug>/visual/desktop.png`, `mobile.png`, ...
+- `work/<item-ref>/visual/desktop.png`, `mobile.png`, ...
 
 ## Verdict
 
@@ -320,3 +413,8 @@ updated: YYYY-MM-DD
 To allocate `NNNN`, list `work/`, parse the numeric prefix of each directory,
 take the maximum, and add one. If `work/` is empty, start at `0001`. Never reuse
 a number, even if the directory was deleted.
+
+To allocate a child's local `MMMM`, list `work/<parent-NNNN-slug>/`, parse the
+prefix of each child directory, take the maximum, and add one. Child numbers are
+scoped to their parent: they are independent of the top-level sequence and of
+other roadmaps, and are never reused within that parent.

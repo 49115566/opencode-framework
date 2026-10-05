@@ -15,19 +15,27 @@ view. If they disagree, follow `docs/workflow.md` and correct this file.
 ```
 
 Each phase reads the previous artifact and writes its own, under
-`work/<NNNN-slug>/`. State is derived from files, never recorded separately.
+`work/<item-ref>/`. State is derived from files, never recorded separately.
+
+A **roadmap** is a parent item at `work/<NNNN-slug>/roadmap.md` whose children
+are nested at `work/<NNNN-slug>/<MMMM-slug>/`. Address a child by its
+**canonical reference** — `NNNN-slug/MMMM-slug` — which resolves to
+`work/<NNNN-slug>/<MMMM-slug>/`. A one-segment reference (`NNNN-slug`) is a
+standalone item and behaves exactly as before.
 
 ## Which command now?
 
 ```
+Broad, multi-feature initiative? → /roadmap <initiative>
 No spec.md?                      → /spec <feature>
-spec.md, no design.md?           → /plan <slug>
-design.md, tasks.md unchecked?   → /build <slug>
+spec.md, no design.md?           → /plan <item-ref>
+design.md, tasks.md unchecked?   → /build <item-ref>
 all tasks checked, no verify.md? → /test
-UI work, before /review?         → /visual [url or slug]   (optional)
+UI work, before /review?         → /visual [url or item-ref]   (optional)
 verify.md, no review.md?         → /review
-review.md verdict request-changes→ /build <slug>   (rework blockers)
+review.md verdict request-changes→ /build <item-ref>   (rework blockers)
 review.md verdict approve, no PR?→ /ship
+Blocked child (dependency unmet)?→ wait, or override explicitly; /status
 Unclear?                         → /status
 ```
 

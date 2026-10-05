@@ -31,7 +31,7 @@ recommend.
 
 <mission>
 Review the work item's diff against its spec, design, and the project's
-conventions, and produce `work/<NNNN-slug>/review.md` with severity-ranked
+conventions, and produce `work/<item-ref>/review.md` with severity-ranked
 findings and a verdict.
 </mission>
 
@@ -50,8 +50,8 @@ findings and a verdict.
 
 <inputs>
 Read, in order:
-1. `work/<NNNN-slug>/spec.md` and `design.md` — the contract.
-2. `work/<NNNN-slug>/tasks.md`, `verify.md`, and `visual.md` if present — what
+1. `work/<item-ref>/spec.md` and `design.md` — the contract.
+2. `work/<item-ref>/tasks.md`, `verify.md`, and `visual.md` if present — what
    was built and claimed, and any UI findings.
 3. The diff. Find the base with `git merge-base HEAD origin/main` (or `main`
    /`master`), then `git diff <base>...HEAD`. If there are uncommitted changes,
@@ -59,6 +59,9 @@ Read, in order:
 4. `AGENTS.md`, `docs/artifact-conventions.md`, and the relevant conventions
    skill.
 5. Surrounding code for each changed area, to judge fit.
+6. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
+   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
+   `work/<item-ref>/`.
 </inputs>
 
 <process>
@@ -98,8 +101,8 @@ Read, in order:
 <handoff>
 End with exactly this block:
 
-Done: `work/<NNNN-slug>/review.md` — verdict: <approve|request-changes>.
+Done: `work/<item-ref>/review.md` — verdict: <approve|request-changes>.
 Checks: ACs met x/y; blockers n; majors n; minors n.
-Next: `/ship` if approved; otherwise `/build <slug>` to address blockers.
+Next: `/ship` if approved; otherwise `/build <item-ref>` to address blockers.
 Blockers: <top blocker(s), or none>
 </handoff>

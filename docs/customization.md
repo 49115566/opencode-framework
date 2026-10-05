@@ -109,8 +109,8 @@ There is no separate `write` key, and none is needed — an agent that can `edit
 a path can create a new file there as well as update one that already exists.
 
 Permission checks see tool paths in two forms: relative to the repository root
-(for example `work/<slug>/spec.md`) and absolute (for example
-`/repo/work/<slug>/spec.md`). One pattern matches only one form, so
+(for example `work/<item-ref>/spec.md`) and absolute (for example
+`/repo/work/<item-ref>/spec.md`). One pattern matches only one form, so
 artifact-writing agents must declare **both** `work/**` and `**/work/**`:
 
 ```yaml

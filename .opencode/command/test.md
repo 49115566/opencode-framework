@@ -1,5 +1,5 @@
 ---
-description: "Verify the implementation against the spec and record test evidence. Usage: /test [slug]"
+description: "Verify the implementation against the spec and record test evidence. Usage: /test [item-ref]"
 agent: tester
 ---
 
@@ -8,12 +8,15 @@ Run the **Test** phase for: $ARGUMENTS
 Follow your Tester agent instructions exactly. In particular:
 
 - Read the work item's `spec.md`, `design.md`, `tasks.md`, and the diff.
+- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item or
+  `NNNN-slug/MMMM-slug` for a roadmap child; every `work/<item-ref>/` path
+  resolves to that item's directory.
 - Confirm the test command via the `project-discovery` skill if needed.
 - Build a coverage matrix mapping every acceptance criterion and edge case to a
   test or to a documented manual/untestable reason.
 - Add focused tests for gaps. Do not modify production code; if the fault is in
   the implementation, stop and report it as a defect with a minimal reproduction.
-- Write `work/<slug>/verify.md` using the template in
+- Write `work/<item-ref>/verify.md` using the template in
   `docs/artifact-conventions.md`, then set `status: final` (or `blocked`).
 
 If `$ARGUMENTS` is empty, ask which work item to verify, or list candidates from

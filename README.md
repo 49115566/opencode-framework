@@ -14,7 +14,7 @@ Most agent setups fail in one of two ways: the agent has no memory of *why* a
 change exists, or it happily declares success without evidence. This framework
 addresses both:
 
-- **Artifacts before code.** Each phase produces a file under `work/<NNNN-slug>/`
+- **Artifacts before code.** Each phase produces a file under `work/<item-ref>/`
   that the next phase reads. Intent survives across sessions.
 - **Evidence over assertion.** Builders run the project's checks; testers map
   every acceptance criterion to a test; reviewers cite `file:line`; shippers
@@ -84,7 +84,7 @@ Not sure where things stand? `/status`. Fixing a small bug? `/fix <description>`
 ```mermaid
 flowchart LR
     spec["/spec &lt;feature&gt;"] --> specmd["spec.md"]
-    specmd --> plan["/plan &lt;slug&gt;"]
+    specmd --> plan["/plan &lt;item-ref&gt;"]
     plan --> design["design.md<br/>tasks.md"]
     design --> build["/build [task]"]
     build --> code["code + [x] tasks"]
@@ -127,18 +127,26 @@ stateDiagram-v2
 Each phase reads the previous artifact and writes its own. Full details in
 [`docs/workflow.md`](docs/workflow.md).
 
+For a broad, multi-feature initiative, plan first with `/roadmap <initiative>`,
+which creates a parent roadmap item (`work/<NNNN-slug>/roadmap.md`) enumerating
+child features and their dependencies, each nested at
+`work/<NNNN-slug>/<MMMM-slug>/`. Every child is then addressed by its
+**canonical reference** (`NNNN-slug/MMMM-slug`) and runs the ordinary lifecycle
+unchanged. A standalone item is still just `NNNN-slug`.
+
 ## Commands
 
 | Command            | Agent       | What it does                                             |
 | ------------------ | ----------- | -------------------------------------------------------- |
 | `/spec <feature>`  | `product`   | Requirements → `spec.md`                                 |
-| `/plan <slug>`     | `architect` | Design + task breakdown → `design.md`, `tasks.md`        |
+| `/plan <item-ref>` | `architect` | Design + task breakdown → `design.md`, `tasks.md`        |
 | `/build [task]`    | `builder`   | Implement a task; update `tasks.md`                      |
-| `/test [slug]`     | `tester`    | Verify acceptance criteria → `verify.md`                 |
+| `/test [item-ref]` | `tester`    | Verify acceptance criteria → `verify.md`                 |
 | `/visual [url]`    | `visual`    | Browser QA of a running UI → `visual.md` (optional)      |
-| `/review [slug]`   | `reviewer`  | Read-only review → `review.md`                           |
-| `/ship [slug]`     | `shipper`   | Branch, conventional commits, PR                         |
+| `/review [item-ref]`| `reviewer` | Read-only review → `review.md`                           |
+| `/ship [item-ref]` | `shipper`   | Branch, conventional commits, PR                         |
 | `/fix <bug>`       | `builder`   | Lightweight reproduce → fix → test path                  |
+| `/roadmap <initiative>` | `roadmap` | Decompose a multi-feature initiative → `roadmap.md` + child dirs |
 | `/status`          | `status`    | Report each work item's phase (read-only)                |
 | `/doctor`          | `doctor`    | Read-only framework drift check: inventories, counts, permissions, ignore rules |
 | `/bootstrap`       | `bootstrap` | Adopt the framework into the current repository          |
@@ -149,6 +157,7 @@ Each phase reads the previous artifact and writes its own. Full details in
 | ----------- | --------- | --------------------------------------- | --------------------- |
 | `product`   | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
 | `architect` | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
+| `roadmap`   | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
 | `builder`   | primary   | any source                              | allow                 |
 | `tester`    | primary   | test files + `work/**` + `**/work/**`   | allow                 |
 | `visual`    | all       | `work/**` + `**/work/**`                | allow                 |
@@ -164,7 +173,7 @@ Each phase reads the previous artifact and writes its own. Full details in
 Permissions are enforced by opencode, not just requested in prose. In opencode,
 the `edit` permission covers **create, write, and patch** — there is no separate
 `write` grant — and tool paths reach the check in both relative
-(`work/<slug>/spec.md`) and absolute (`/repo/work/<slug>/spec.md`) forms.
+(`work/<item-ref>/spec.md`) and absolute (`/repo/work/<item-ref>/spec.md`) forms.
 Artifact-writing agents therefore declare **both** `work/**` and `**/work/**`;
 declaring only one leaves the other form to fall through to the catch-all deny.
 See [`docs/customization.md`](docs/customization.md) for the full permission
@@ -189,8 +198,8 @@ model.
 
 ```
 .opencode/
-  agent/     # 13 role prompts
-  command/   # 11 slash commands
+  agent/     # 14 role prompts
+  command/   # 12 slash commands
   skill/     # 10 knowledge skills
 docs/
   workflow.md               # lifecycle, phases, state, routing

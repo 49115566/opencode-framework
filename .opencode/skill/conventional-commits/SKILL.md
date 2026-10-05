@@ -50,11 +50,18 @@ followed by `BREAKING CHANGE: <migration notes>`.
 ## Branch naming
 
 ```
-<type>/<NNNN-slug-or-short-description>
+<type>/<ref-or-short-description>
 ```
 
-Examples: `feat/0001-add-dark-mode`, `fix/login-timeout`, `docs/update-readme`.
-Use the work item's slug when there is one so the branch maps to the artifact.
+`<ref>` is the work item's canonical reference: `NNNN-slug` for a standalone
+item, or `NNNN-slug/MMMM-slug` for a roadmap child with the `/` replaced by `-`
+(`NNNN-slug-MMMM-slug`). Joining the two segments keeps the branch a single ref —
+two children of one roadmap must not map to the same branch — while still
+identifying the exact child work item.
+
+Examples: `feat/0001-add-dark-mode`,
+`feat/0002-agentic-roadmaps-0001-roadmap-model`, `fix/login-timeout`,
+`docs/update-readme`.
 
 ## Rules
 
