@@ -90,8 +90,7 @@ Readiness is derived live from files at status time; it is never stored:
 satisfied(dep_local_id):
   child_dir = work/<parent>/<dep_local_id>/
   if child_dir does not exist        -> dangling; not satisfied
-  if child_dir/ship.md exists        -> satisfied        # shipped
-  if a PR is detected for the child  -> satisfied        # shipped
+  if child_dir/ship.md exists        -> satisfied        # shipped; presence is the sole shipped signal
   if child_dir/review.md exists
        and its verdict == "approve"  -> satisfied        # approved, even if unshipped
   otherwise                          -> not satisfied
@@ -100,10 +99,12 @@ ready(child)      = every dependency of child is satisfied AND child is not in a
 blocked_by(child) = [dep_local_id for each unsatisfied dependency]
 ```
 
-A child with no dependencies is `ready`. Only a `review.md` verdict of `approve`
-or a shipped child — an optional `ship.md` recording the PR, or a PR detected for
-the child — satisfies a dependency: a `request-changes` verdict, no review yet,
-and an approved-but-unshipped boundary are all covered by the same rule.
+A child with no dependencies is `ready`. A dependency is satisfied when its child
+directory contains `ship.md` — its presence is the sole shipped signal, keyed on
+presence rather than contents — or when its `review.md` verdict is `approve`, which
+satisfies the dependency **even if unshipped**. `ship.md` presence takes precedence
+over a `request-changes` verdict; a `request-changes` verdict or a missing
+`review.md` (with no `ship.md`) is not satisfied.
 A child in a cycle is never `ready`.
 
 ### Status reporting
@@ -220,9 +221,17 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   overrides).
 - **Process**: Confirm checks are green and the tree contains no secrets →
   create a branch → stage logical commits with conventional messages →
-  (user-approved) push → open a PR with a structured body linking the artifacts.
-- **Exit**: PR URL reported to the user. Nothing is merged by the agent.
-- **Artifact**: branch, commits, PR. Optionally `ship.md` recording the PR URL.
+  (user-approved) push → open a PR with a structured body linking the artifacts →
+  write `ship.md` recording the branch, commits, and PR (or "not created"), commit
+  it (`docs(work): record ship state for <item-ref>`), and push so the shipped
+  signal travels with the branch.
+- **Exit**: PR URL reported to the user, or — when `gh` is unavailable — the
+  local-commit path recorded in `ship.md`; the branch carries a committed
+  `ship.md` and the run leaves no uncommitted `ship.md`. Nothing is merged by the
+  agent.
+- **Artifact**: branch, commits, PR, and `ship.md` recording the shipped signal
+  (branch, commits, and PR URL). Presence of `ship.md` is the shipped signal; see
+  "Dependencies and readiness".
 - **Next**: Human review and merge. `/status` will show the item as shipped.
 
 ## Derived state
@@ -239,10 +248,10 @@ content:
 | `tasks.md` present, some boxes unchecked                   | build        |
 | all boxes checked, `verify.md` missing                     | test         |
 | `verify.md` present, `review.md` missing                  | review       |
-| `visual.md` present (optional; does not change the phase) | review       |
+| `ship.md` present                                          | shipped      |
 | `review.md` verdict `request-changes`                      | build (rework)|
-| `review.md` verdict `approve`, no branch/PR recorded       | ship         |
-| `ship.md` present with PR URL, or PR detected              | shipped      |
+| `review.md` verdict `approve`, no `ship.md`                | ship         |
+| `visual.md` present (optional; does not change the phase) | review       |
 
 A directory containing `roadmap.md` is a roadmap parent and is derived as
 `roadmap` before the single-feature rows. A roadmap child is derived like any
