@@ -8,18 +8,19 @@ Produce a **status report**. This is read-only: do not edit any file.
 Follow your Status agent instructions exactly. In particular:
 
 - List `work/` and read each item's artifacts — frontmatter, `tasks.md` check
-  boxes, `review.md` verdict, and any `ship.md` or detected PR.
+  boxes, `review.md` verdict, and any `ship.md`.
 - Detect a **roadmap parent** by the presence of `roadmap.md`; treat everything
   else as a single-feature item. Decide this before deriving any phase.
 - Derive each item's phase using the "Derived state" table in
   `docs/workflow.md`; base it on artifacts and contents, not timestamps. A
   `.gitkeep`-only child directory is `not started`.
 - For each roadmap parent, parse the **Children** table and compute each child's
-  readiness with the readiness algorithm in `docs/workflow.md`: `ready` iff every
-  dependency is satisfied, where a dependency is satisfied only by a `review.md`
-  verdict of `approve` or a shipped child (an optional `ship.md`, or a PR detected
-  for the child); a child with no dependencies is `ready`; a child in a cycle is
-  never `ready`. Name the specific blocking children for each blocked child.
+  readiness with the authoritative readiness definition in `docs/workflow.md` →
+  "Dependencies and readiness". Do not restate its branch sequence here. In
+  short: a `review.md` verdict of `approve` satisfies a dependency even when
+  unshipped, and presence of the dependency's `ship.md` satisfies it too; a child
+  with no dependencies is `ready`; a child in a cycle is never `ready`. Name the
+  specific blocking children for each blocked child.
 - Report the roadmap row separately from its children, showing
   `<ready>/<total> ready` plus a distribution tally of its children across phases
   (`<phase> <n>, ...`); list child rows beneath it. A standalone row keeps
