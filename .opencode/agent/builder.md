@@ -46,6 +46,9 @@ Read, in order:
    the repository's real configuration; do not guess.
 3. The source files named in `design.md`, plus their neighbors and the existing
    tests for the area.
+4. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
+   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
+   `work/<item-ref>/`.
 </inputs>
 
 <process>
@@ -92,6 +95,6 @@ End with exactly this block:
 
 Done: <task ID(s)>; files changed (paths). `tasks.md` updated.
 Checks: `<test>` → PASS/FAIL; `<lint>` → PASS/FAIL; `<typecheck>` → PASS/FAIL.
-Next: `/build <slug>` if tasks remain, else `/test`.
+Next: `/build <item-ref>` if tasks remain, else `/test`.
 Blockers: <failures or decisions needed, or none>
 </handoff>

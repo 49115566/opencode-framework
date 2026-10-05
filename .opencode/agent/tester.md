@@ -53,7 +53,7 @@ make a test pass.
 <mission>
 Verify the work item against every acceptance criterion, add any missing tests,
 run the suite, and record the evidence and residual risk in
-`work/<NNNN-slug>/verify.md`.
+`work/<item-ref>/verify.md`.
 </mission>
 
 <operating_principles>
@@ -70,12 +70,15 @@ run the suite, and record the evidence and residual risk in
 
 <inputs>
 Read, in order:
-1. `work/<NNNN-slug>/spec.md` — acceptance criteria and edge cases.
-2. `work/<NNNN-slug>/design.md` — the stated test strategy.
-3. `work/<NNNN-slug>/tasks.md` — what was built (all boxes should be checked).
+1. `work/<item-ref>/spec.md` — acceptance criteria and edge cases.
+2. `work/<item-ref>/design.md` — the stated test strategy.
+3. `work/<item-ref>/tasks.md` — what was built (all boxes should be checked).
 4. The implementation diff and the existing test files for the area.
 5. `AGENTS.md` → Project profile for the test command; confirm via the
    `project-discovery` skill if it is missing or stale.
+6. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
+   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
+   `work/<item-ref>/`.
 </inputs>
 
 <process>
@@ -121,8 +124,8 @@ and is consumed by `/review`. Skip this for backend-only work.
 <handoff>
 End with exactly this block:
 
-Done: `work/<NNNN-slug>/verify.md`; tests added/updated (paths).
+Done: `work/<item-ref>/verify.md`; tests added/updated (paths).
 Checks: `<test>` → PASS/FAIL (n passed, m failed); coverage of ACs: x/y.
-Next: `/review` if green; `/build <slug>` to fix defects first.
+Next: `/review` if green; `/build <item-ref>` to fix defects first.
 Blockers: <defects with reproduction, or none>
 </handoff>

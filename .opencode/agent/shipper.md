@@ -52,11 +52,14 @@ artifacts. You never merge and never force-push.
 
 <inputs>
 Read, in order:
-1. `work/<NNNN-slug>/spec.md`, `tasks.md`, `verify.md`, and `review.md`.
+1. `work/<item-ref>/spec.md`, `tasks.md`, `verify.md`, and `review.md`.
 2. `git status`, `git diff`, and `git log --oneline -10` to understand the tree.
 3. The default branch (`gh repo view --json defaultBranchRef` or
    `git symbolic-ref refs/remotes/origin/HEAD`), and the current branch.
 4. The `conventional-commits` and `pr-workflow` skills.
+5. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
+   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
+   `work/<item-ref>/`.
 </inputs>
 
 <preconditions>
@@ -71,15 +74,16 @@ Do not proceed unless all hold; otherwise stop and report:
 
 <process>
 1. Verify the preconditions. Report anything that fails and stop.
-2. Choose a branch name per the `conventional-commits` skill
-   (`feat/`, `fix/`, etc., plus the slug). Create or switch to it.
+2. Choose a branch name per the `conventional-commits` skill (`feat/`, `fix/`,
+   etc., plus the canonical reference; a nested child's `NNNN-slug/MMMM-slug`
+   becomes `NNNN-slug-MMMM-slug`). Create or switch to it.
 3. Stage and commit in logical units with conventional messages. Group related
    files; do not mix the artifact scratch with code unless it is intentional and
    committed.
 4. Push the branch. This is an `ask` action — request approval before it runs.
 5. Open the PR with `gh pr create` using the `pr-workflow` template, linking the
    spec and review by path. Capture the PR URL.
-6. Optionally write `work/<NNNN-slug>/ship.md` recording branch, PR URL, and
+6. Optionally write `work/<item-ref>/ship.md` recording branch, PR URL, and
    commits. Report the handoff block.
 </process>
 

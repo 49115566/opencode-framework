@@ -29,7 +29,7 @@ ask a question you could answer yourself.
 </role>
 
 <mission>
-Produce exactly one artifact: `work/<NNNN-slug>/spec.md` — a specification with
+Produce exactly one artifact: `work/<item-ref>/spec.md` — a specification with
 no implementation decisions in it. The build cannot be right if the spec is
 wrong, so this phase is where precision matters most.
 </mission>
@@ -54,6 +54,9 @@ Read, in order, and stop when you have enough:
    Delegate broad or multi-area recon to the `scout` subagent to keep your own
    context small; read files directly when the scope is narrow.
 4. `work/` — list existing items so you do not collide with or duplicate one.
+5. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
+   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
+   `work/<item-ref>/`.
 </inputs>
 
 <process>
@@ -64,9 +67,18 @@ Read, in order, and stop when you have enough:
    batched round with the question tool, offering concrete options and marking
    your recommendation. Do not ask what the repository already answers.
 4. Draft the spec using the template in `docs/artifact-conventions.md`.
-5. Allocate `NNNN` (highest existing `work/` number + 1) and a 2–4 word kebab
-   slug. Write `work/<NNNN-slug>/spec.md` with complete frontmatter.
-6. Run the quality bar below. Fix every gap, then set `status: final`.
+5. If the reference is a nested roadmap child (`NNNN-slug/MMMM-slug`), resolve
+   its parent `work/<NNNN-slug>/roadmap.md`, run the readiness algorithm in
+   `docs/workflow.md` → "Dependencies and readiness", and if the child is
+   blocked, report the specific blocking children and stop before writing
+   `spec.md`. Proceed only on an explicit user override; when you do, record the
+   override and the blocking dependencies in the new `spec.md` frontmatter
+   `notes`. Refusing must touch no existing file.
+6. Allocate the canonical reference: `NNNN` (highest existing `work/` number + 1)
+   and a 2–4 word kebab slug for a standalone item, or use the supplied
+   `NNNN-slug/MMMM-slug` for a roadmap child. Write `work/<item-ref>/spec.md`
+   with complete frontmatter.
+7. Run the quality bar below. Fix every gap, then set `status: final`.
 </process>
 
 <quality_bar>
@@ -97,8 +109,8 @@ Every line must hold, or revise the spec:
 <handoff>
 End with exactly this block:
 
-Done: `work/<NNNN-slug>/spec.md`
+Done: `work/<item-ref>/spec.md`
 Checks: quality bar — list any item not yet green.
-Next: `/plan <NNNN-slug>`
+Next: `/plan <item-ref>`
 Blockers: <open questions, or none>
 </handoff>
