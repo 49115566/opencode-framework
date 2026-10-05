@@ -5,6 +5,10 @@ nested roadmap child, `work/<NNNN-slug>/<MMMM-slug>/` — with YAML frontmatter.
 Agents must follow these formats exactly so that other phases and `/status` can
 parse them deterministically.
 
+Workflow artifacts under `work/` are **committed working state**:
+version-controlled so a fresh clone, a teammate, and CI derive the same phase.
+Only `scratch/` and opencode's generated state are ignored.
+
 ## Frontmatter
 
 Every artifact begins with:
@@ -410,11 +414,48 @@ updated: YYYY-MM-DD
 
 ## Sequence allocation
 
-To allocate `NNNN`, list `work/`, parse the numeric prefix of each directory,
-take the maximum, and add one. If `work/` is empty, start at `0001`. Never reuse
-a number, even if the directory was deleted.
+To allocate a top-level `NNNN`, take the greatest 4-digit prefix that has **ever**
+appeared in the committed history of `work/` and add one, zero-padded to four
+digits. The source set is the union of directory names under `work/` at `HEAD`
+and every path ever committed under `work/`, read with
+`git log --all --name-only --pretty=format: -- work/`. When the set is empty,
+start at `0001`. Git history is the durable ledger: Never reuse a number, even
+if its directory was later deleted, because the deleted number stays visible in
+the committed history and therefore in the source set. Do not create a registry
+or any other allocation file; the committed tree and its history are the only
+source.
 
-To allocate a child's local `MMMM`, list `work/<parent-NNNN-slug>/`, parse the
-prefix of each child directory, take the maximum, and add one. Child numbers are
-scoped to their parent: they are independent of the top-level sequence and of
-other roadmaps, and are never reused within that parent.
+To allocate a child's local `MMMM`, apply the same contract within
+`work/<parent-NNNN-slug>/`: take the greatest 4-digit prefix ever present in that
+parent's committed history and add one. Child numbers are scoped to their parent:
+they are independent of the top-level sequence and of other roadmaps, and are
+never reused within that parent.
+
+### Renumbering after a parallel merge
+
+Two branches may each allocate the same next number; because they create distinct
+directories, the merge produces no conflict and can silently leave two items
+sharing a canonical reference. Resolve it on the merged tree before either item
+ships:
+
+1. **Detect.** Any two top-level `work/` directories whose 4-digit prefix is
+   equal are a collision; likewise any two canonical references that differ only
+   by slug under the same number. Check each roadmap parent's child numbers the
+   same way.
+2. **Choose one.** Renumber the item that is not yet approved or shipped; if both
+   are unshipped, renumber the one whose directory was added later by commit time
+   (`git log --diff-filter=A`), breaking ties by slug order. The chosen number
+   stays spent and is never reassigned.
+3. **Renumber.** `git mv work/<old>/ work/<new>/` using the allocation contract
+   above.
+4. **Update every reference in the same change:** the directory name; the
+   artifact `feature:` frontmatter value; a nested child's `parent:` value; the
+   roadmap `Children` table `Canonical reference` cells; `ship.md` and
+   PR/handoff paths; and any prose that names the old reference.
+5. **Record.** Note the renumber in the item's newest artifact frontmatter
+   `notes` (or the PR description when the artifacts are already immutable
+   history).
+
+Renumbering is the one sanctioned mechanical cross-phase edit: it changes
+references, never decisions or content. It happens at merge time, before the item
+ships, so it does not rewrite historical records.

@@ -63,7 +63,9 @@ MCP is for interactive inspection; the runner is for repeatable assertions.
    and color contrast on key text. Compute contrast with `browser_evaluate` on
    the relevant elements.
 7. **Capture evidence.** Save screenshots per viewport and per defect into
-   `work/<item-ref>/visual/`. Keep the snapshot and logs for the worst states.
+   `work/<item-ref>/visual/`; those screenshots are committed working state that
+   travels with the item, so keep only transient output under `scratch/`. Keep
+   the snapshot and logs for the worst states.
 8. **Clean up.** Stop any server you started.
 
 ## Vision-aware judgement

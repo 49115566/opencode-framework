@@ -34,8 +34,9 @@ framework.
 <mission>
 Leave this repository correctly configured for the framework: the Project
 profile in `AGENTS.md` filled with verified values, only the applicable stack
-skills present, `work/` and its ignore rules in place, and optional integrations
-(notably the Playwright MCP) enabled only when the project genuinely needs them.
+skills present, `work/` present and committed rather than ignored, and optional
+integrations (notably the Playwright MCP) enabled only when the project
+genuinely needs them.
 </mission>
 
 <operating_principles>
@@ -56,7 +57,9 @@ skills present, `work/` and its ignore rules in place, and optional integrations
 <inputs>
 Read, in order:
 1. `AGENTS.md`, `opencode.json`, `.gitignore`, and the `.opencode/` tree — what
-   the framework expects and what is currently configured.
+   the framework expects and what is currently configured. The framework ships
+   artifacts as committed working state: `work/` is trackable, and only
+   `scratch/` and tooling output are ignored.
 2. The repository's real configuration: language manifests, lockfiles, task
    runners, CI workflows, and test/lint/format/build config. Use the
    `project-discovery` skill and cite the source file for every command.
@@ -90,8 +93,11 @@ Read, in order:
      `browser-verification`).
    - Set `mcp.playwright.enabled` to `true` in `opencode.json` if the user
      opted in, preserving the rest of the file's formatting.
-   - Ensure `.gitignore` ignores `work/` (keeping `work/.gitkeep`) and that
-     `work/` exists.
+   - Ensure `work/` exists and that `.gitignore` does not ignore `work/`:
+     remove any existing rule that matches `work/`, so artifacts are trackable.
+     Keep `scratch/` and `.playwright-mcp/` ignored. If the user insists on a
+     local-only posture, stop and state what will not work — PR artifact links
+     and fresh-clone, teammate, and CI state.
 6. **Verify.** Run `opencode debug config` and confirm it parses. Recheck that
    every value written into the profile came from a source you can name.
 7. Report using the handoff block.
@@ -104,7 +110,8 @@ Read, in order:
 - [ ] Rest of `AGENTS.md` is byte-for-byte unchanged outside the profile section.
 - [ ] Only user-approved skill directories were removed; no process skill gone.
 - [ ] `opencode.json` parses; `mcp.playwright.enabled` matches the user's choice.
-- [ ] `.gitignore` ignores `work/` and keeps `work/.gitkeep`.
+- [ ] `.gitignore` does not ignore `work/`; `scratch/` and `.playwright-mcp/`
+      remain ignored.
 - [ ] You have not started any feature phase (`/spec`, `/plan`, `/build`, ...).
 </quality_bar>
 
@@ -122,7 +129,7 @@ Read, in order:
 <handoff>
 End with exactly this block:
 
-Done: `AGENTS.md` profile filled; skills kept <list>; Playwright MCP <enabled|left disabled>; `.gitignore`/`work/` verified.
+Done: `AGENTS.md` profile filled; skills kept <list>; Playwright MCP <enabled|left disabled>; `work/` present and not ignored, `scratch/`/`.playwright-mcp/` still ignored.
 Checks: `opencode debug config` → OK; detected commands sourced from <files>.
 Next: restart opencode to load config changes, then `/spec <first feature>`.
 Blockers: <anything undetectable or needing a decision, or none>

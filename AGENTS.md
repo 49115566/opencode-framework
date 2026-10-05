@@ -62,7 +62,9 @@ lives in `docs/workflow.md`. The exact artifact formats live in
 
 All workflow artifacts live under `work/<NNNN-slug>/`, one directory per
 feature (`NNNN` is the next zero-padded sequence number; `slug` is kebab-case).
-Artifacts are working state and are git-ignored.
+Workflow artifacts under `work/` are **committed working state**:
+version-controlled so a fresh clone, a teammate, and CI derive the same phase.
+Only `scratch/` and opencode's generated state are ignored.
 
 A **roadmap** is a parent work item at `work/<NNNN-slug>/` whose `roadmap.md`
 enumerates child features; its children are nested at

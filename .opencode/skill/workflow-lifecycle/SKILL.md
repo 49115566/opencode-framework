@@ -15,7 +15,9 @@ view. If they disagree, follow `docs/workflow.md` and correct this file.
 ```
 
 Each phase reads the previous artifact and writes its own, under
-`work/<item-ref>/`. State is derived from files, never recorded separately.
+`work/<item-ref>/`. Artifacts are **committed working state**, so a fresh clone,
+a teammate, and CI derive the same phase; state is derived from those files,
+never recorded separately.
 
 A **roadmap** is a parent item at `work/<NNNN-slug>/roadmap.md` whose children
 are nested at `work/<NNNN-slug>/<MMMM-slug>/`. Address a child by its
