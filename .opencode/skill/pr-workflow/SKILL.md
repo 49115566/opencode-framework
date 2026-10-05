@@ -13,7 +13,7 @@ the change without reconstructing the whole workflow.
 - The branch is up to date with the base branch, or the divergence is explained.
 - Tests, lint, and typecheck pass; cite the evidence.
 - The diff contains no secrets, debug code, or unrelated changes.
-- `work/<slug>/review.md` records an approving verdict (or the override is noted).
+- `work/<item-ref>/review.md` records an approving verdict (or the override is noted).
 
 ## Title
 
@@ -42,10 +42,10 @@ under ~72 characters. The PR title will become the squash-merge subject.
 
 ## Artifacts
 
-- Spec: `work/NNNN-slug/spec.md`
-- Design: `work/NNNN-slug/design.md`
-- Verification: `work/NNNN-slug/verify.md`
-- Review: `work/NNNN-slug/review.md`
+- Spec: `work/<item-ref>/spec.md`
+- Design: `work/<item-ref>/design.md`
+- Verification: `work/<item-ref>/verify.md`
+- Review: `work/<item-ref>/review.md`
 ```
 
 ## Commands
