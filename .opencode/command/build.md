@@ -1,5 +1,5 @@
 ---
-description: "Implement a work item's tasks. Usage: /build [slug or task-id]"
+description: "Implement a work item's tasks. Usage: /build [item-ref or task-id]"
 agent: builder
 ---
 
@@ -8,6 +8,9 @@ Run the **Build** phase for: $ARGUMENTS
 Follow your Builder agent instructions exactly. In particular:
 
 - Read `AGENTS.md`, then the work item's `spec.md`, `design.md`, and `tasks.md`.
+- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item or
+  `NNNN-slug/MMMM-slug` for a roadmap child; every `work/<item-ref>/` path
+  resolves to that item's directory.
 - Resolve the project's test, lint, and typecheck commands via the
   `project-discovery` skill if `AGENTS.md` does not already state them.
 - Implement the requested task, or the next unblocked unchecked task if none is
