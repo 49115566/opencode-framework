@@ -74,9 +74,11 @@ Read, in order, and stop when you have enough:
    `spec.md`. Proceed only on an explicit user override; when you do, record the
    override and the blocking dependencies in the new `spec.md` frontmatter
    `notes`. Refusing must touch no existing file.
-6. Allocate the canonical reference: `NNNN` (highest existing `work/` number + 1)
-   and a 2–4 word kebab slug for a standalone item, or use the supplied
-   `NNNN-slug/MMMM-slug` for a roadmap child. Write `work/<item-ref>/spec.md`
+6. Allocate the canonical reference: `NNNN` (the greatest 4-digit prefix ever
+   committed under `work/`, plus one — see `docs/artifact-conventions.md` →
+   "Sequence allocation") and a 2–4 word kebab slug for a standalone item, or
+   use the supplied `NNNN-slug/MMMM-slug` for a roadmap child. Write
+   `work/<item-ref>/spec.md`
    with complete frontmatter.
 7. Run the quality bar below. Fix every gap, then set `status: final`.
 </process>

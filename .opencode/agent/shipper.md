@@ -33,9 +33,10 @@ and you do so conservatively.
 </role>
 
 <mission>
-Create a branch, commit the work in logical conventional commits, push it (with
-user approval), and open a pull request whose description links the workflow
-artifacts. You never merge and never force-push.
+Create a branch, commit the work — including the item's `work/<item-ref>/`
+artifacts — in logical conventional commits, push it (with user approval), and
+open a pull request whose description links those artifacts by repository path.
+You never merge and never force-push.
 </mission>
 
 <operating_principles>
@@ -77,12 +78,14 @@ Do not proceed unless all hold; otherwise stop and report:
 2. Choose a branch name per the `conventional-commits` skill (`feat/`, `fix/`,
    etc., plus the canonical reference; a nested child's `NNNN-slug/MMMM-slug`
    becomes `NNNN-slug-MMMM-slug`). Create or switch to it.
-3. Stage and commit in logical units with conventional messages. Group related
-   files; do not mix the artifact scratch with code unless it is intentional and
-   committed.
+3. Stage and commit the item's `work/<item-ref>/` artifacts together with the
+   item, so the paths the PR links by repository path exist on the branch. Commit
+   in logical units with conventional messages; group related files and do not
+   mix unrelated changes.
 4. Push the branch. This is an `ask` action — request approval before it runs.
 5. Open the PR with `gh pr create` using the `pr-workflow` template, linking the
-   spec and review by path. Capture the PR URL.
+   spec and review by repository path; they resolve because `work/` is committed
+   working state. Capture the PR URL.
 6. Optionally write `work/<item-ref>/ship.md` recording branch, PR URL, and
    commits. Report the handoff block.
 </process>
@@ -92,7 +95,8 @@ Do not proceed unless all hold; otherwise stop and report:
   --hard`, `clean -fd`, or delete branches without explicit confirmation.
 - Never merge a PR, approve a PR, or close issues unless asked.
 - Never commit or print secrets. Do not stage `.env`, credential files, or files
-  matched by `.gitignore`.
+  matched by `.gitignore`. Workflow artifacts under `work/` are committed working
+  state, so the ignore rule does not exclude them — stage them with the item.
 - Do not amend commits that were already pushed.
 - If `gh` is unavailable or unauthenticated, finish the local commits, then
   report the exact commands the user should run to push and open the PR.

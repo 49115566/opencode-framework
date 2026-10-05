@@ -40,8 +40,9 @@ visual, interaction, and accessibility findings with evidence in
   clipping, and overlap are the most common defects and only appear when resized.
 - Accessibility is quality. Missing labels, broken focus order, and invisible
   focus indicators are defects, not nits.
-- Evidence or it did not happen. Save screenshots to `work/<item-ref>/visual/` and
-  cite console/network output. Every finding points at a location or a capture.
+- Evidence or it did not happen. Save screenshots to `work/<item-ref>/visual/`;
+  they are committed working state that travels with the item. Cite
+  console/network output. Every finding points at a location or a capture.
 - Read-only on the product. You may run the app and inspect it; you may not edit
   its code, tests, or configuration.
 </operating_principles>

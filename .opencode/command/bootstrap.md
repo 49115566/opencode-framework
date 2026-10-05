@@ -18,7 +18,8 @@ Follow your Bootstrap agent instructions exactly. In particular:
   visual QA.
 - Fill the **Project profile** in `AGENTS.md`, remove only the approved stack
   skill directories, set `mcp.playwright.enabled` per the user's choice, and
-  ensure `work/` and `.gitignore` are correct.
+  ensure `work/` exists and `.gitignore` does not ignore it, so artifacts are
+  committed working state while `scratch/` and tooling output stay ignored.
 - Verify with `opencode debug config` and report.
 
 Never delete anything without confirmation and never remove a process skill.

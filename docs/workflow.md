@@ -10,8 +10,9 @@ corrected.
 A **work item** is one unit of change — a feature, a behavior change, or a
 sizable bug. Each work item gets a directory under `work/` and moves through six
 phases. Each phase consumes the previous phase's artifact and produces its own.
-Nothing is implicit: the repository's `work/` directory plus the code diff is
-the complete state of the work.
+Nothing is implicit: the repository's committed `work/` directory plus the code
+diff is the complete state of the work, visible to a fresh clone, a teammate,
+and CI.
 
 ```
 /spec ──▶ spec.md ──▶ /plan ──▶ design.md + tasks.md ──▶ /build ──▶ code + [x] tasks
@@ -52,7 +53,9 @@ work/
   for a standalone item, or `NNNN-slug/MMMM-slug` for a nested roadmap child.
   Phase commands accept either form; a one-segment reference behaves exactly as
   before. See "Roadmaps" for the nested layout.
-- Artifacts are git-ignored. They are working state, not deliverables.
+- Workflow artifacts under `work/` are committed working state:
+  version-controlled so a fresh clone, a teammate, and CI derive the same
+  phase. Only `scratch/` and opencode's generated state are ignored.
 - A phase may be skipped only by explicit user request. If skipped, say so in
   the next artifact's frontmatter `notes`.
 
@@ -274,6 +277,19 @@ When a task's nature is ambiguous, ask the user which track to use.
 Items are independent directories and may proceed in parallel. Keep them on
 separate branches. `tasks.md` check boxes are per-item; never mix items in one
 commit unless the user asks.
+
+Artifacts are committed, so they travel with the branch: a work item's
+`work/<item-ref>/` directory merges alongside its code, and the artifact paths
+linked from its pull request resolve for a reviewer who does not share the
+author's working tree.
+
+Because two branches can each allocate the same next number, a merge can leave
+two items sharing a canonical reference without a filesystem conflict. After a
+merge, scan the top-level `work/` directories — and each roadmap parent's child
+directories — for duplicate 4-digit prefixes. On a collision, follow
+"Renumbering after a parallel merge" in `docs/artifact-conventions.md`: renumber
+the unshipped item to the next number from the allocation contract and update
+every reference in the same change before it ships. A number is never reused.
 
 ## Resuming and interruption
 

@@ -88,15 +88,17 @@ Read, in order, and stop when you have enough:
    the initiative was too ambiguous to decompose cleanly, you may ask one batched
    clarifying round; otherwise proceed and record assumptions rather than
    blocking.
-8. Allocate the next top-level `NNNN` (highest existing `work/` number + 1) and a
-   2–4 word kebab-case slug. Write `work/<NNNN-slug>/roadmap.md` using the
-   template in `docs/artifact-conventions.md`, with `feature: <NNNN-slug>`,
-   `phase: roadmap`, `status: final`, and the current ISO-8601 date for `created`
-   and `updated`.
+8. Allocate the next top-level `NNNN` (the greatest 4-digit prefix ever committed
+   under `work/`, plus one — see `docs/artifact-conventions.md` → "Sequence
+   allocation") and a 2–4 word kebab-case slug. Write
+   `work/<NNNN-slug>/roadmap.md` using the template in
+   `docs/artifact-conventions.md`, with `feature: <NNNN-slug>`, `phase: roadmap`,
+   `status: final`, and the current ISO-8601 date for `created` and `updated`.
 9. Create `work/<NNNN-slug>/<MMMM-slug>/.gitkeep` for every enumerated child —
    and nothing else. Writing the placeholder creates the intermediate directory;
-   do not run `mkdir`. Each child directory must contain no spec, design, tasks,
-   verification, or review.
+   do not run `mkdir`. The placeholder is committed, so the reserved child
+   number persists in version control. Each child directory must contain
+   no spec, design, tasks, verification, or review.
 10. Run the quality bar below, then end with the handoff block, recommending the
     next command per ready child, e.g. `/spec <NNNN-slug>/<MMMM-slug>`.
 </process>

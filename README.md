@@ -14,8 +14,9 @@ Most agent setups fail in one of two ways: the agent has no memory of *why* a
 change exists, or it happily declares success without evidence. This framework
 addresses both:
 
-- **Artifacts before code.** Each phase produces a file under `work/<item-ref>/`
-  that the next phase reads. Intent survives across sessions.
+- **Artifacts before code.** Each phase produces a committed file under
+  `work/<item-ref>/` that the next phase reads. Intent survives across sessions,
+  teammates, and CI.
 - **Evidence over assertion.** Builders run the project's checks; testers map
   every acceptance criterion to a test; reviewers cite `file:line`; shippers
   verify before committing.
@@ -51,6 +52,13 @@ those should not be copied between projects.
 
 If the project already has an `AGENTS.md`, `opencode.json`, or `.gitignore`,
 merge rather than overwrite — the framework files are authored to merge cleanly.
+
+The framework does not ignore `work/`. Workflow artifacts are committed working
+state, so a fresh clone, a teammate, and CI derive the same phase; only
+`scratch/` and tooling output (`.playwright-mcp/`) stay ignored. If your project
+already ignores `work/`, `/bootstrap` removes that rule. A local-only posture is
+an unsupported override: PR artifact links and fresh-clone, teammate, and CI
+state will not work.
 
 ### 2. Bootstrap
 
@@ -207,7 +215,7 @@ docs/
   customization.md          # extend agents/skills/commands
 AGENTS.md                   # always-loaded workflow contract + project profile
 opencode.json               # model, default agent, permissions, instructions, MCP
-work/                       # per-feature artifacts (git-ignored)
+work/                       # per-feature artifacts (committed)
 scratch/                    # temporary files and background logs (git-ignored)
 ```
 

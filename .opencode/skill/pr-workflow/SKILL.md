@@ -42,6 +42,10 @@ under ~72 characters. The PR title will become the squash-merge subject.
 
 ## Artifacts
 
+Workflow artifacts under `work/` are committed working state, so these paths
+exist on the branch and resolve for a reviewer who does not share the author's
+working tree:
+
 - Spec: `work/<item-ref>/spec.md`
 - Design: `work/<item-ref>/design.md`
 - Verification: `work/<item-ref>/verify.md`

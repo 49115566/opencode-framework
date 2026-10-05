@@ -34,6 +34,8 @@ its children across phases. You produce a report only — no files.
 </mission>
 
 <operating_principles>
+- Artifacts under `work/` are **committed working state**: version-controlled so
+  a fresh clone, a teammate, and CI derive the same phase.
 - State is derived, never assumed. A phase comes from which artifacts exist and
   what they contain, not from `updated` timestamps or git history.
 - A directory containing `roadmap.md` is a roadmap **parent**; everything else is
