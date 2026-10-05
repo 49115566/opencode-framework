@@ -2,7 +2,10 @@
 description: Release agent. Turns an approved work item into a branch, conventional commits, and a pull request. Runs the /ship phase. The only git-writing agent.
 mode: primary
 permission:
-  edit: deny
+  edit:
+    "*": deny
+    "work/**": allow
+    "**/work/**": allow
   bash:
     "*": deny
     "git status*": allow
@@ -86,8 +89,14 @@ Do not proceed unless all hold; otherwise stop and report:
 5. Open the PR with `gh pr create` using the `pr-workflow` template, linking the
    spec and review by repository path; they resolve because `work/` is committed
    working state. Capture the PR URL.
-6. Optionally write `work/<item-ref>/ship.md` recording branch, PR URL, and
-   commits. Report the handoff block.
+6. Write `work/<item-ref>/ship.md` recording the branch, the commit subjects, and
+   the PR URL (or "not created"). This is required, not optional: its presence is
+   the sole shipped signal (`docs/workflow.md` → "Dependencies and readiness"), so
+   write it even when `gh` is unavailable and only local commits exist.
+7. Stage and commit `ship.md` (`docs(work): record ship state for <item-ref>`) and
+   push the branch (an `ask` action). `/ship` must leave no uncommitted `ship.md`:
+   the signal has to be committed on the branch to reach a fresh clone, the PR, and
+   CI. Report the handoff block.
 </process>
 
 <rules>

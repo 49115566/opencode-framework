@@ -82,7 +82,7 @@ for visual QA.
 /build                       # implement the next task
 /test                        # verify against acceptance criteria
 /review                      # read-only review of the diff
-/ship                        # branch, commits, PR
+/ship                        # branch, commits, PR, ship.md
 ```
 
 Not sure where things stand? `/status`. Fixing a small bug? `/fix <description>`.
@@ -101,7 +101,7 @@ flowchart LR
     verify --> review["/review"]
     review -->|request-changes| build
     review -->|approve| ship["/ship"]
-    ship --> pr["branch, commits, PR"]
+    ship --> pr["branch, commits, PR, ship.md"]
 
     test -.->|"UI only · optional"| visual["/visual"]
     visual -.->|visual.md| review
@@ -129,7 +129,7 @@ stateDiagram-v2
     Test: verify.md
     Visual: visual.md (optional)
     Review: review.md
-    Ship: branch + PR
+    Ship: branch + PR + ship.md
 ```
 
 Each phase reads the previous artifact and writes its own. Full details in
@@ -152,7 +152,7 @@ unchanged. A standalone item is still just `NNNN-slug`.
 | `/test [item-ref]` | `tester`    | Verify acceptance criteria → `verify.md`                 |
 | `/visual [url]`    | `visual`    | Browser QA of a running UI → `visual.md` (optional)      |
 | `/review [item-ref]`| `reviewer` | Read-only review → `review.md`                           |
-| `/ship [item-ref]` | `shipper`   | Branch, conventional commits, PR                         |
+| `/ship [item-ref]` | `shipper`   | Branch, conventional commits, PR, `ship.md`              |
 | `/fix <bug>`       | `builder`   | Lightweight reproduce → fix → test path                  |
 | `/roadmap <initiative>` | `roadmap` | Decompose a multi-feature initiative → `roadmap.md` + child dirs |
 | `/status`          | `status`    | Report each work item's phase (read-only)                |
@@ -170,7 +170,7 @@ unchanged. A standalone item is still just `NNNN-slug`.
 | `tester`    | primary   | test files + `work/**` + `**/work/**`   | allow                 |
 | `visual`    | all       | `work/**` + `**/work/**`                | allow                 |
 | `reviewer`  | all       | `work/**` + `**/work/**`                | read-only allowlist   |
-| `shipper`   | primary   | none                                    | git/gh allowlist      |
+| `shipper`   | primary   | `work/**` + `**/work/**`                | git/gh allowlist      |
 | `bootstrap` | primary   | config files + `work/**` + `**/work/**` | allow                 |
 | `status`    | primary   | none                                    | read-only allowlist   |
 | `scout`     | subagent  | none                                    | allow                 |

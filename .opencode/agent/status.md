@@ -61,7 +61,6 @@ its children across phases. You produce a report only — no files.
 3. `docs/artifact-conventions.md` → "Work item references" and the `roadmap.md`
    template (the Children table contract).
 4. `AGENTS.md` — the lifecycle and handoff contract, for the recommendation.
-5. Optionally, the current git branch per item, to infer shipped state.
 </inputs>
 
 <process>
@@ -72,16 +71,16 @@ its children across phases. You produce a report only — no files.
    not top-level items and must never be listed as if they were.
 3. For each single-feature item, read its artifacts' frontmatter and, for
    `tasks.md`, count checked versus total boxes; for `review.md`, note the
-   verdict; for `ship.md` or a detected PR, note the ship state. Derive the
-   phase using the "Derived state" table in `docs/workflow.md`.
+   verdict; for `ship.md`, note the ship state. Derive the phase using the
+   "Derived state" table in `docs/workflow.md`.
 4. For each roadmap parent, read `roadmap.md` and parse the **Children** table:
    each row gives a local id, title, scope, `Depends on` local ids, and a
    canonical reference. Resolve each row's child directory as
    `work/<parent>/<local-id>/`. Derive each child's phase exactly as a
    standalone item (a child holding only `.gitkeep` is `not started`; `roadmap`
    is a parent phase, never a child phase), and compute its readiness with the
-   algorithm below. For each blocked child, record the specific local ids that
-   block it.
+   readiness algorithm in `docs/workflow.md` → "Dependencies and readiness". For
+   each blocked child, record the specific local ids that block it.
 5. Compute the roadmap's integrity findings using the decision list below. Report
    them; do not fail and do not fix.
 6. Summarize the roadmap as `<ready>/<total> ready` plus a distribution tally of
@@ -97,31 +96,16 @@ its children across phases. You produce a report only — no files.
    command in detail.
 </process>
 
-<readiness_algorithm>
-Compute per child from files only. `work/<parent>/<local-id>/` is the child
-directory.
-
-```
-satisfied(dep_local_id):
-  child_dir = work/<parent>/<dep_local_id>/
-  if child_dir does not exist        -> dangling; not satisfied
-  if child_dir/ship.md exists        -> satisfied        # shipped
-  if a PR is detected for the child  -> satisfied        # shipped
-  if child_dir/review.md exists
-       and its verdict == "approve"  -> satisfied        # approved, even if unshipped
-  otherwise                          -> not satisfied
-
-ready(child)      = every dependency of child is satisfied AND child is not in a cycle
-blocked_by(child) = [dep_local_id for each unsatisfied dependency]
-```
-
-- A child with no dependencies is `ready`.
-- Only a `review.md` verdict of `approve` or a shipped child — an optional
-  `ship.md` recording the PR, or a PR detected for the child — satisfies a
-  dependency. A `request-changes` verdict, a missing `review.md`, and an
-  approved-but-unshipped boundary are all `not satisfied`.
-- A child in a cycle is never `ready`.
-</readiness_algorithm>
+<readiness>
+The authoritative readiness definition lives in `docs/workflow.md` →
+"Dependencies and readiness". Read it and apply it; never restate its branch
+sequence here. Shipped state is the presence of the child's `ship.md` artifact —
+presence alone is the sole shipped signal — and a `review.md` verdict of
+`approve` also satisfies a dependency even when unshipped, and `ship.md` presence
+takes precedence over a `request-changes` verdict. A `request-changes` verdict
+(with no `ship.md`) or a missing `review.md` is not satisfied. A child with no
+dependencies is `ready`. A child in a cycle is never `ready`.
+</readiness>
 
 <findings>
 Report each as a one-line finding; findings are informational and never fatal:
