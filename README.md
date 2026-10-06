@@ -22,7 +22,10 @@ addresses both:
   verify before committing.
 - **Hard guardrails.** Only the shipper commits, and only when you explicitly ask
   — `/ship` for a work item, or `/ship fix` for a verified fix. Reviewers and
-  product agents cannot touch source. Secrets are a stop condition.
+  product agents cannot create, modify, or delete source through the file tools;
+  their bash access is an inspection allowlist, not a sandbox (see the
+  [permission caveat](docs/customization.md#permissions)). Secrets are a stop
+  condition.
 - **Right-sized process.** `/fix` for small defects, the full lifecycle for real
   features.
 
@@ -42,6 +45,7 @@ From your project root, copy the framework files in:
 FRAMEWORK=/path/to/opencode-framework
 mkdir -p .opencode
 cp -r "$FRAMEWORK/.opencode/agent" "$FRAMEWORK/.opencode/command" "$FRAMEWORK/.opencode/skill" .opencode/
+rm -f .opencode/agent/doctor.md .opencode/command/doctor.md
 cp "$FRAMEWORK/AGENTS.md" "$FRAMEWORK/opencode.json" "$FRAMEWORK/.gitignore" .
 mkdir -p docs && cp "$FRAMEWORK"/docs/*.md docs/
 mkdir -p work && touch work/.gitkeep
@@ -50,6 +54,15 @@ mkdir -p work && touch work/.gitkeep
 Copy only the `agent/`, `command/`, and `skill/` subdirectories — opencode
 generates `.opencode/node_modules/` and package files locally when it runs, and
 those should not be copied between projects.
+
+The quickstart then removes `.opencode/agent/doctor.md` and
+`.opencode/command/doctor.md`. The `doctor` agent and `/doctor` command are
+**framework-maintainer only**: the diagnostic reads the framework `README.md`'s
+inventory tables and layout counts, which this quickstart never copies, so it
+would report a cascade of false drift findings in any other repository. If you
+adopted before this change, remove or ignore those two files — they are not
+authoritative outside the framework repository. Copying `.opencode/` by some
+other means that retains them will make `/doctor` misreport.
 
 If the project already has an `AGENTS.md`, `opencode.json`, or `.gitignore`,
 merge rather than overwrite — the framework files are authored to merge cleanly.
@@ -158,36 +171,48 @@ unchanged. A standalone item is still just `NNNN-slug`.
 | `/fix <bug>`       | `builder`   | Lightweight reproduce → fix → test; land with `/ship fix` |
 | `/roadmap <initiative>` | `roadmap` | Decompose a multi-feature initiative → `roadmap.md` + child dirs |
 | `/status`          | `status`    | Report each work item's phase (read-only)                |
-| `/doctor`          | `doctor`    | Read-only framework drift check: inventories, counts, permissions, ignore rules |
+| `/doctor`          | `doctor`    | Read-only framework drift check: inventories, counts, permissions, ignore rules — framework-maintainer only |
 | `/bootstrap`       | `bootstrap` | Adopt the framework into the current repository          |
 
 ## Agents
 
-| Agent       | Mode      | Can edit                                | Can run bash          |
-| ----------- | --------- | --------------------------------------- | --------------------- |
-| `product`   | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
-| `architect` | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
-| `roadmap`   | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
-| `builder`   | primary   | any source                              | allow                 |
-| `tester`    | primary   | test files + `work/**` + `**/work/**`   | allow                 |
-| `visual`    | all       | `work/**` + `**/work/**`                | allow                 |
-| `reviewer`  | all       | `work/**` + `**/work/**`                | read-only allowlist   |
-| `shipper`   | primary   | `work/**` + `**/work/**`                | git/gh allowlist      |
-| `bootstrap` | primary   | config files + `work/**` + `**/work/**` | allow                 |
-| `status`    | primary   | none                                    | read-only allowlist   |
-| `scout`     | subagent  | none                                    | allow                 |
-| `scribe`    | subagent  | `work/**` + `**/work/**`                | none                  |
-| `ask`       | primary   | none                                    | none                  |
-| `doctor`    | primary   | none                                    | read-only allowlist   |
+| Agent       | Mode     | Can edit                                | Can run bash             |
+| ----------- | -------- | --------------------------------------- | ------------------------ |
+| `product`   | primary  | `work/**` + `**/work/**`                | read-only, best-effort † |
+| `architect` | primary  | `work/**` + `**/work/**`                | read-only, best-effort † |
+| `roadmap`   | primary  | `work/**` + `**/work/**`                | read-only, best-effort † |
+| `builder`   | primary  | any source                              | allow                    |
+| `tester`    | primary  | test files + `work/**` + `**/work/**`   | allow                    |
+| `visual`    | all      | `work/**` + `**/work/**`                | allow                    |
+| `reviewer`  | all      | `work/**` + `**/work/**`                | read-only, best-effort † |
+| `shipper`   | primary  | `work/**` + `**/work/**`                | git/gh allowlist         |
+| `bootstrap` | primary  | config files + `work/**` + `**/work/**` | allow                    |
+| `status`    | primary  | none                                    | read-only, best-effort † |
+| `scout`     | subagent | none                                    | allow                    |
+| `scribe`    | subagent | `work/**` + `**/work/**`                | none                     |
+| `ask`       | primary  | none                                    | none                     |
+| `doctor`    | primary  | none                                    | read-only, best-effort † |
 
-Permissions are enforced by opencode, not just requested in prose. In opencode,
-the `edit` permission covers **create, write, and patch** — there is no separate
-`write` grant — and tool paths reach the check in both relative
+> † The "Can run bash" column is a best-effort allowlist, not a sandbox.
+> opencode matches bash rules by command prefix and cannot prevent shell
+> redirection or output-to-file flags. See
+> [`docs/customization.md`](docs/customization.md) for the full permission
+> model.
+
+File-tool permissions are enforced by opencode, not just requested in prose. In
+opencode, the `edit` permission covers **create, write, and patch** — there is no
+separate `write` grant — and tool paths reach the check in both relative
 (`work/<item-ref>/spec.md`) and absolute (`/repo/work/<item-ref>/spec.md`) forms.
 Artifact-writing agents therefore declare **both** `work/**` and `**/work/**`;
 declaring only one leaves the other form to fall through to the catch-all deny.
-See [`docs/customization.md`](docs/customization.md) for the full permission
-model.
+
+Bash permissions are **best-effort**, not a sandbox. opencode matches bash rules
+by command prefix, so an allowlist cannot prevent shell redirection
+(`ls > file`) or output-to-file flags (`tree -o file`, `git diff --output=file`).
+Agents with broad bash — `bootstrap`, `scout`, `tester`, and `visual` — can
+therefore modify files through the shell even when their `edit` permission is
+restricted. See [`docs/customization.md`](docs/customization.md) for the full
+permission model.
 
 ## Skills
 

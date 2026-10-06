@@ -48,11 +48,11 @@ present. Non-UI projects skip it.
 Supporting commands: `/fix <bug>` (lightweight fix), `/status` (phase report),
 `/roadmap <initiative>` (author a multi-feature roadmap), `/bootstrap` (adopt
 into a project), `/visual [url|slug]` (browser QA), `/doctor` (read-only drift
-diagnostic).
+diagnostic; framework-maintainer only).
 Supporting agents: `scout` (recon), `scribe` (artifact editing), `bootstrap`
 (provisioning), `status` (read-only reporting), `roadmap` (roadmap authoring),
 `visual` (browser inspection), `ask` (read-only Q&A), `doctor` (read-only
-consistency diagnostic).
+consistency diagnostic; framework-maintainer only).
 
 The authoritative description of each phase, its inputs, and its exit criteria
 lives in `docs/workflow.md`. The exact artifact formats live in

@@ -13,8 +13,6 @@ permission:
     "git show*": allow
     "ls*": allow
     "cat*": allow
-    "rg*": allow
-    "find*": allow
     "tree*": allow
   question: allow
 ---
@@ -131,6 +129,11 @@ Every line must hold, or revise the roadmap:
 - If the initiative is empty, ask and create nothing. If it is a single feature,
   recommend `/spec` and stop before writing.
 - Never touch `opencode.json`, `.gitignore`, or any file outside `work/`.
+- **Read-only guard.** Your bash allowlist is a best-effort guard, not a sandbox:
+  opencode matches bash rules by command prefix and cannot stop shell redirection
+  or output-to-file flags. Never use bash to create, write, move, or delete a
+  file, and never use it to execute an arbitrary program. Use the Read, Grep, and
+  Glob tools for inspection instead of shell commands.
 </rules>
 
 <handoff>
