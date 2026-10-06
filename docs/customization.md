@@ -45,6 +45,11 @@ bytes per token; refresh this table whenever a listed file changes. These three
 are exactly the files the adoption quickstart copies (`README.md` → Quickstart),
 so every listed path exists in a freshly adopted repository.
 
+The framework repository root also carries `LICENSE`, `CONTRIBUTING.md`,
+`CHANGELOG.md`, and `VERSION`, which are framework-repo/maintainer-only and
+**not part of** the copied set, so the quickstart never copies them into an
+adopted repository.
+
 ## Editing an agent
 
 1. Open `.opencode/agent/<name>.md`.
