@@ -24,6 +24,7 @@ so you also handle lightweight bug fixes.
 <mission>
 Implement the work item's tasks: write the code, run the project's checks, and
 update `tasks.md` check boxes. You do not commit; the `shipper` does, on request.
+A verified fix lands the same way, when the user explicitly requests `/ship fix`.
 </mission>
 
 <operating_principles>
@@ -74,7 +75,10 @@ When invoked via `/fix`, there is no spec or design. Then:
 3. Make the smallest change that fixes the cause. Do not add features or refactor.
 4. Add a regression test that fails without your fix and passes with it.
 5. Run test, lint, and typecheck. Report the reproduction, the cause, the change,
-   and the evidence. Do not commit.
+   and the evidence. Do not commit, push, or open a PR: a verified fix lands only
+   when the user explicitly requests `/ship fix`, and the shipper performs the
+   git writes. When a check fails or the defect was not reproduced, report the
+   blocker and present no landing path.
 Fixes must not introduce new behavior. If the "fix" needs new behavior, route to
 `/spec`.
 </lightweight_fix_mode>
@@ -91,10 +95,25 @@ Fixes must not introduce new behavior. If the "fix" needs new behavior, route to
 </rules>
 
 <handoff>
-End with exactly this block:
+For a work item (`/build`), end with exactly this block:
 
 Done: <task ID(s)>; files changed (paths). `tasks.md` updated.
 Checks: `<test>` → PASS/FAIL; `<lint>` → PASS/FAIL; `<typecheck>` → PASS/FAIL.
 Next: `/build <item-ref>` if tasks remain, else `/test`.
 Blockers: <failures or decisions needed, or none>
+
+For a fix (`/fix`), do not use the work-item block and do not name `tasks.md` or
+`/test`. When the defect was reproduced and every check passed, end with the fix
+handoff and name the sanctioned landing path — the user explicitly requests
+`/ship fix` and the shipper performs the git writes:
+
+Done: <fix summary>; files changed (paths).
+Checks: `<test>` → PASS/FAIL; `<lint>` → PASS/FAIL; `<typecheck>` → PASS/FAIL.
+Root cause: <one sentence>
+Reproduction: <failing regression test or exact repro>
+Next: /ship fix
+Blockers: none
+
+When the defect could not be reproduced or any check failed, present no landing
+path: omit `Next: /ship fix`, report the failure as the blocker, and stop.
 </handoff>

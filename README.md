@@ -20,11 +20,12 @@ addresses both:
 - **Evidence over assertion.** Builders run the project's checks; testers map
   every acceptance criterion to a test; reviewers cite `file:line`; shippers
   verify before committing.
-- **Hard guardrails.** Only the shipper commits, and only when you run `/ship`.
-  Reviewers and product agents cannot create, modify, or delete source through
-  the file tools; their bash access is an inspection allowlist, not a sandbox
-  (see the [permission caveat](docs/customization.md#permissions)). Secrets are a
-  stop condition.
+- **Hard guardrails.** Only the shipper commits, and only when you explicitly ask
+  — `/ship` for a work item, or `/ship fix` for a verified fix. Reviewers and
+  product agents cannot create, modify, or delete source through the file tools;
+  their bash access is an inspection allowlist, not a sandbox (see the
+  [permission caveat](docs/customization.md#permissions)). Secrets are a stop
+  condition.
 - **Right-sized process.** `/fix` for small defects, the full lifecycle for real
   features.
 
@@ -98,7 +99,8 @@ for visual QA.
 /ship                        # branch, commits, PR, ship.md
 ```
 
-Not sure where things stand? `/status`. Fixing a small bug? `/fix <description>`.
+Not sure where things stand? `/status`. Fixing a small bug? `/fix <description>`,
+then land it with `/ship fix`.
 
 ## The lifecycle
 
@@ -166,7 +168,7 @@ unchanged. A standalone item is still just `NNNN-slug`.
 | `/visual [url]`    | `visual`    | Browser QA of a running UI → `visual.md` (optional)      |
 | `/review [item-ref]`| `reviewer` | Read-only review → `review.md`                           |
 | `/ship [item-ref]` | `shipper`   | Branch, conventional commits, PR, `ship.md`              |
-| `/fix <bug>`       | `builder`   | Lightweight reproduce → fix → test path                  |
+| `/fix <bug>`       | `builder`   | Lightweight reproduce → fix → test; land with `/ship fix` |
 | `/roadmap <initiative>` | `roadmap` | Decompose a multi-feature initiative → `roadmap.md` + child dirs |
 | `/status`          | `status`    | Report each work item's phase (read-only)                |
 | `/doctor`          | `doctor`    | Read-only framework drift check: inventories, counts, permissions, ignore rules — framework-maintainer only |

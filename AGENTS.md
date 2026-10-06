@@ -104,7 +104,7 @@ and report it rather than working around it.
 
 ```xml
 <guardrails>
-  <rule priority="critical">Never commit, push, tag, or open a PR unless the user invoked `/ship` or explicitly asked. Only the `shipper` agent performs git write operations.</rule>
+  <rule priority="critical">Never commit, push, tag, or open a PR unless the user invoked `/ship` or explicitly asked. Only the `shipper` agent performs git write operations: for an approved work item on `/ship <item-ref>`, and for a verified fix on `/ship fix` when the user explicitly requests it. Every other agent never writes git.</rule>
   <rule priority="critical">Never commit secrets, credentials, tokens, or `.env` contents. If you find them, stop and report.</rule>
   <rule priority="critical">Never run destructive commands without confirmation: force-push, `reset --hard`, `clean -fd`, bulk deletes, dropping databases.</rule>
   <rule priority="high">After any code change, run the project's lint, typecheck, and tests for the touched scope, and fix what you broke.</rule>
