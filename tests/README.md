@@ -3,9 +3,12 @@
 The committed, canonical test suite for the opencode-framework repository itself.
 
 **Maintainer-only.** This directory and `.github/` are framework-maintainer
-tooling. They are deliberately outside the adopter quickstart copy set
+tooling. The root packaging files `LICENSE`, `CONTRIBUTING.md`, `CHANGELOG.md`,
+and `VERSION` are likewise framework-repo/maintainer-only. This directory and
+those files are deliberately outside the adopter quickstart copy set
 (`.opencode/{agent,command,skill}`, `AGENTS.md`, `opencode.json`, `.gitignore`,
-and `docs/*.md`), so adopters neither receive nor are expected to run them.
+and `docs/*.md`), so adopters neither receive nor are expected to run or copy
+them.
 
 ## Canonical command
 
@@ -68,6 +71,12 @@ with a stable `ACn` token.
 | `60-default-agent.sh` | default-agent agreement |
 | `70-pin.sh` | external pin agreement |
 | `80-cycle-fixture.sh` | roadmap cycle rule and committed fixture |
+| `90-packaging.sh` | packaging agreement: manifest ↔ changelog, copy-set, `Layout` (suite tokens `AC18`–`AC20`) |
+
+`90-packaging.sh` uses suite tokens `AC18`–`AC20`, which map to the
+`0008-adoption-packaging` acceptance criteria: spec AC12 → `AC18` (manifest ↔
+changelog agreement), spec AC13 → `AC19` (copy-set agreement), and spec AC14 →
+`AC20` (`Layout` ↔ disk agreement).
 
 ## Mutation self-check
 

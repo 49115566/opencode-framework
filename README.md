@@ -70,6 +70,16 @@ assert agreement among this repository's own docs, configuration, and prompts,
 which an adopter's repository does not share. See
 [`tests/README.md`](tests/README.md) for the canonical command and scope.
 
+The root packaging files are likewise outside the copied set:
+[`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md),
+[`CHANGELOG.md`](CHANGELOG.md), and [`VERSION`](VERSION) are
+**framework-repo/maintainer-only** — the framework's own license, contribution
+guide, changelog, and version manifest. The quickstart never copies them into an
+adopted repository, so **already-adopted repositories need no action**:
+re-running the quickstart adds nothing, and an existing `LICENSE`,
+`CONTRIBUTING.md`, `CHANGELOG.md`, or `VERSION` in your repository is neither
+overwritten nor conflicted with.
+
 If the project already has an `AGENTS.md`, `opencode.json`, or `.gitignore`,
 merge rather than overwrite — the framework files are authored to merge cleanly.
 
@@ -249,6 +259,12 @@ docs/
   customization.md          # extend agents/skills/commands
 AGENTS.md                   # always-loaded workflow contract + project profile
 opencode.json               # model, default agent, permissions, instructions, MCP
+README.md                   # this file
+LICENSE                     # MIT license (maintainer-only)
+CONTRIBUTING.md             # contribution and release guide (maintainer-only)
+CHANGELOG.md                # release history (maintainer-only)
+VERSION                     # version source of truth (maintainer-only)
+tests/                      # committed test suite (maintainer-only)
 work/                       # per-feature artifacts (committed)
 scratch/                    # temporary files and background logs (git-ignored)
 ```
@@ -281,3 +297,7 @@ command, skill, or config file.**
 - The smallest change that satisfies the acceptance criteria wins.
 - Discovery before action; evidence before claims.
 - No artifact is rewritten by a phase that does not own it.
+
+## License
+
+Released under the [MIT License](LICENSE).
