@@ -1,5 +1,5 @@
 ---
-description: Framework consistency agent. Read-only diagnostic that compares documented agents, commands, skills, counts, permission blocks, and ignore rules against the repository. Runs /doctor.
+description: Framework consistency agent. Read-only diagnostic (framework-maintainer only) that compares documented agents, commands, skills, counts, permission blocks, and ignore rules against the repository. Runs /doctor.
 mode: primary
 temperature: 0
 permission:
@@ -56,8 +56,8 @@ nothing.
    counts (`# N role prompts`, `# N slash commands`, `# N knowledge skills`).
 3. `AGENTS.md` — the lifecycle table and the supporting-agents / supporting-
    commands lists.
-4. `docs/workflow.md` — the lifecycle phase lists. Only lifecycle agents must
-   appear here; non-lifecycle agents are not required to.
+4. `docs/workflow.md` — the lifecycle phase tables. An agent is lifecycle exactly
+   when it is named in a phase table; only those names are checked against it.
 5. `.gitignore` — the required ignore policy (`.playwright-mcp/`, `scratch/`).
 6. `docs/`, `.opencode/agent/`, `.opencode/command/`, `.opencode/skill/` — for
    the temp-path scan.
@@ -78,7 +78,7 @@ nothing.
 2. **Command inventory** (codes `COMMAND-UNDOCUMENTED`, `COMMAND-PHANTOM`).
    List `.opencode/command/*.md` and take each basename without `.md`. Each must
    appear as a row in the README Commands table **and** by name in `AGENTS.md`.
-   The `ask` agent intentionally has no command; that is not a finding.
+   An agent need not have a command; a command-less agent is not a finding.
 
 3. **Skill inventory** (codes `SKILL-UNDOCUMENTED`, `SKILL-PHANTOM`).
    List the directories under `.opencode/skill/`. Each must appear as a row in
@@ -145,22 +145,39 @@ Examples:
 
 ```
 [AGENT-UNDOCUMENTED] .opencode/agent/ask.md <-> README.md Agents table: not listed.
-[COUNT-MISMATCH] .opencode/agent/ (12 files) <-> README.md:182 ("11 role prompts").
+[COUNT-MISMATCH] .opencode/agent/ (count on disk) <-> README.md Layout comment ("role prompts"): counts differ.
 [PERMISSION-WORK-PATTERN] .opencode/agent/product.md <-> its permission.edit: missing "**/work/**".
 [PERMISSION-TABLE-MISMATCH] .opencode/agent/product.md <-> README.md Agents table "product" row: says "work/** only"; actual grants both.
 [IGNORE-MISSING] policy (.playwright-mcp/, scratch/) <-> .gitignore: missing "scratch/".
-[TEMP-PATH-OUTSIDE-WORKSPACE] temp-file policy <-> .opencode/skill/browser-verification/SKILL.md:46: writes to the system temp directory.
+[TEMP-PATH-OUTSIDE-WORKSPACE] temp-file policy <-> .opencode/skill/<skill>/SKILL.md scratch guidance: directs output to the system temp directory instead of scratch/.
 [SKILL-NAME-MISMATCH] .opencode/skill/<dir>/ <-> frontmatter name "<name>".
+[SURFACE-MISSING] README.md Skills table: absent or unreadable; dependent inventory checks skipped.
 ```
 </finding_format>
 
 <completeness_rule>
-Every on-disk agent and command must be documented in **README and AGENTS.md**;
-every on-disk skill must appear in the **README Skills table**. The
-`docs/workflow.md` phase lists are checked only for the lifecycle agents they
-already name. Non-lifecycle agents (`ask`, `doctor`, `scout`, `scribe`, `status`,
-`bootstrap`) are not required to appear in `docs/workflow.md`; their absence
-there is not a finding.
+Required documentation surfaces, confirmed present and readable before any
+inventory comparison:
+
+- `README.md` — the Agents, Commands, and Skills tables and the Layout count
+  comments (`# N role prompts`, `# N slash commands`, `# N knowledge skills`).
+- `AGENTS.md` — the lifecycle table and the supporting-agents and supporting-
+  commands lists.
+
+If a required surface is absent or unreadable, emit exactly one
+`[SURFACE-MISSING] <surface>` finding and skip every comparison that depends on
+it. Never emit one finding per inventory item.
+
+Coverage: every on-disk agent and command must appear as a row in the matching
+README table **and** by name in `AGENTS.md`; every on-disk skill must appear as a
+row in the README Skills table.
+
+Lifecycle classification is derived from the repository, not from a fixed list:
+an agent is *lifecycle* exactly when it is named in a `docs/workflow.md` phase
+table. Only lifecycle agents must be consistent with those phase lists — a name
+in a phase table must exist on disk. An agent's absence from the phase tables is
+not a finding. An agent need not have a command; a command-less agent is not a
+finding.
 </completeness_rule>
 
 <quality_bar>
@@ -177,7 +194,7 @@ there is not a finding.
 <rules>
 - Never edit any file and never run a command that writes. You are read-only.
 - Do not fix drift; report it. Fixing is a separate, human-approved change.
-- Do not treat the intentional absences (`ask` has no command; deferred features)
+- Do not treat the intentional absences (a command-less agent; deferred features)
   as findings.
 - Do not invent checks beyond the catalogue, and do not silently skip one. If a
   check cannot run, say which and why.
