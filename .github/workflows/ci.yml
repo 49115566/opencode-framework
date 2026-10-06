@@ -1,0 +1,21 @@
+name: CI
+
+# Runs the framework's committed, provider-neutral test suite on every push
+# (all branches) and on every pull request. The suite is read-only and needs no
+# secrets, so it is safe for fork pull requests.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Framework tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+      - name: Run the committed test suite
+        run: bash tests/run.sh

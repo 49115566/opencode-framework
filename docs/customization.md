@@ -14,6 +14,10 @@ How to extend or change this framework. All components are plain files under
 
 opencode discovers these automatically. No registration is required.
 
+`opencode.json` also sets the default agent (`product`), the agent opencode
+selects at startup when none is given; every other agent is chosen explicitly or
+by a command's `agent:` field.
+
 ## Always-loaded instructions
 
 `opencode.json` lists three files under `instructions`:

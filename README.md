@@ -64,6 +64,12 @@ adopted before this change, remove or ignore those two files — they are not
 authoritative outside the framework repository. Copying `.opencode/` by some
 other means that retains them will make `/doctor` misreport.
 
+The quickstart copy set also deliberately excludes `tests/` and `.github/`. The
+committed test suite and its CI workflow are **framework-maintainer-only**: they
+assert agreement among this repository's own docs, configuration, and prompts,
+which an adopter's repository does not share. See
+[`tests/README.md`](tests/README.md) for the canonical command and scope.
+
 If the project already has an `AGENTS.md`, `opencode.json`, or `.gitignore`,
 merge rather than overwrite — the framework files are authored to merge cleanly.
 
@@ -253,9 +259,10 @@ scratch/                    # temporary files and background logs (git-ignored)
 agent (`product`), the always-loaded instruction files, baseline permissions
 (force-push, `reset --hard`, `rm -rf`, and `sudo` require confirmation), and
 optional MCP servers. Agents override permissions in their frontmatter; see
-[`docs/customization.md`](docs/customization.md). The three always-loaded
-instruction files, their purpose, and their per-request token cost are
-documented in
+[`docs/customization.md`](docs/customization.md).
+
+Always-loaded instruction files: `AGENTS.md`, `docs/workflow.md`, `docs/artifact-conventions.md`.
+Their purpose and per-request token cost are documented in
 [`docs/customization.md`](docs/customization.md#always-loaded-instructions).
 The default `deepseek/deepseek-flash` is vision-capable and the strongest model
 the framework ships; every agent inherits it, so `/visual` and `/reviewer` need
