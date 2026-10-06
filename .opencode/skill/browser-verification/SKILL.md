@@ -18,7 +18,7 @@ view of the live page and drives a real browser. Enable it in `opencode.json`:
 "mcp": {
   "playwright": {
     "type": "local",
-    "command": ["npx", "-y", "@playwright/mcp@latest", "--headless", "--isolated"],
+    "command": ["npx", "-y", "@playwright/mcp@0.0.83", "--headless", "--isolated"],
     "enabled": true
   }
 }
