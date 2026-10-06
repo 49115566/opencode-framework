@@ -14,6 +14,33 @@ How to extend or change this framework. All components are plain files under
 
 opencode discovers these automatically. No registration is required.
 
+## Always-loaded instructions
+
+`opencode.json` lists three files under `instructions`:
+
+```json
+"instructions": [
+  "AGENTS.md",
+  "docs/workflow.md",
+  "docs/artifact-conventions.md"
+]
+```
+
+Every request loads all three, so their combined size is a token tax paid on
+every turn. The set is deliberate, not accidental:
+
+| File                            | Purpose                                                                                             | Approx. per-request cost |
+| ------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------ |
+| `AGENTS.md`                     | The workflow contract every agent needs: lifecycle, artifact contract, guardrails, project profile. | ~1.9k tokens (~7.5 KB)   |
+| `docs/workflow.md`              | Authoritative lifecycle: phase entry/exit criteria, derived state, routing.                         | ~4.1k tokens (~16.6 KB)  |
+| `docs/artifact-conventions.md`  | Exact frontmatter and templates for every artifact.                                                 | ~3.3k tokens (~13.2 KB)  |
+| **Total per request**           |                                                                                                     | **~9.3k tokens (~37 KB)**|
+
+Costs are approximate, estimated from each file's current size at roughly 4
+bytes per token; refresh this table whenever a listed file changes. These three
+are exactly the files the adoption quickstart copies (`README.md` → Quickstart),
+so every listed path exists in a freshly adopted repository.
+
 ## Editing an agent
 
 1. Open `.opencode/agent/<name>.md`.
@@ -91,6 +118,14 @@ focused on one job.
 own `model`. To specialize, add `model: provider/model-id` to an agent's
 frontmatter.
 
+The shipped default is `deepseek/deepseek-flash`. It is vision-capable and the
+strongest model the framework ships, and every agent inherits it: no agent
+declares a `model:` override. `/visual` and `/reviewer` therefore need no
+per-agent model override — `/visual` can already analyze screenshots on the
+default. To move the whole framework to another model, change the global `model`
+(and `small_model`, which tracks it); add a per-agent `model:` only when one
+agent genuinely needs a different one.
+
 ## Permissions
 
 `opencode.json` sets global permission defaults. Agents override them per key.
@@ -145,7 +180,7 @@ Playwright browser server **disabled by default**:
 "mcp": {
   "playwright": {
     "type": "local",
-    "command": ["npx", "-y", "@playwright/mcp@latest", "--headless", "--isolated"],
+    "command": ["npx", "-y", "@playwright/mcp@0.0.83", "--headless", "--isolated"],
     "enabled": false
   }
 }
@@ -156,6 +191,13 @@ disabled server costs nothing at runtime; `command` must be an array of strings;
 `type` is required. Restart opencode after toggling. Use `--headless` to avoid
 focus stealing and `--isolated` to avoid a persistent profile; add
 `--storage-state <file>` only for flows that need authentication.
+
+The Playwright server is pinned to one exact version so every clone resolves the
+same tooling. To move to a new version, **bump the pin**: edit the `@x.y.z`
+literal in `opencode.json` and mirror it in the snippet above and in the
+`browser-verification` skill's copied example — never restore a floating tag
+such as `@latest`. The pin is a deliberate, reviewable change, and bumping it is
+the sanctioned way to upgrade.
 
 ## Validation loop
 

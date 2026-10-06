@@ -163,7 +163,7 @@ unchanged. A standalone item is still just `NNNN-slug`.
 
 | Agent       | Mode      | Can edit                                | Can run bash          |
 | ----------- | --------- | --------------------------------------- | --------------------- |
-| `product`   | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
+| `product`   | primary (default) | `work/**` + `**/work/**`                | read-only allowlist   |
 | `architect` | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
 | `roadmap`   | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
 | `builder`   | primary   | any source                              | allow                 |
@@ -222,10 +222,16 @@ scratch/                    # temporary files and background logs (git-ignored)
 ## Configuration
 
 `opencode.json` sets the model (default `deepseek/deepseek-flash`), the default
-agent (`builder`), the always-loaded instruction files, baseline permissions
+agent (`product`), the always-loaded instruction files, baseline permissions
 (force-push, `reset --hard`, `rm -rf`, and `sudo` require confirmation), and
 optional MCP servers. Agents override permissions in their frontmatter; see
-[`docs/customization.md`](docs/customization.md).
+[`docs/customization.md`](docs/customization.md). The three always-loaded
+instruction files, their purpose, and their per-request token cost are
+documented in
+[`docs/customization.md`](docs/customization.md#always-loaded-instructions).
+The default `deepseek/deepseek-flash` is vision-capable and the strongest model
+the framework ships; every agent inherits it, so `/visual` and `/reviewer` need
+no per-agent model overrides.
 
 The Playwright MCP server is **disabled by default** because an enabled server
 adds its tool schemas to every request. `/bootstrap` enables it when it detects a
