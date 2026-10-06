@@ -21,7 +21,10 @@ addresses both:
   every acceptance criterion to a test; reviewers cite `file:line`; shippers
   verify before committing.
 - **Hard guardrails.** Only the shipper commits, and only when you run `/ship`.
-  Reviewers and product agents cannot touch source. Secrets are a stop condition.
+  Reviewers and product agents cannot create, modify, or delete source through
+  the file tools; their bash access is an inspection allowlist, not a sandbox
+  (see the [permission caveat](docs/customization.md#permissions)). Secrets are a
+  stop condition.
 - **Right-sized process.** `/fix` for small defects, the full lifecycle for real
   features.
 
@@ -161,31 +164,43 @@ unchanged. A standalone item is still just `NNNN-slug`.
 
 ## Agents
 
-| Agent       | Mode      | Can edit                                | Can run bash          |
-| ----------- | --------- | --------------------------------------- | --------------------- |
-| `product`   | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
-| `architect` | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
-| `roadmap`   | primary   | `work/**` + `**/work/**`                | read-only allowlist   |
-| `builder`   | primary   | any source                              | allow                 |
-| `tester`    | primary   | test files + `work/**` + `**/work/**`   | allow                 |
-| `visual`    | all       | `work/**` + `**/work/**`                | allow                 |
-| `reviewer`  | all       | `work/**` + `**/work/**`                | read-only allowlist   |
-| `shipper`   | primary   | `work/**` + `**/work/**`                | git/gh allowlist      |
-| `bootstrap` | primary   | config files + `work/**` + `**/work/**` | allow                 |
-| `status`    | primary   | none                                    | read-only allowlist   |
-| `scout`     | subagent  | none                                    | allow                 |
-| `scribe`    | subagent  | `work/**` + `**/work/**`                | none                  |
-| `ask`       | primary   | none                                    | none                  |
-| `doctor`    | primary   | none                                    | read-only allowlist   |
+| Agent       | Mode     | Can edit                                | Can run bash             |
+| ----------- | -------- | --------------------------------------- | ------------------------ |
+| `product`   | primary  | `work/**` + `**/work/**`                | read-only, best-effort † |
+| `architect` | primary  | `work/**` + `**/work/**`                | read-only, best-effort † |
+| `roadmap`   | primary  | `work/**` + `**/work/**`                | read-only, best-effort † |
+| `builder`   | primary  | any source                              | allow                    |
+| `tester`    | primary  | test files + `work/**` + `**/work/**`   | allow                    |
+| `visual`    | all      | `work/**` + `**/work/**`                | allow                    |
+| `reviewer`  | all      | `work/**` + `**/work/**`                | read-only, best-effort † |
+| `shipper`   | primary  | `work/**` + `**/work/**`                | git/gh allowlist         |
+| `bootstrap` | primary  | config files + `work/**` + `**/work/**` | allow                    |
+| `status`    | primary  | none                                    | read-only, best-effort † |
+| `scout`     | subagent | none                                    | allow                    |
+| `scribe`    | subagent | `work/**` + `**/work/**`                | none                     |
+| `ask`       | primary  | none                                    | none                     |
+| `doctor`    | primary  | none                                    | read-only, best-effort † |
 
-Permissions are enforced by opencode, not just requested in prose. In opencode,
-the `edit` permission covers **create, write, and patch** — there is no separate
-`write` grant — and tool paths reach the check in both relative
+> † The "Can run bash" column is a best-effort allowlist, not a sandbox.
+> opencode matches bash rules by command prefix and cannot prevent shell
+> redirection or output-to-file flags. See
+> [`docs/customization.md`](docs/customization.md) for the full permission
+> model.
+
+File-tool permissions are enforced by opencode, not just requested in prose. In
+opencode, the `edit` permission covers **create, write, and patch** — there is no
+separate `write` grant — and tool paths reach the check in both relative
 (`work/<item-ref>/spec.md`) and absolute (`/repo/work/<item-ref>/spec.md`) forms.
 Artifact-writing agents therefore declare **both** `work/**` and `**/work/**`;
 declaring only one leaves the other form to fall through to the catch-all deny.
-See [`docs/customization.md`](docs/customization.md) for the full permission
-model.
+
+Bash permissions are **best-effort**, not a sandbox. opencode matches bash rules
+by command prefix, so an allowlist cannot prevent shell redirection
+(`ls > file`) or output-to-file flags (`tree -o file`, `git diff --output=file`).
+Agents with broad bash — `bootstrap`, `scout`, `tester`, and `visual` — can
+therefore modify files through the shell even when their `edit` permission is
+restricted. See [`docs/customization.md`](docs/customization.md) for the full
+permission model.
 
 ## Skills
 

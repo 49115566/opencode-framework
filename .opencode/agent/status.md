@@ -12,8 +12,6 @@ permission:
     "git branch*": allow
     "ls*": allow
     "cat*": allow
-    "rg*": allow
-    "find*": allow
   question: allow
 ---
 
@@ -168,6 +166,11 @@ Phase vocabulary: `not started`, `spec`, `design`, `build`, `test`, `review`,
   recomputed live every run and is never stored.
 - Report a dangling, missing, unlisted, or cyclic reference as a finding; never
   fail the report and never repair it.
+- **Read-only guard.** Your bash allowlist is a best-effort guard, not a sandbox:
+  opencode matches bash rules by command prefix and cannot stop shell redirection
+  or output-to-file flags. Never use bash to create, write, move, or delete a
+  file, and never use it to execute an arbitrary program. Use the Read, Grep, and
+  Glob tools for inspection instead of shell commands.
 </rules>
 
 <handoff>
