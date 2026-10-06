@@ -3,7 +3,7 @@ feature: 0003-framework-quality-hardening
 phase: roadmap
 status: final
 created: 2026-10-04
-updated: 2026-10-04
+updated: 2026-10-06
 ---
 
 # Roadmap — Framework quality hardening
@@ -64,7 +64,6 @@ adoption path is complete.
 | 0006-committed-tests-ci | Committed test harness and CI | Move the framework's static verification suite out of the git-ignored `work/` directory (`work/0002-agentic-roadmaps/verify-tests.sh`) into a committed location (e.g. `tests/` or `scripts/`), make it runnable in CI, and add a CI workflow. Add semantic agreement assertions — e.g. that duplicated readiness/lifecycle/permission facts in different files agree — which the current name/count checks miss. Note and, where possible, cover the roadmap cycle diagnostic that today can only be produced by hand. Distinguish framework-maintainer tooling from shipped user tooling. Evidence: `work/0002-agentic-roadmaps/verify-tests.sh`, `work/0002-agentic-roadmaps/review.md`, no committed test/CI files exist. | — | 0003-framework-quality-hardening/0006-committed-tests-ci |
 | 0007-config-hardening | Default config safety and reproducibility | Harden `opencode.json` defaults. Reconsider `default_agent: builder` — the most privileged agent — against the framework's discipline framing. Decide per-agent model specialization (at least `visual` and `reviewer`) and document that visual QA degrades on a text-only model under the shipped global default. Pin the Playwright MCP package instead of `@playwright/mcp@latest`. Keep the always-loaded instruction set intentional. Evidence: `opencode.json:3-5,38-46`, `docs/customization.md:88-92,148`. | — | 0003-framework-quality-hardening/0007-config-hardening |
 | 0008-adoption-packaging | Adoption packaging and versioning | Close the adoption gaps: add a `LICENSE` (a practical blocker for copying into arbitrary repos), `CONTRIBUTING`, `CHANGELOG`, and a root version manifest; decide the framework's versioning and release model. Ensure the quickstart and any copied-file list stay consistent with the added files. Evidence: no `LICENSE`/`CONTRIBUTING`/`CHANGELOG`/version manifest on disk; `README.md:33-53`. | — | 0003-framework-quality-hardening/0008-adoption-packaging |
-| 0009-surface-consistency | Prompt and documentation surface consistency | Sweep the remaining surface inconsistencies not owned by earlier children: the `ask` agent's non-conforming description (`ask.md:2`); command usage strings and the `AGENTS.md` lifecycle table that still omit or misstate the `item-ref` argument (e.g. `/test`, `/review`, `/ship`); and the framework's own project profile (`AGENTS.md`) being entirely placeholders because the framework never ran `/bootstrap` on itself. Keep every change consistent with the state model, corrected permission wording, and `/doctor` scope chosen by the earlier children. Evidence: `ask.md:2`, `README.md:144-147`, `AGENTS.md` lifecycle table and project profile. | 0001-state-model, 0003-readonly-permissions, 0004-doctor-scope | 0003-framework-quality-hardening/0009-surface-consistency |
 
 ## Sequencing
 
@@ -76,32 +75,38 @@ adoption path is complete.
 6. 0006-committed-tests-ci
 7. 0007-config-hardening
 8. 0008-adoption-packaging
-9. 0009-surface-consistency
 
 `0001-state-model` is the keystone: its committed-versus-local decision reshapes
 the PR handoff and any `/fix` landing path, so `0002` and `0005` follow it.
-`0009` is a consistency sweep and runs last, after the surfaces owned by `0001`,
-`0003`, and `0004` have settled. `0003`, `0004`, `0006`, `0007`, and `0008` have
-no unmet prerequisites and may proceed in parallel; `0006` in particular is worth
-landing early so later fixes gain committed regression coverage.
+`0003`, `0004`, `0006`, `0007`, and `0008` have no unmet prerequisites and may
+proceed in parallel; `0006` in particular is worth landing early so later fixes
+gain committed regression coverage.
 
 ## Open issues
 
+- **Withdrawn child — `0009-surface-consistency`.** Withdrawn by user decision on
+  2026-10-06 and removed from the Children table and Sequencing above, so
+  `/status` no longer presents it as a ready or active child. Its directory
+  (`work/0003-framework-quality-hardening/0009-surface-consistency/`) keeps only
+  the withdrawal `spec.md`; the number 0009 stays spent. The former scope — the
+  command signature/usage-string sweep (including the stale `/visual [url|slug]`
+  spelling), the non-conforming `ask.md` description, and the
+  maintainer-vs-adopter bootstrapped-file split — is re-homed to a successor
+  roadmap authored via `/roadmap`.
 - **No stored cycle.** The `Depends on` graph is acyclic; no `CYCLIC-DEP` is
   expected. Recorded here because the roadmap agent never stores a cycle by
   design.
 - **Unresolved user decision — artifact persistence.** Committed versus local-only
   `work/` artifacts is a genuine fork that child `0001-state-model` must resolve
-  with the user. It materially changes `0002-readiness-ship-state`,
-  `0005-fix-landing`, and `0009-surface-consistency`. The roadmap does not decide
-  it.
+  with the user. It materially changes `0002-readiness-ship-state` and
+  `0005-fix-landing`. The roadmap does not decide it.
 - **Unresolved user decision — default agent.** Whether to keep `builder` as the
   default (most privileged) or move to a least-privilege default belongs to child
   `0007-config-hardening`.
 - **Possible overlap with existing work.** `0001-framework-consistency-hardening`
   already shipped doc/config drift detection and `/doctor`
-  (`PERMISSION-WORK-PATTERN`, inventory/count checks); children `0004-doctor-scope`
-  and `0009-surface-consistency` extend that area and must not duplicate it.
+  (`PERMISSION-WORK-PATTERN`, inventory/count checks); child `0004-doctor-scope`
+  extends that area and must not duplicate it.
   `0002-agentic-roadmaps` owns the readiness algorithm; child
   `0002-readiness-ship-state` overlaps its recorded minor m1 (the PR-detection
   branch) and should reference and supersede it rather than fork a second
