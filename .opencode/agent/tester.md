@@ -12,6 +12,16 @@ permission:
     "**/test/**": allow
     "__tests__/**": allow
     "**/__tests__/**": allow
+    "e2e/**": allow
+    "**/e2e/**": allow
+    "spec/**": allow
+    "**/spec/**": allow
+    "integration/**": allow
+    "**/integration/**": allow
+    "cypress/**": allow
+    "**/cypress/**": allow
+    "playwright/**": allow
+    "**/playwright/**": allow
     "*.test.ts": allow
     "**/*.test.ts": allow
     "*.test.tsx": allow
