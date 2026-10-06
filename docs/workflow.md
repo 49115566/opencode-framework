@@ -258,11 +258,39 @@ A directory containing `roadmap.md` is a roadmap parent and is derived as
 other item: a child holding only its `.gitkeep` has no phase artifacts and is
 `not started`.
 
+## The fix track
+
+`/fix` is the lightweight track for a small defect whose correct behavior is
+already clear. It has **no work item**: no `spec.md`, `design.md`, `tasks.md`,
+`verify.md`, or `review.md`, and no directory under `work/`. It consumes no
+sequence number, so a fix cannot collide with or renumber a work item even when
+both are in flight.
+
+- Reproduce the defect with a failing test or an exact repro, find the root
+  cause, make the smallest change, and add a regression test that fails without
+  the change and passes with it. Fixes never introduce new behavior; a change
+  that needs new behavior routes to `/spec`.
+- Run test, lint, and typecheck for the touched scope. A failed check, or a
+  defect that could not be reproduced, blocks landing — the closing handoff omits
+  the landing step and reports the failure as the blocker instead.
+- Only the `shipper` performs git writes, and only on the user's explicit
+  request. The builder and every other non-shipper agent never commit, push, or
+  open a PR.
+- A verified fix lands through `/ship fix` (with an optional short description).
+  The shipper stages only the fix's files, creates a `fix/<short-description>`
+  branch, commits the change and its regression test as conventional commits, and
+  opens a PR whose description carries the reproduction, root cause, change, and
+  check results.
+- A landed fix creates no work item and no shipped-state record. `ship.md`
+  remains the sole shipped signal for lifecycle work items, so a fix has no
+  `/status` phase and never appears under `work/`.
+
 ## Routing heuristics
 
 - **`/fix <bug>`** — for defects where the desired behavior is already clear and
   the change is small. Skips spec/design. Still: reproduce, fix, test, then
-  report. Fixes never introduce new behavior.
+  report; a verified fix lands through `/ship fix` on the user's explicit request
+  (see "The fix track"). Fixes never introduce new behavior.
 - **Full lifecycle** — new features, behavior changes, cross-cutting work,
   anything touching public interfaces, data, or security.
 - **`/roadmap <initiative>`** — decompose a broad, multi-feature initiative into
@@ -271,9 +299,10 @@ other item: a child holding only its `.gitkeep` has no phase artifacts and is
   several interdependent features; a single, self-contained feature still goes
   straight to `/spec`.
 - **`/status`** — when unsure where things stand.
-- **`/doctor`** — a read-only consistency check of the framework's documented
-  inventories, counts, permission blocks, and ignore rules. It reports drift and
-  never edits; safe to run at any time, including before release.
+- **`/doctor`** — a **framework-maintainer only**, read-only consistency check of
+  the framework's documented inventories, counts, permission blocks, and ignore
+  rules. It reports drift and never edits; safe to run at any time, including
+  before release.
 - **`/visual [url or slug]`** — to inspect a running user-facing frontend in a
   real browser for layout, interaction, responsiveness, and accessibility. Use
   for UI-bearing work; harmless to skip for backend-only work.

@@ -48,11 +48,11 @@ present. Non-UI projects skip it.
 Supporting commands: `/fix <bug>` (lightweight fix), `/status` (phase report),
 `/roadmap <initiative>` (author a multi-feature roadmap), `/bootstrap` (adopt
 into a project), `/visual [url|slug]` (browser QA), `/doctor` (read-only drift
-diagnostic).
+diagnostic; framework-maintainer only).
 Supporting agents: `scout` (recon), `scribe` (artifact editing), `bootstrap`
 (provisioning), `status` (read-only reporting), `roadmap` (roadmap authoring),
 `visual` (browser inspection), `ask` (read-only Q&A), `doctor` (read-only
-consistency diagnostic).
+consistency diagnostic; framework-maintainer only).
 
 The authoritative description of each phase, its inputs, and its exit criteria
 lives in `docs/workflow.md`. The exact artifact formats live in
@@ -104,7 +104,7 @@ and report it rather than working around it.
 
 ```xml
 <guardrails>
-  <rule priority="critical">Never commit, push, tag, or open a PR unless the user invoked `/ship` or explicitly asked. Only the `shipper` agent performs git write operations.</rule>
+  <rule priority="critical">Never commit, push, tag, or open a PR unless the user invoked `/ship` or explicitly asked. Only the `shipper` agent performs git write operations: for an approved work item on `/ship <item-ref>`, and for a verified fix on `/ship fix` when the user explicitly requests it. Every other agent never writes git.</rule>
   <rule priority="critical">Never commit secrets, credentials, tokens, or `.env` contents. If you find them, stop and report.</rule>
   <rule priority="critical">Never run destructive commands without confirmation: force-push, `reset --hard`, `clean -fd`, bulk deletes, dropping databases.</rule>
   <rule priority="high">After any code change, run the project's lint, typecheck, and tests for the touched scope, and fix what you broke.</rule>
