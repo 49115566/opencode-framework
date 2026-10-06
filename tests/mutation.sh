@@ -12,9 +12,9 @@
 #   1. runs `bash tests/run.sh <copy>` and asserts exit 0 (AC2);
 #   2. runs it with FRAMEWORK_TEST_NO_PY/_OPENCODE/_NPM=1 and asserts exit 0 with
 #      visible skips (AC14);
-#   3. for each agreement area AC6-AC13, applies exactly one mutation, asserts the
-#      suite exits non-zero and names that area, restores the file, and asserts
-#      the clean copy passes again (AC15);
+#   3. for each agreement area AC6-AC13 and AC18-AC20, applies exactly one
+#      mutation, asserts the suite exits non-zero and names that area, restores
+#      the file, and asserts the clean copy passes again (AC15);
 #   4. exits non-zero if any mutation is not caught or any clean run fails, and
 #      cleans up its scratch/ subtree on exit.
 #
@@ -60,7 +60,10 @@ stage() {
   rm -rf "$SCRATCH"
   mkdir -p "$COPY/docs" "$COPY/.opencode" "$COPY/tests/fixtures"
   cp "$REPO_ROOT/opencode.json" "$REPO_ROOT/AGENTS.md" "$REPO_ROOT/README.md" "$COPY/"
+  cp "$REPO_ROOT/LICENSE" "$REPO_ROOT/CONTRIBUTING.md" "$REPO_ROOT/CHANGELOG.md" \
+     "$REPO_ROOT/VERSION" "$COPY/"
   cp "$REPO_ROOT"/docs/*.md "$COPY/docs/"
+  cp "$REPO_ROOT/tests/README.md" "$COPY/tests/README.md"
   cp -R "$REPO_ROOT/.opencode/agent"   "$COPY/.opencode/agent"
   cp -R "$REPO_ROOT/.opencode/command" "$COPY/.opencode/command"
   cp -R "$REPO_ROOT/.opencode/skill"   "$COPY/.opencode/skill"
@@ -242,6 +245,33 @@ rm -f "$COPY/tests/fixtures/cyclic-roadmap/roadmap.md"
 check_mutation AC13 'AC13 committed cycle fixture missing' "removed the committed cycle fixture"
 restore_file tests/fixtures/cyclic-roadmap/roadmap.md
 assert_clean_absent "after AC13 restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC18 manifest <-> changelog agreement =="
+orig_ver="$(tr -d '\r\n' < "$COPY/VERSION")"
+mut_ver="$(printf '%s' "$orig_ver" | awk -F. '{ printf "%d.%s.%s\n", $1 + 1, $2, $3 }')"
+replace_first "$COPY/VERSION" "$orig_ver" "$mut_ver"
+check_mutation AC18 \
+  "AC18 VERSION ($mut_ver) and CHANGELOG.md newest released version ($orig_ver) disagree" \
+  "diverged the version manifest from the changelog"
+restore_file VERSION
+assert_clean_absent "after AC18 restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC19 copy-set surface agreement =="
+replace_first "$COPY/tests/README.md" '`docs/*.md`)' '`docs/*.md`, `LICENSE`)'
+check_mutation AC19 'AC19 tests/README.md copy-set sentence wrongly lists packaging file(s): LICENSE' \
+  "added a packaging file to a copy-set enumeration"
+restore_file tests/README.md
+assert_clean_absent "after AC19 restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC20 README Layout agreement =="
+delete_first_line "$COPY/README.md" 'version source of truth'
+check_mutation AC20 'AC20 README Layout does not document packaging file VERSION' \
+  "dropped a packaging file from the README Layout block"
+restore_file README.md
+assert_clean_absent "after AC20 restore"
 
 # ---------------------------------------------------------------------------
 printf '\nMUTATION TOTAL: %s checked passed, %s failed\n' "$mpass" "$mfail"
