@@ -14,6 +14,10 @@ the change without reconstructing the whole workflow.
 - Tests, lint, and typecheck pass; cite the evidence.
 - The diff contains no secrets, debug code, or unrelated changes.
 - `work/<item-ref>/review.md` records an approving verdict (or the override is noted).
+  A fix-landing PR (`/ship fix`) has no work item and no `review.md`, so this
+  precondition does not apply to it: a fix is gated on an established
+  reproduction, a regression test that fails before the change and passes after,
+  and green test/lint/typecheck instead.
 
 ## Title
 
@@ -51,6 +55,42 @@ working tree:
 - Verification: `work/<item-ref>/verify.md`
 - Review: `work/<item-ref>/review.md`
 ```
+
+## Fix PR description template
+
+A `/fix` landed with `/ship fix` has no work item, so its pull request uses this
+body instead. It has **no** `## Artifacts` section, because no `work/` artifact
+exists; the evidence travels in the description:
+
+```markdown
+## Summary
+
+<What changed and why, in one or two sentences.>
+
+## Reproduction
+
+<The failing test or exact repro.>
+
+## Root cause
+
+<One sentence.>
+
+## Change
+
+- <Notable changes.>
+
+## Testing
+
+- `<command>` → <result>
+- Regression test: fails without the change, passes with it.
+
+## Risks
+
+- <Risk and mitigation, or "None identified.">
+```
+
+If the user explicitly accepts a missing regression test, state that acceptance
+here so the gap is recorded for the reviewer.
 
 ## Commands
 

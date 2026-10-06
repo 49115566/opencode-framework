@@ -59,6 +59,11 @@ item, or `NNNN-slug/MMMM-slug` for a roadmap child with the `/` replaced by `-`
 two children of one roadmap must not map to the same branch — while still
 identifying the exact child work item.
 
+A fix with no work item — a `/fix` landed with `/ship fix` — has no canonical
+reference, so name its branch `fix/<short-description>`: the `fix` type plus a
+short kebab-case description of the defect, e.g. `fix/login-timeout`. Never reuse
+a work item's branch for a fix.
+
 Examples: `feat/0001-add-dark-mode`,
 `feat/0002-agentic-roadmaps-0001-roadmap-model`, `fix/login-timeout`,
 `docs/update-readme`.
