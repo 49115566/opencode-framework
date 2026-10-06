@@ -37,6 +37,7 @@ UI work, before /review?         → /visual [url or item-ref]   (optional)
 verify.md, no review.md?         → /review
 review.md verdict request-changes→ /build <item-ref>   (rework blockers)
 review.md verdict approve, no ship.md?→ /ship
+Verified /fix complete?          → /ship fix   (explicit request; shipper lands it)
 Blocked child (dependency unmet)?→ wait, or override explicitly; /status
 Unclear?                         → /status
 ```
@@ -58,8 +59,12 @@ Blockers: <or none>
 - Never skip a phase silently. If the user asks to skip, note it in the next
   artifact's frontmatter `notes`.
 - Never start downstream work to "help". If upstream is broken, stop and report.
-- Only the `shipper` commits, and only on `/ship` or explicit request.
-- Trivial fixes use `/fix`; new behavior uses the full lifecycle. When unsure, ask.
+- Only the `shipper` commits, and only on `/ship` or explicit request: an
+  approved work item on `/ship <item-ref>`, or a verified fix on `/ship fix`.
+  Every other agent never writes git.
+- Trivial fixes use `/fix`; new behavior uses the full lifecycle. A verified fix
+  lands through `/ship fix` (no review artifact and no `ship.md`); when unsure,
+  ask.
 
 ## Choosing the track
 
