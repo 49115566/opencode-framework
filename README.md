@@ -176,22 +176,22 @@ unchanged. A standalone item is still just `NNNN-slug`.
 
 ## Agents
 
-| Agent       | Mode     | Can edit                                | Can run bash             |
-| ----------- | -------- | --------------------------------------- | ------------------------ |
-| `product`   | primary  | `work/**` + `**/work/**`                | read-only, best-effort † |
-| `architect` | primary  | `work/**` + `**/work/**`                | read-only, best-effort † |
-| `roadmap`   | primary  | `work/**` + `**/work/**`                | read-only, best-effort † |
-| `builder`   | primary  | any source                              | allow                    |
-| `tester`    | primary  | test files + `work/**` + `**/work/**`   | allow                    |
-| `visual`    | all      | `work/**` + `**/work/**`                | allow                    |
-| `reviewer`  | all      | `work/**` + `**/work/**`                | read-only, best-effort † |
-| `shipper`   | primary  | `work/**` + `**/work/**`                | git/gh allowlist         |
-| `bootstrap` | primary  | config files + `work/**` + `**/work/**` | allow                    |
-| `status`    | primary  | none                                    | read-only, best-effort † |
-| `scout`     | subagent | none                                    | allow                    |
-| `scribe`    | subagent | `work/**` + `**/work/**`                | none                     |
-| `ask`       | primary  | none                                    | none                     |
-| `doctor`    | primary  | none                                    | read-only, best-effort † |
+| Agent       | Mode      | Can edit                                | Can run bash          |
+| ----------- | ----------------- | --------------------------------------- | --------------------------- |
+| `product`   | primary (default) | `work/**` + `**/work/**`                | read-only, best-effort †    |
+| `architect` | primary           | `work/**` + `**/work/**`                | read-only, best-effort †    |
+| `roadmap`   | primary           | `work/**` + `**/work/**`                | read-only, best-effort †    |
+| `builder`   | primary           | any source                              | allow                       |
+| `tester`    | primary           | test files + `work/**` + `**/work/**`   | allow                       |
+| `visual`    | all               | `work/**` + `**/work/**`                | allow                       |
+| `reviewer`  | all               | `work/**` + `**/work/**`                | read-only, best-effort †    |
+| `shipper`   | primary           | `work/**` + `**/work/**`                | git/gh allowlist            |
+| `bootstrap` | primary           | config files + `work/**` + `**/work/**` | allow                       |
+| `status`    | primary           | none                                    | read-only, best-effort †    |
+| `scout`     | subagent          | none                                    | allow                       |
+| `scribe`    | subagent          | `work/**` + `**/work/**`                | none                        |
+| `ask`       | primary           | none                                    | none                        |
+| `doctor`    | primary           | none                                    | read-only, best-effort †    |
 
 > † The "Can run bash" column is a best-effort allowlist, not a sandbox.
 > opencode matches bash rules by command prefix and cannot prevent shell
@@ -202,6 +202,7 @@ unchanged. A standalone item is still just `NNNN-slug`.
 File-tool permissions are enforced by opencode, not just requested in prose. In
 opencode, the `edit` permission covers **create, write, and patch** — there is no
 separate `write` grant — and tool paths reach the check in both relative
+
 (`work/<item-ref>/spec.md`) and absolute (`/repo/work/<item-ref>/spec.md`) forms.
 Artifact-writing agents therefore declare **both** `work/**` and `**/work/**`;
 declaring only one leaves the other form to fall through to the catch-all deny.
@@ -249,10 +250,16 @@ scratch/                    # temporary files and background logs (git-ignored)
 ## Configuration
 
 `opencode.json` sets the model (default `deepseek/deepseek-flash`), the default
-agent (`builder`), the always-loaded instruction files, baseline permissions
+agent (`product`), the always-loaded instruction files, baseline permissions
 (force-push, `reset --hard`, `rm -rf`, and `sudo` require confirmation), and
 optional MCP servers. Agents override permissions in their frontmatter; see
-[`docs/customization.md`](docs/customization.md).
+[`docs/customization.md`](docs/customization.md). The three always-loaded
+instruction files, their purpose, and their per-request token cost are
+documented in
+[`docs/customization.md`](docs/customization.md#always-loaded-instructions).
+The default `deepseek/deepseek-flash` is vision-capable and the strongest model
+the framework ships; every agent inherits it, so `/visual` and `/reviewer` need
+no per-agent model overrides.
 
 The Playwright MCP server is **disabled by default** because an enabled server
 adds its tool schemas to every request. `/bootstrap` enables it when it detects a
