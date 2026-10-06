@@ -131,9 +131,14 @@ opencode debug agent <name>
 ```
 
 These blocks restrict opencode's own file tools; they are not a sandbox for
-`bash`. Agents with broad bash access (`bootstrap`, `scout`, `tester`, `visual`)
-can still modify files through shell commands even when their `edit` permission
-is restricted.
+`bash`. opencode matches bash rules by command prefix, so an allowlist cannot
+prevent shell redirection (`ls > file`) or output-to-file flags (`tree -o file`,
+`git diff --output=file`). Agents with broad bash access (`bootstrap`, `scout`,
+`tester`, `visual`) can still modify files through shell commands even when their
+`edit` permission is restricted. `scout`'s broad access is a deliberate, accepted
+residual: it is the reconnaissance subagent and needs the full shell to explore
+unfamiliar repositories. If you need a hard boundary, run opencode in a
+sandboxed filesystem rather than relying on these permission blocks.
 
 ## MCP servers
 
