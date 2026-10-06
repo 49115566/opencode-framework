@@ -271,9 +271,10 @@ other item: a child holding only its `.gitkeep` has no phase artifacts and is
   several interdependent features; a single, self-contained feature still goes
   straight to `/spec`.
 - **`/status`** — when unsure where things stand.
-- **`/doctor`** — a read-only consistency check of the framework's documented
-  inventories, counts, permission blocks, and ignore rules. It reports drift and
-  never edits; safe to run at any time, including before release.
+- **`/doctor`** — a **framework-maintainer only**, read-only consistency check of
+  the framework's documented inventories, counts, permission blocks, and ignore
+  rules. It reports drift and never edits; safe to run at any time, including
+  before release.
 - **`/visual [url or slug]`** — to inspect a running user-facing frontend in a
   real browser for layout, interaction, responsiveness, and accessibility. Use
   for UI-bearing work; harmless to skip for backend-only work.

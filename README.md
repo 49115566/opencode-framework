@@ -44,6 +44,7 @@ From your project root, copy the framework files in:
 FRAMEWORK=/path/to/opencode-framework
 mkdir -p .opencode
 cp -r "$FRAMEWORK/.opencode/agent" "$FRAMEWORK/.opencode/command" "$FRAMEWORK/.opencode/skill" .opencode/
+rm -f .opencode/agent/doctor.md .opencode/command/doctor.md
 cp "$FRAMEWORK/AGENTS.md" "$FRAMEWORK/opencode.json" "$FRAMEWORK/.gitignore" .
 mkdir -p docs && cp "$FRAMEWORK"/docs/*.md docs/
 mkdir -p work && touch work/.gitkeep
@@ -52,6 +53,15 @@ mkdir -p work && touch work/.gitkeep
 Copy only the `agent/`, `command/`, and `skill/` subdirectories — opencode
 generates `.opencode/node_modules/` and package files locally when it runs, and
 those should not be copied between projects.
+
+The quickstart then removes `.opencode/agent/doctor.md` and
+`.opencode/command/doctor.md`. The `doctor` agent and `/doctor` command are
+**framework-maintainer only**: the diagnostic reads the framework `README.md`'s
+inventory tables and layout counts, which this quickstart never copies, so it
+would report a cascade of false drift findings in any other repository. If you
+adopted before this change, remove or ignore those two files — they are not
+authoritative outside the framework repository. Copying `.opencode/` by some
+other means that retains them will make `/doctor` misreport.
 
 If the project already has an `AGENTS.md`, `opencode.json`, or `.gitignore`,
 merge rather than overwrite — the framework files are authored to merge cleanly.
@@ -159,7 +169,7 @@ unchanged. A standalone item is still just `NNNN-slug`.
 | `/fix <bug>`       | `builder`   | Lightweight reproduce → fix → test path                  |
 | `/roadmap <initiative>` | `roadmap` | Decompose a multi-feature initiative → `roadmap.md` + child dirs |
 | `/status`          | `status`    | Report each work item's phase (read-only)                |
-| `/doctor`          | `doctor`    | Read-only framework drift check: inventories, counts, permissions, ignore rules |
+| `/doctor`          | `doctor`    | Read-only framework drift check: inventories, counts, permissions, ignore rules — framework-maintainer only |
 | `/bootstrap`       | `bootstrap` | Adopt the framework into the current repository          |
 
 ## Agents
