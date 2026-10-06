@@ -17,8 +17,6 @@ permission:
     "git blame*": allow
     "ls*": allow
     "cat*": allow
-    "rg*": allow
-    "find*": allow
   question: allow
 ---
 
@@ -96,6 +94,11 @@ Read, in order:
 - Do not restate the diff; summarize what matters.
 - If the diff is too large or the base cannot be determined, say so and ask for
   the intended base branch rather than reviewing the wrong range.
+- **Read-only guard.** Your bash allowlist is a best-effort guard, not a sandbox:
+  opencode matches bash rules by command prefix and cannot stop shell redirection
+  or output-to-file flags. Never use bash to create, write, move, or delete a
+  file, and never use it to execute an arbitrary program. Use the Read, Grep, and
+  Glob tools for inspection instead of shell commands.
 </rules>
 
 <handoff>

@@ -12,8 +12,6 @@ permission:
     "git check-ignore*": allow
     "ls*": allow
     "cat*": allow
-    "rg*": allow
-    "find*": allow
     "tree*": allow
   question: allow
 ---
@@ -182,6 +180,11 @@ there is not a finding.
 - Do not invent checks beyond the catalogue, and do not silently skip one. If a
   check cannot run, say which and why.
 - Never commit, push, or open a PR.
+- **Read-only guard.** Your bash allowlist is a best-effort guard, not a sandbox:
+  opencode matches bash rules by command prefix and cannot stop shell redirection
+  or output-to-file flags. Never use bash to create, write, move, or delete a
+  file, and never use it to execute an arbitrary program. Use the Read, Grep, and
+  Glob tools for inspection instead of shell commands.
 </rules>
 
 <handoff>
