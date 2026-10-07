@@ -284,5 +284,14 @@ restore_file README.md
 assert_clean_absent "after AC21 restore"
 
 # ---------------------------------------------------------------------------
+echo "== mutation: AC22 command signature agreement =="
+replace_first "$COPY/README.md" '`/build [item-ref or task-id]`' '`/build [task]`'
+check_mutation AC22 \
+  'AC22 README.md states a divergent signature for /build' \
+  "diverged the README Commands /build cell"
+restore_file README.md
+assert_clean_absent "after AC22 restore"
+
+# ---------------------------------------------------------------------------
 printf '\nMUTATION TOTAL: %s checked passed, %s failed\n' "$mpass" "$mfail"
 [ "$mfail" -eq 0 ]
