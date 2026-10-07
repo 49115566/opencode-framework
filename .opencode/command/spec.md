@@ -1,5 +1,5 @@
 ---
-description: "Gather requirements and write a feature spec. Usage: /spec <feature or problem description>"
+description: "Gather requirements and write a feature spec. Usage: /spec <feature or problem description | item-ref>"
 agent: product
 ---
 

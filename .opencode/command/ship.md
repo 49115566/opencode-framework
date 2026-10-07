@@ -1,5 +1,5 @@
 ---
-description: "Ship an approved work item as a branch, conventional commits, and a PR. Usage: /ship [item-ref]"
+description: "Ship an approved work item as a branch, conventional commits, and a PR. Usage: /ship [item-ref] | /ship fix [short description]"
 agent: shipper
 ---
 

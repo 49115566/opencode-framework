@@ -29,17 +29,17 @@ standalone item and behaves exactly as before.
 
 ```
 Broad, multi-feature initiative? → /roadmap <initiative>
-No spec.md?                      → /spec <feature>
+No spec.md?                      → /spec <feature or problem description | item-ref>
 spec.md, no design.md?           → /plan <item-ref>
-design.md, tasks.md unchecked?   → /build <item-ref>
-all tasks checked, no verify.md? → /test
+design.md, tasks.md unchecked?   → /build [item-ref or task-id]
+all tasks checked, no verify.md? → /test [item-ref]
 UI work, before /review?         → /visual [url or item-ref]   (optional)
-verify.md, no review.md?         → /review
-review.md verdict request-changes→ /build <item-ref>   (rework blockers)
-review.md verdict approve, no ship.md?→ /ship
+verify.md, no review.md?         → /review [item-ref]
+review.md verdict request-changes→ /build [item-ref or task-id]   (rework blockers)
+review.md verdict approve, no ship.md?→ /ship [item-ref]
 Verified /fix complete?          → /ship fix   (explicit request; shipper lands it)
-Blocked child (dependency unmet)?→ wait, or override explicitly; /status
-Unclear?                         → /status
+Blocked child (dependency unmet)?→ wait, or override explicitly; /status [item-ref]
+Unclear?                         → /status [item-ref]
 ```
 
 ## Handoff block

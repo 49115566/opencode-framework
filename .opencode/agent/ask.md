@@ -1,5 +1,5 @@
 ---
-description: Ultra-Basic Read-Only Agent.
+description: Q&A agent. Answers whatever the user has on their mind with plain, thorough explanations. Read-only.
 mode: primary
 permission:
   edit:
