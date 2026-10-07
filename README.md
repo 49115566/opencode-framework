@@ -262,6 +262,7 @@ permission model.
 | `conventional-commits` | Commit messages and branch naming                     |
 | `pr-workflow`          | PR titles, descriptions, `gh` usage                   |
 | `workflow-lifecycle`   | Routing between phases and reporting handoffs         |
+| `merge-conflict`       | Reconciling a branch behind the default branch        |
 
 ## Layout
 
@@ -269,7 +270,7 @@ permission model.
 .opencode/
   agent/     # 14 role prompts
   command/   # 12 slash commands
-  skill/     # 10 knowledge skills
+  skill/     # 11 knowledge skills
 docs/
   workflow.md               # lifecycle, phases, state, routing
   artifact-conventions.md   # exact format of every artifact
