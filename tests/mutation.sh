@@ -63,6 +63,7 @@ stage() {
   cp "$REPO_ROOT/LICENSE" "$REPO_ROOT/CONTRIBUTING.md" "$REPO_ROOT/CHANGELOG.md" \
      "$REPO_ROOT/VERSION" "$COPY/"
   cp "$REPO_ROOT"/docs/*.md "$COPY/docs/"
+  cp -R "$REPO_ROOT/template" "$COPY/template"
   cp "$REPO_ROOT/tests/README.md" "$COPY/tests/README.md"
   cp -R "$REPO_ROOT/.opencode/agent"   "$COPY/.opencode/agent"
   cp -R "$REPO_ROOT/.opencode/command" "$COPY/.opencode/command"

@@ -10,16 +10,18 @@ work moves through the system and the rules that govern all agents.
 
 ## Project profile
 
-- **Purpose**: A portable, prompt-driven development workflow for opencode: agents, commands, and skills with committed lifecycle artifacts.
-- **Primary language(s)**: none (opencode prompt/config files; the test harness is Bash)
-- **Package manager**: none
-- **Install**: none
-- **Test**: `bash tests/run.sh`
-- **Lint**: none
-- **Typecheck**: none
-- **Format**: none
-- **Build**: none
-- **Key directories**: `.opencode/`, `docs/`, `tests/`, `work/`
+<!-- /bootstrap replaces the placeholders below with real, verified values. -->
+
+- **Purpose**: _one or two sentences on what this project does_
+- **Primary language(s)**: _e.g. TypeScript, Python_
+- **Package manager**: _e.g. pnpm, npm, uv_
+- **Install**: _e.g. `pnpm install`_
+- **Test**: _e.g. `pnpm test`_
+- **Lint**: _e.g. `pnpm lint`_
+- **Typecheck**: _e.g. `pnpm typecheck` or `tsc --noEmit`_
+- **Format**: _e.g. `pnpm format`_
+- **Build**: _e.g. `pnpm build`_
+- **Key directories**: _e.g. `src/`, `tests/`, `app/`_
 
 If a value is missing or looks wrong, do not guess — run the
 `project-discovery` skill and confirm against the repository's real config.

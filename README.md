@@ -257,6 +257,10 @@ docs/
   workflow.md               # lifecycle, phases, state, routing
   artifact-conventions.md   # exact format of every artifact
   customization.md          # extend agents/skills/commands
+template/                   # adopter-pristine sources (maintainer-only)
+  AGENTS.md                 # template/AGENTS.md — placeholder Project profile
+  opencode.json             # template/opencode.json — config adopters receive
+  .gitignore                # template/.gitignore — ignore rules adopters receive
 AGENTS.md                   # always-loaded workflow contract + project profile
 opencode.json               # model, default agent, permissions, instructions, MCP
 README.md                   # this file
