@@ -215,7 +215,7 @@ unchanged. A standalone item is still just `NNNN-slug`.
 | `tester`    | primary           | test files + `work/**` + `**/work/**`   | allow                       |
 | `visual`    | all               | `work/**` + `**/work/**`                | allow                       |
 | `reviewer`  | all               | `work/**` + `**/work/**`                | read-only, best-effort †    |
-| `shipper`   | primary           | `work/**` + `**/work/**`                | git/gh allowlist            |
+| `shipper`   | primary           | `work/**` + `**/work/**` + shared surfaces (`README.md`, `AGENTS.md`, `docs/*.md`, `.opencode/{agent,command,skill}/**`, `template/**`, `tests/checks/**`) | git/gh allowlist + `bash tests/run.sh` / item checks |
 | `bootstrap` | primary           | config files + `work/**` + `**/work/**` | allow                       |
 | `status`    | primary           | none                                    | read-only, best-effort †    |
 | `scout`     | subagent          | none                                    | allow                       |
