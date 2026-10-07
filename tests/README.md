@@ -77,11 +77,24 @@ with a stable `ACn` token.
 | `70-pin.sh` | external pin agreement |
 | `80-cycle-fixture.sh` | roadmap cycle rule and committed fixture |
 | `90-packaging.sh` | packaging agreement: manifest ↔ changelog, copy-set, `Layout` (suite tokens `AC18`–`AC20`) |
+| `95-split-guard.sh` | adoption split guard: quickstart sources, `docs/customization.md` contract, `template/AGENTS.md` placeholder profile, copy-set surfaces, `bootstrap` deny rules (suite token `AC21`) |
 
 `90-packaging.sh` uses suite tokens `AC18`–`AC20`, which map to the
 `0008-adoption-packaging` acceptance criteria: spec AC12 → `AC18` (manifest ↔
 changelog agreement), spec AC13 → `AC19` (copy-set agreement), and spec AC14 →
 `AC20` (`Layout` ↔ disk agreement).
+
+`95-split-guard.sh` uses the stable suite token `AC21`, which maps to the
+`0004-adoption-template-split/0003-split-guard-tests` acceptance criteria:
+spec AC2 → `AC21` quickstart source/destination (the `README.md` quickstart
+sources `template/AGENTS.md`, `template/opencode.json`, and
+`template/.gitignore` to their destination names and never from a root copy),
+spec AC3 → `template/AGENTS.md` unfilled placeholder Project profile, spec AC4
+→ the copy-set surfaces name all three pristine sources and never claim an
+adopter receives a root copy, spec AC5 → the quickstart source agrees with the
+`docs/customization.md` split contract, and spec AC6 → the `bootstrap` agent
+denies edits under `template/` while leaving the adopter's own root files
+editable.
 
 ## Mutation self-check
 
