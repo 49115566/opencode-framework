@@ -12,7 +12,7 @@
 #   1. runs `bash tests/run.sh <copy>` and asserts exit 0 (AC2);
 #   2. runs it with FRAMEWORK_TEST_NO_PY/_OPENCODE/_NPM=1 and asserts exit 0 with
 #      visible skips (AC14);
-#   3. for each agreement area AC6-AC13 and AC18-AC20, applies exactly one
+#   3. for each agreement area AC6-AC13 and AC18-AC21, applies exactly one
 #      mutation, asserts the suite exits non-zero and names that area, restores
 #      the file, and asserts the clean copy passes again (AC15);
 #   4. exits non-zero if any mutation is not caught or any clean run fails, and
@@ -273,6 +273,15 @@ check_mutation AC20 'AC20 README Layout does not document packaging file VERSION
   "dropped a packaging file from the README Layout block"
 restore_file README.md
 assert_clean_absent "after AC20 restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC21 adoption split guard =="
+replace_first "$COPY/README.md" 'template/AGENTS.md' 'AGENTS.md'
+check_mutation AC21 \
+  'AC21 README.md quickstart does not source AGENTS.md from template/AGENTS.md' \
+  "repointed the quickstart at the root copy"
+restore_file README.md
+assert_clean_absent "after AC21 restore"
 
 # ---------------------------------------------------------------------------
 printf '\nMUTATION TOTAL: %s checked passed, %s failed\n' "$mpass" "$mfail"
