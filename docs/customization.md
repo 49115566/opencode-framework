@@ -18,6 +18,27 @@ opencode discovers these automatically. No registration is required.
 selects at startup when none is given; every other agent is chosen explicitly or
 by a command's `agent:` field.
 
+## Adopter-pristine sources and framework copies
+
+Three files are **bootstrap-mutable**: `/bootstrap` fills or toggles
+repository-specific values in `AGENTS.md` (its Project profile), `opencode.json`
+(its model, permissions, and MCP), and `.gitignore` (its ignore rules). The
+framework repository keeps its own bootstrapped copies of those files and serves
+adopters a separate, pristine snapshot, so maintainer configuration can never
+leak into an adopted repository:
+
+| Copied file     | Adopter-pristine source                         | Framework repository's own copy        |
+| --------------- | ----------------------------------------------- | -------------------------------------- |
+| `AGENTS.md`     | `template/AGENTS.md` — placeholder Project profile | root `AGENTS.md` — bootstrapped profile |
+| `opencode.json` | `template/opencode.json` — shipped defaults     | root `opencode.json` — loaded by opencode |
+| `.gitignore`    | `template/.gitignore` — shipped ignore rules    | root `.gitignore` — active rules       |
+
+`/bootstrap` mutates exactly those three files, so the framework's own copies
+must never be copied into an adopted repository. Everything else in the copied
+set — `.opencode/{agent,command,skill}` and `docs/*.md` — has a single source and
+is shared verbatim between the framework repository and adopters; `docs/*.md` are
+never templated.
+
 ## Always-loaded instructions
 
 `opencode.json` lists three files under `instructions`:
@@ -35,10 +56,10 @@ every turn. The set is deliberate, not accidental:
 
 | File                            | Purpose                                                                                             | Approx. per-request cost |
 | ------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------ |
-| `AGENTS.md`                     | The workflow contract every agent needs: lifecycle, artifact contract, guardrails, project profile. | ~1.9k tokens (~7.5 KB)   |
-| `docs/workflow.md`              | Authoritative lifecycle: phase entry/exit criteria, derived state, routing.                         | ~4.1k tokens (~16.6 KB)  |
-| `docs/artifact-conventions.md`  | Exact frontmatter and templates for every artifact.                                                 | ~3.3k tokens (~13.2 KB)  |
-| **Total per request**           |                                                                                                     | **~9.3k tokens (~37 KB)**|
+| `AGENTS.md`                     | The workflow contract every agent needs: lifecycle, artifact contract, guardrails, project profile. | ~1.9k tokens (~7.4 KB)   |
+| `docs/workflow.md`              | Authoritative lifecycle: phase entry/exit criteria, derived state, routing.                         | ~4.5k tokens (~17.9 KB)  |
+| `docs/artifact-conventions.md`  | Exact frontmatter and templates for every artifact.                                                 | ~3.2k tokens (~12.9 KB)  |
+| **Total per request**           |                                                                                                     | **~9.6k tokens (~38.2 KB)**|
 
 Costs are approximate, estimated from each file's current size at roughly 4
 bytes per token; refresh this table whenever a listed file changes. These three
