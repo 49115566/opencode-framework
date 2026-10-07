@@ -56,10 +56,10 @@ every turn. The set is deliberate, not accidental:
 
 | File                            | Purpose                                                                                             | Approx. per-request cost |
 | ------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------ |
-| `AGENTS.md`                     | The workflow contract every agent needs: lifecycle, artifact contract, guardrails, project profile. | ~1.9k tokens (~7.4 KB)   |
-| `docs/workflow.md`              | Authoritative lifecycle: phase entry/exit criteria, derived state, routing.                         | ~4.5k tokens (~17.9 KB)  |
-| `docs/artifact-conventions.md`  | Exact frontmatter and templates for every artifact.                                                 | ~3.2k tokens (~12.9 KB)  |
-| **Total per request**           |                                                                                                     | **~9.6k tokens (~38.2 KB)**|
+| `AGENTS.md`                     | The workflow contract every agent needs: lifecycle, artifact contract, guardrails, project profile. | ~1.9k tokens (~7.6 KB)   |
+| `docs/workflow.md`              | Authoritative lifecycle: phase entry/exit criteria, derived state, routing.                         | ~5.4k tokens (~21.6 KB)  |
+| `docs/artifact-conventions.md`  | Exact frontmatter and templates for every artifact.                                                 | ~3.3k tokens (~13.0 KB)  |
+| **Total per request**           |                                                                                                     | **~10.6k tokens (~42.2 KB)**|
 
 Costs are approximate, estimated from each file's current size at roughly 4
 bytes per token; refresh this table whenever a listed file changes. These files

@@ -219,7 +219,9 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 - **Purpose**: Turn a reviewed work item into a reviewable pull request.
 - **Entry**: `review.md` exists with verdict `approve` (or the user explicitly
   overrides).
-- **Process**: Confirm checks are green and the tree contains no secrets →
+- **Process**: Reconcile first — if the branch has fallen behind the default
+  branch, merge it forward and resolve conflicts per `## Merge conflicts` →
+  confirm checks are green and the tree contains no secrets →
   create a branch → stage logical commits with conventional messages →
   (user-approved) push → open a PR with a structured body linking the artifacts →
   write `ship.md` recording the branch, commits, and PR (or "not created"), commit
@@ -328,6 +330,71 @@ directories — for duplicate 4-digit prefixes. On a collision, follow
 "Renumbering after a parallel merge" in `docs/artifact-conventions.md`: renumber
 the unshipped item to the next number from the allocation contract and update
 every reference in the same change before it ships. A number is never reused.
+Duplicate sequence numbers are only one class of conflict; for every other class
+— shared-surface textual conflicts, `work/` artifact conflicts, and
+derived-agreement drift — see `## Merge conflicts`.
+
+## Merge conflicts
+
+This section is the normative merge-conflict contract: it classifies the conflict
+classes this workflow can encounter and states the sanctioned handling for each.
+The `merge-conflict` skill restates the operational procedure; on any
+disagreement, this section is the source of truth.
+
+### Conflict taxonomy
+
+| Class | Conflict | Affected surface(s) |
+| ----- | -------- | ------------------- |
+| (a) shared-surface textual conflict | Both branches edit the same framework file, so Git emits conflict markers. | `README.md`, `AGENTS.md`, `docs/*.md`, `.opencode/{agent,command,skill}/**`, `template/**`, `tests/checks/**` |
+| (b) `work/` artifact conflict | Both branches edit the same committed work artifact. | Roadmap `Children` / `Depends on` tables, artifact frontmatter, nested-child intersections |
+| (c) duplicate sequence number | Both branches allocate the same `NNNN`, or the same per-parent `MMMM`. | Top-level `work/<NNNN-slug>`, per-parent `work/<NNNN-slug>/<MMMM-slug>` |
+| (d) derived-agreement drift | A duplicated inventory or count fact merges cleanly but the two sides now disagree. | README Layout counts, README Skills table |
+
+### Lifecycle placement
+
+Reconciliation happens at two points in the lifecycle: a **pre-ship reconcile**
+before the shipper performs any ship operation, and a **post-merge integrity
+pass** after a merge to the default branch. The pre-ship reconcile merges the
+default branch forward into the item branch and resolves any conflicts, so a
+ship is never built on a stale merge base. The post-merge integrity pass is a
+documented, shipper-owned checklist run on the merged tree: re-scan top-level
+and per-parent `work/` directories for duplicate 4-digit prefixes, re-check
+every roadmap `Depends on` against its `Children` table for dangling, missing,
+unlisted, or cyclic references, and re-run `bash tests/run.sh` to surface
+derived-agreement drift.
+
+When the branch is already up to date, both steps are no-ops and do not error.
+
+### Ownership
+
+The `shipper` is the single owner of reconciliation. Reconciliation is a step inside `/ship` and adds no new command or agent.
+
+### Resolution principles
+
+- **Merge the default branch forward.** Bring the default branch into the item
+  branch with a merge. Never rebase a pushed branch and never force-push; the
+  shipper's guardrails forbid both.
+- **Preserve both branches' intent.** Keep both sides' records and changes rather
+  than dropping one. A conflict whose resolution requires a judgment about
+  competing intents is a semantic conflict: never silently accept it, and escalate
+  it to the user for explicit approval before proceeding.
+- **Auto-resolve the mechanical.** A conflict whose resolution is mechanical or
+  structural — one that does not require choosing between competing intents — may
+  be resolved automatically, subject to the re-verification below.
+
+### Verification
+
+After any resolution, re-run `bash tests/run.sh` and the affected item's checks.
+Both must be green before the resolved merge is recorded or shipped. A clean
+merge is not evidence of correctness: even a merge that produced no conflict
+markers still runs the suite, because derived-agreement drift is surfaced only
+there.
+
+### Relationship to renumbering
+
+Duplicate sequence numbers — class (c) — are handled by "Renumbering after a
+parallel merge" in `docs/artifact-conventions.md`. This section defers to and
+extends that rule; it never defines a second renumbering rule.
 
 ## Resuming and interruption
 

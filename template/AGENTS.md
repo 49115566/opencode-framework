@@ -135,3 +135,4 @@ and report it rather than working around it.
 - `docs/workflow.md` — lifecycle, phase entry/exit criteria, routing.
 - `docs/artifact-conventions.md` — templates and frontmatter for every artifact.
 - `docs/customization.md` — how to add or change agents, skills, and commands.
+- `.opencode/skill/merge-conflict/SKILL.md` — the shipper's reconcile procedure; the normative contract is `docs/workflow.md` → `## Merge conflicts`.
