@@ -144,11 +144,66 @@ escalate).
 
 1. **Reconcile.** The read-only pre-flight above has already detected and
    classified what a merge would collide on, and it hands its findings here.
-   Merge the default branch forward into the item branch (never rebase). A branch
-   that is already up to date reports `no conflicts` and is a no-op: both
-   reconcile and the integrity pass do nothing and do not error. Never resolve a
-   conflict the pre-flight flagged as needing a judgment about intent; escalate
-   it (Stop and escalate).
+   Run the reconcile as this ordered, agent-executable sequence:
+
+   1. **Determine the default branch and the merge base, then fetch.** First
+      determine the default branch and the merge base exactly as the pre-flight
+      does — `git symbolic-ref refs/remotes/origin/HEAD` (or
+      `gh repo view --json defaultBranchRef`) for the default branch, then
+      `git merge-base HEAD origin/<default>` — and fetch the latest
+      remote-tracking refs with `git fetch <remote> <default>`. If the default
+      branch cannot be determined, report that and do not mutate the branch.
+
+   2. **Do not start a second merge.** If a merge is already in progress at
+      start (`git rev-parse -q --verify MERGE_HEAD`), report it and do **not**
+      start a second merge.
+
+   3. **An already-up-to-date branch is a no-op.** If the default branch is
+      already an ancestor of the item branch (the merge base equals
+      `origin/<default>`), report `no conflicts`: the reconcile is a `no-op`, it
+      creates `no merge commit`, and it `does not error`; continue with the
+      remaining ship operations.
+
+   4. **Merge the default branch forward.** Otherwise run
+      `git merge --no-edit origin/<default>` to merge the default branch forward
+      into the item branch. The rule is absolute — never rebase a pushed branch
+      and never force-push. A merge that completes with no conflict markers has
+      nothing to resolve and proceeds directly to sub-step 8 — a clean merge is
+      not evidence of correctness.
+
+   5. **List every conflicted path.** Enumerate the unmerged paths with
+      `git status --short` and `git diff --name-only --diff-filter=U`. Report
+      every conflicted path — the list is never truncated — and classify each as
+      class (a) or class (b) per step 2.
+
+   6. **Resolve.** Resolve the set per step 3: preserve **both** branches'
+      changes, `drop neither side`; keep class (b) `work/` records from both
+      branches rather than dropping one; send a class (c) duplicate sequence
+      number to `Renumbering after a parallel merge` in
+      `docs/artifact-conventions.md` (`git mv`; automated renumbering and graph
+      repair remain sibling `0004`). Auto-resolve only `mechanical or
+      structural` conflicts that `does not require choosing between competing
+      intents`, subject to sub-step 8. A conflict that requires a judgment
+      between competing intents is a `semantic conflict`: do not resolve it —
+      go to sub-step 9.
+
+   7. **Assert no conflict markers remain.** Read each previously conflicted
+      file and confirm that none of `<<<<<<<`, `=======`, `>>>>>>>` remains. A
+      file that still contains markers is `unresolved` and must not be
+      committed.
+
+   8. **Re-verify.** After any resolution, run `bash tests/run.sh` and the
+      affected item's checks (step 4). Both must be `green` before the resolved
+      merge is committed, recorded, or shipped. A resolution whose
+      re-verification fails is not accepted; report the failing check as the
+      blocker.
+
+   9. **Stop and escalate a semantic conflict.** On a `semantic conflict`, run
+      `git merge --abort` to restore a clean working tree, report the specific
+      blocked path(s) and the decision the user must make, and keep the ship
+      `blocked until the user responds` (step 7). Never commit, record, or ship
+      a partial or unresolved merge; if the abort cannot complete, report that
+      and stop rather than committing a partial merge.
 
 2. **Classify** each conflicting path into one of the four classes from the
    `### Conflict taxonomy` in `docs/workflow.md`:
@@ -179,9 +234,11 @@ escalate).
    markers still runs the suite, because derived-agreement drift is surfaced only
    there.
 
-5. **Record** the resolved paths and the re-verification evidence (in the ship
-   handoff and the PR description) so the reviewer can confirm what was resolved
-   and that it was re-verified. Do not invent a new artifact or field for this.
+5. **Record.** Record the reconcile, the resolved paths, and the re-verification
+   evidence in the `## Reconcile` section of `ship.md` and in the pull-request
+   description, so the reviewer can confirm what was resolved and that it was
+   re-verified. Do not invent a new artifact or field for this beyond the
+   documented `ship.md` `## Reconcile` record.
 
 6. **Post-merge integrity pass.** After a merge to the default branch, run this
    documented, shipper-owned checklist on the merged tree:
@@ -193,9 +250,11 @@ escalate).
 
 7. **Stop and escalate.** If a conflict needs a judgment about intent, or an
    overlapping `work/` edit leaves the dependency graph dangling, duplicate, or
-   cyclic and cannot be resolved mechanically, stop. Report the specific blocked
-   path(s) and do not resolve silently to proceed. A ship blocked by escalation
-   stays blocked until the user responds.
+   cyclic and cannot be resolved mechanically, run `git merge --abort` to
+   restore a clean working tree. Report the specific blocked path(s) and the
+   decision the user must make, and do not resolve silently to proceed. A ship
+   blocked by escalation stays blocked until the user responds. If the abort
+   cannot complete, report that and stop rather than committing a partial merge.
 
 ## Rules
 
