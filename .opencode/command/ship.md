@@ -32,11 +32,22 @@ Follow your Ship agent instructions exactly. The argument grammar is:
 - Reconcile first, after the read-only pre-flight and before the other ship
   operations, per the `merge-conflict` skill: merge the default branch forward
   with `git merge --no-edit origin/<default>`, resolve class (a) shared-surface
-  and class (b) `work/` conflicts preserving both sides, apply the existing
-  "Renumbering after a parallel merge" rule for a class (c) duplicate sequence
-  number, and abort and escalate a semantic conflict rather than resolving it.
-  Record the `## Reconcile` section — resolved paths and re-verification evidence
-  — in `ship.md` and the PR description, and never rebase or force-push.
+  conflicts preserving both sides, and, for class (b) `work/` conflicts and a
+  class (c) duplicate sequence number, run the skill's `work/` artifact reconcile:
+  merge `work/` artifact content preserving both sides, re-check the roadmap
+  dependency graph, apply "Renumbering after a parallel merge" to a
+  top-level/per-parent `NNNN`/`MMMM` collision — `git mv` the chosen item.
+  Update every reference in one change so no reference to the old canonical
+  reference remains, and never reuse a spent number. A clean merge that touched
+  any `work/` path, or that carries a pre-flight class (b) or class (c) finding,
+  is not finished: run the reconcile on the already-merged tree before
+  re-verifying. Escalate an undecidable renumber
+  or an intent fault rather than guessing: on a conflicted merge `git merge
+  --abort`; on the clean-merge path the auto-created merge commit is not rewritten
+  without user confirmation — report the blocked reference(s) and the decision the
+  user must make. Record the `## Reconcile` section — resolved `work/` paths, any
+  renumber as `<old> → <new>`, and re-verification evidence — in `ship.md` and the
+  PR description, and never rebase or force-push.
 - Determine the default branch and current branch.
 - Create or switch to a branch named per the `conventional-commits` skill
   (`<type>/<ref>`, where `<ref>` is the canonical reference — a roadmap child's
