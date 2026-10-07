@@ -107,10 +107,10 @@ What the initiative is and who it serves.
 
 ## Children
 
-| Local id | Title | Scope | Depends on | Canonical reference |
-| -------- | ----- | ----- | ---------- | ------------------- |
-| 0001-model | Core model | <scope sufficient to author a spec> | — | NNNN-slug/0001-model |
-| 0002-api   | API layer  | ...                                 | 0001-model | NNNN-slug/0002-api |
+| Local id | Title | Scope | Depends on | Canonical reference | Conflicts with |
+| -------- | ----- | ----- | ---------- | ------------------- | -------------- |
+| 0001-model | Core model | <scope sufficient to author a spec> | — | NNNN-slug/0001-model | — |
+| 0002-api   | API layer  | ...                                 | 0001-model | NNNN-slug/0002-api | — |
 
 ## Sequencing
 
@@ -131,6 +131,13 @@ What the initiative is and who it serves.
   dependency may not name its own row, and the stored graph must be acyclic. If
   the initiative's dependencies form a cycle, record the cycle under
   `## Open issues` and leave the stored graph acyclic.
+- **Conflicts with** names local ids of other rows in this same table only, as a
+  comma-separated list when there are two or more (`—` when there are none). Like
+  `Depends on`, it is intra-roadmap only and a row may not name itself; unlike
+  `Depends on`, it never affects readiness or the dependency graph. It records a
+  coordination constraint — siblings that touch overlapping surfaces and must not
+  be developed concurrently — and is read by the pre-development check in
+  `docs/workflow.md` → `## Parallel-development plan conflicts`.
 
 ### `spec.md` (product)
 
@@ -205,6 +212,14 @@ The chosen approach in two or three sentences.
 
 How the change works, with the interfaces, types, and data flow it touches.
 
+## Surface declaration
+
+Optional. A bullet list of repository-relative paths the item will create or
+modify, committed before development and compared by the pre-development check.
+
+- `docs/workflow.md`
+- `.opencode/agent/`
+
 ## Alternatives considered
 
 - **<Option>** — pros / cons / why rejected.
@@ -225,6 +240,14 @@ Files, modules, and systems expected to change. Cite existing paths.
 
 How each acceptance criterion will be verified (unit, integration, e2e, manual).
 ```
+
+The `## Surface declaration` section is optional. Each entry is one
+repository-relative path (no leading `/` and no `..`), optionally wrapped in
+backticks; a trailing `/` marks a directory entry that covers every path beneath
+it, while any other entry is a concrete path. An absent or empty section means
+the item declares no surfaces. Declared entries are compared across ready
+in-flight items by the pre-development check in `docs/workflow.md` →
+`## Parallel-development plan conflicts`.
 
 ### `tasks.md` (architect; builder updates boxes)
 

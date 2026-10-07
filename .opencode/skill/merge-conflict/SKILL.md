@@ -118,8 +118,16 @@ The pre-flight vocabulary (canonical; the `status` agent repeats it) is:
 | `DUPLICATE-PREFIX` | `(c)` | two different top-level `work/` references share an `NNNN` |
 | `DUPLICATE-CHILD` | `(c)` | two different per-parent child references share an `MMMM` |
 | `DRIFT-FACT` | `(d)` | a duplicated count/table fact disagrees with disk or the other branch |
+| `DANGLING-CONFLICT` | `(b)` | a roadmap `Conflicts with` names a local id that resolves to no other row in the same Children table, or names its own row |
+| `DECLARED-CONFLICT` | `(b)` | two ready in-flight items where one plan declares a `Conflicts with` edge naming the other |
+| `SURFACE-OVERLAP` | `(a)` or `(b)` | two ready in-flight items declare the same concrete path, an ancestor/descendant directory overlap, or the same shared framework surface; class `(b)` when both entries are under `work/`, otherwise class `(a)` |
 
 `TEXTUAL-CONFLICT` is pre-flight-only: `/status` performs no dry-run merge.
+`DECLARED-CONFLICT` and `SURFACE-OVERLAP` are pre-development-only: they are
+reported by the pre-development check in `docs/workflow.md` →
+`## Parallel-development plan conflicts`, which `/build` runs before
+implementation. `DANGLING-CONFLICT` is reported by `/status` alongside the
+merge-integrity findings.
 
 This vocabulary is canonical and is consumed unchanged by the merge-integrity
 guard. `docs/workflow.md` → `### Merge-integrity guard` is the single statement

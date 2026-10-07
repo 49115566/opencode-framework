@@ -74,6 +74,14 @@ directory containing only a `.gitkeep`, then stops. It writes no child specs and
 performs no child phase work. Child numbering is local to the parent and
 independent of the flat top-level sequence and of other roadmaps.
 
+The `Children` table carries a `Conflicts with` column alongside `Depends on`.
+Like `Depends on`, it names other rows in the same table only, comma-separated
+when there are two or more or `—` when there are none; unlike `Depends on`, it is
+a coordination relation that never affects readiness or the dependency graph. It
+records sibling children that touch overlapping surfaces and therefore must not
+be developed concurrently, and is read by the pre-development check in
+`## Parallel-development plan conflicts`.
+
 ### Dependencies and readiness
 
 The `Children` table in `roadmap.md` is the single machine-readable source for
@@ -82,7 +90,9 @@ child's **local id**, comma-separated when there are two or more, or `—` when 
 child has none. A dependency may not name its own row, dependencies are
 intra-roadmap only, and the stored graph must be acyclic. If an initiative's
 dependencies are cyclic, the roadmap records the cycle under `## Open issues` and
-leaves the stored graph acyclic.
+leaves the stored graph acyclic. A `Conflicts with` entry never changes a child's
+readiness or its place in the dependency graph; readiness is derived from
+`Depends on` alone.
 
 Readiness is derived live from files at status time; it is never stored:
 
@@ -435,6 +445,105 @@ suite. The duplicated-inventory/count-fact invariant is nevertheless
 Duplicate sequence numbers — class (c) — are handled by "Renumbering after a
 parallel merge" in `docs/artifact-conventions.md`. This section defers to and
 extends that rule; it never defines a second renumbering rule.
+
+## Parallel-development plan conflicts
+
+This section is the normative pre-development conflict contract: it defines a
+read-only check `/build` runs before it implements a task, so a builder learns
+before writing code that another ready in-flight item will touch the same
+surfaces. It complements `## Merge conflicts`, which handles collisions at merge
+and ship time, and changes none of that policy. The `merge-conflict` skill
+carries the canonical finding vocabulary; this section defines no second one.
+
+The check is **report-only**: it is non-fatal, read-only, takes no lock, modifies
+no file, auto-repairs nothing, and never blocks the build. Findings are reported,
+never dropped or truncated, and the result is recorded in the build handoff.
+
+### Surface declaration
+
+Each ready in-flight work item may commit a **surface declaration** — the
+repository-relative paths or directories it will create or modify — in the
+optional `## Surface declaration` section of its `design.md`, so the declaration
+is committed before development begins and is discoverable by the item's
+canonical reference (`work/<item-ref>/design.md`) without reading implementation
+code. The section's exact grammar lives in `docs/artifact-conventions.md` →
+`### design.md`: one path per bullet, no leading `/` and no `..`, an optional
+trailing `/` marking a directory entry that covers every path beneath it. An
+absent or empty section means the item declares no surfaces; the check reports
+that it could not compare that item and does not error.
+
+### Comparison universe
+
+The comparison universe is the set of **ready in-flight items** in this
+repository's committed `work/` tree:
+
+- it is not a roadmap parent (a directory holding `roadmap.md`),
+- it has a committed `design.md` (a plan exists),
+- it has no `ship.md` (it is not shipped), and
+- it is **ready**: a standalone item, or a nested roadmap child whose `Depends
+  on` entries are all satisfied and which is not in a cycle.
+
+Items that are shipped (a `ship.md` is present) or blocked or cyclic are outside
+the universe: they are neither reporters nor reported conflicting items. The
+comparison is local to the committed tree only; no branch-diff, remote, or
+cross-repository comparison is performed. The current item is excluded from its
+own peer set. When there is no other ready in-flight item, or no other item
+carries a declaration, or the current item declares no surfaces, the check
+reports `no conflicts` and does not error.
+
+### Detection
+
+`/build` runs the check once, as a step after it selects the task and before it
+implements anything. It reads the current item's `## Surface declaration` (empty
+if absent), enumerates the universe above, reads each peer's declaration, and
+reports a conflict when any of the following holds:
+
+- **Declared edge.** The current item is a nested roadmap child and its
+  `Conflicts with` entry names a ready in-flight sibling, or a ready in-flight
+  sibling's `Conflicts with` entry names the current item. The relation is
+  symmetric for detection: one direction suffices, and declaring both directions
+  is not an error. An unresolvable `Conflicts with` reference is
+  `DANGLING-CONFLICT`, owned by `/status`, not this check.
+- **Surface overlap by path.** Two declared surfaces name the same concrete path,
+  or one is a directory entry that is an ancestor of (or equal to) the other —
+  for example a declared `docs/` overlaps a declared `docs/workflow.md`. This
+  reports `SURFACE-OVERLAP` naming both items and the overlapping surface(s).
+- **Shared framework surface.** Both items declare paths under the same shared
+  framework surface class — `README.md`, `AGENTS.md`, `docs/*.md`,
+  `.opencode/{agent,command,skill}/**`, `template/**`, `tests/checks/**`. This
+  reports `SURFACE-OVERLAP` naming both items and the shared surface.
+
+An in-flight peer whose `design.md` lacks a surface declaration is reported as
+"could not compare", never treated as declaring no surfaces.
+
+### Finding vocabulary
+
+Every finding uses the `merge-conflict` skill's grammar,
+`- [<CODE>] (<class>) <offender canonical reference(s)> — <detail>`, and its
+canonical vocabulary table, extended for pre-development with:
+
+| Code | Class | Finding |
+| ---- | ----- | ------- |
+| `DANGLING-CONFLICT` | `(b)` | a roadmap `Conflicts with` names a local id that resolves to no other row in the same `Children` table, or names its own row |
+| `DECLARED-CONFLICT` | `(b)` | two ready in-flight items where one plan declares a `Conflicts with` edge naming the other |
+| `SURFACE-OVERLAP` | `(a)` or `(b)` | two ready in-flight items declare the same concrete path, an ancestor/descendant directory overlap, or the same shared framework surface; class `(b)` when both entries are under `work/`, otherwise class `(a)` |
+
+This section defines no second vocabulary. `DANGLING-CONFLICT` is reported by
+`/status` alongside the merge-integrity findings; `DECLARED-CONFLICT` and
+`SURFACE-OVERLAP` are reported only by the pre-development check. Every finding
+carries its code, its class, the offending canonical reference(s), and the
+specific overlap or declared-edge detail; no detected conflict is silently
+dropped, and the list is never truncated, even for a large overlap set.
+
+### Report-only contract
+
+The check is advisory. It never resolves or serializes parallel work, never
+assigns an order, moves a branch, merges, or blocks a build; it modifies no file
+and auto-repairs nothing. Two concurrent check runs take no lock, write nothing,
+and do not interfere. `/build` always continues, whether or not conflicts are
+reported, and records the result in its handoff: the declarations assessed and
+either the conflicts found or an explicit `no conflicts`, so a reviewer can see
+what was checked before development began.
 
 ## Resuming and interruption
 
