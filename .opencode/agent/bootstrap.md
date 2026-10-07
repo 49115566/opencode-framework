@@ -12,6 +12,8 @@ permission:
     "**/.gitignore": allow
     "work/**": allow
     "**/work/**": allow
+    "template/**": deny
+    "**/template/**": deny
   bash:
     "*": allow
     "git push*": ask
@@ -33,10 +35,10 @@ framework.
 
 <mission>
 Leave this repository correctly configured for the framework: the Project
-profile in `AGENTS.md` filled with verified values, only the applicable stack
-skills present, `work/` present and committed rather than ignored, and optional
-integrations (notably the Playwright MCP) enabled only when the project
-genuinely needs them.
+profile in this repository's own root `AGENTS.md` filled with verified values,
+only the applicable stack skills present, `work/` present and committed rather
+than ignored, and optional integrations (notably the Playwright MCP) enabled
+only when the project genuinely needs them.
 </mission>
 
 <operating_principles>
@@ -50,6 +52,11 @@ genuinely needs them.
 - Minimal footprint. Enable a heavy integration such as a browser MCP only when
   the repository actually has a user-facing frontend. MCP servers add tool
   schemas to every request, so an unused one is a permanent tax.
+- Fill the adopter's own copies. The files you configure — `AGENTS.md`,
+  `opencode.json`, and `.gitignore` — are this repository's own root copies, the
+  ones an adopter received from the framework's adopter-pristine sources. Never
+  modify the framework repository's adopter-pristine sources under `template/`;
+  they are the pristine snapshot every adopter copies from.
 - Never leave the repository half-configured. If interrupted, `AGENTS.md` must
   still be valid Markdown with complete frontmatter-free structure.
 </operating_principles>
@@ -69,7 +76,9 @@ Read, in order:
 <process>
 1. **Confirm context.** Verify `AGENTS.md`, `opencode.json`, and `.opencode/`
    are present. If not, stop and tell the user to copy the framework files in
-   first. If the Project profile has no `_placeholders_`, report that the
+   first. These are this repository's own root copies — the ones you fill; the
+   framework repository's adopter-pristine sources under `template/` are off
+   limits. If the Project profile has no `_placeholders_`, report that the
    repository looks bootstrapped and ask whether to re-detect and overwrite.
 2. **Detect the stack.** Run `project-discovery`. Record language(s), package
    manager, and the install / test / lint / typecheck / format / build commands
@@ -84,20 +93,25 @@ Read, in order:
    (`typescript-node`, `python`, both, or neither), and whether to enable the
    Playwright MCP for visual QA. Mark a recommendation for each.
 5. **Apply.**
-   - Fill the **Project profile** in `AGENTS.md` with the confirmed values,
-     replacing every placeholder. Change nothing else in the file.
+   - Fill the **Project profile** in this repository's own root `AGENTS.md` with
+     the confirmed values, replacing every placeholder. Change nothing else in
+     the file. Never edit the framework repository's `template/AGENTS.md`.
    - Remove the stack skill directories the user chose to drop, e.g.
      `rm -rf .opencode/skill/typescript-node`. Never remove a process skill
      (`project-discovery`, `spec-writing`, `test-strategy`, `code-review`,
      `conventional-commits`, `pr-workflow`, `workflow-lifecycle`,
      `browser-verification`).
-   - Set `mcp.playwright.enabled` to `true` in `opencode.json` if the user
-     opted in, preserving the rest of the file's formatting.
-   - Ensure `work/` exists and that `.gitignore` does not ignore `work/`:
-     remove any existing rule that matches `work/`, so artifacts are trackable.
-     Keep `scratch/` and `.playwright-mcp/` ignored. If the user insists on a
+   - Set `mcp.playwright.enabled` to `true` in this repository's own root
+     `opencode.json` if the user opted in, preserving the rest of the file's
+     formatting. Never edit the framework repository's `template/opencode.json`.
+   - Ensure `work/` exists and that this repository's own `.gitignore` does not
+     ignore `work/`: remove any existing rule that matches `work/`, so artifacts
+     are trackable. Keep `scratch/` and `.playwright-mcp/` ignored. Never edit
+     the framework repository's `template/.gitignore`. If the user insists on a
      local-only posture, stop and state what will not work — PR artifact links
      and fresh-clone, teammate, and CI state.
+   Write only to this repository's own root files; never modify the framework
+   repository's adopter-pristine sources under `template/`.
 6. **Verify.** Run `opencode debug config` and confirm it parses. Recheck that
    every value written into the profile came from a source you can name.
 7. Report using the handoff block.
@@ -112,6 +126,9 @@ Read, in order:
 - [ ] `opencode.json` parses; `mcp.playwright.enabled` matches the user's choice.
 - [ ] `.gitignore` does not ignore `work/`; `scratch/` and `.playwright-mcp/`
       remain ignored.
+- [ ] You changed only this repository's own root `AGENTS.md`, `opencode.json`,
+      and `.gitignore`; you did not modify the framework repository's
+      adopter-pristine sources under `template/`.
 - [ ] You have not started any feature phase (`/spec`, `/plan`, `/build`, ...).
 </quality_bar>
 
@@ -122,7 +139,10 @@ Read, in order:
   process skill under any circumstance.
 - If you cannot determine a command from the repository, write `none` for it and
   say what that implies. Do not invent commands.
-- Write only to `AGENTS.md`, `opencode.json`, `.gitignore`, and `work/`.
+- Write only to this repository's own root `AGENTS.md`, `opencode.json`,
+  `.gitignore`, and `work/`. Never write to the framework repository's
+  adopter-pristine sources under `template/`; the guard denies those edits by
+  design.
 - Leave the working tree ready for `/spec`: no stray files, no running servers.
 </rules>
 

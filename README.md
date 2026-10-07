@@ -46,7 +46,9 @@ FRAMEWORK=/path/to/opencode-framework
 mkdir -p .opencode
 cp -r "$FRAMEWORK/.opencode/agent" "$FRAMEWORK/.opencode/command" "$FRAMEWORK/.opencode/skill" .opencode/
 rm -f .opencode/agent/doctor.md .opencode/command/doctor.md
-cp "$FRAMEWORK/AGENTS.md" "$FRAMEWORK/opencode.json" "$FRAMEWORK/.gitignore" .
+cp "$FRAMEWORK/template/AGENTS.md" ./AGENTS.md
+cp "$FRAMEWORK/template/opencode.json" ./opencode.json
+cp "$FRAMEWORK/template/.gitignore" ./.gitignore
 mkdir -p docs && cp "$FRAMEWORK"/docs/*.md docs/
 mkdir -p work && touch work/.gitkeep
 ```
@@ -54,6 +56,18 @@ mkdir -p work && touch work/.gitkeep
 Copy only the `agent/`, `command/`, and `skill/` subdirectories — opencode
 generates `.opencode/node_modules/` and package files locally when it runs, and
 those should not be copied between projects.
+
+The three files `/bootstrap` fills — `AGENTS.md`, `opencode.json`, and
+`.gitignore` — are copied from the framework's **adopter-pristine sources**
+(`template/AGENTS.md`, `template/opencode.json`, and `template/.gitignore`), not
+from the framework repository's own root copies. The framework's root `AGENTS.md`,
+`opencode.json`, and `.gitignore` are **maintainer-bootstrapped** and are never
+copied into an adopted repository, so the maintainers' Project profile, model,
+permissions, MCP, and ignore rules cannot leak. `template/` is a
+framework-repository directory only: each source is copied to its destination
+name, so no `template/` directory appears in an adopted repository. The rest of
+the copied set — `.opencode/{agent,command,skill}` and `docs/*.md` — has a single
+source and is **shared verbatim** between the framework repository and adopters.
 
 The quickstart then removes `.opencode/agent/doctor.md` and
 `.opencode/command/doctor.md`. The `doctor` agent and `/doctor` command are

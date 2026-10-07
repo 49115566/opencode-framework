@@ -122,10 +122,18 @@ moving a tag that has been pushed.
 
 `LICENSE`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `VERSION` belong to the
 framework repository itself. They are **maintainer-only** and are deliberately
-outside the adopter copy set (`.opencode/{agent,command,skill}`, `AGENTS.md`,
-`opencode.json`, `.gitignore`, and `docs/*.md`), so the adoption quickstart never
-copies them into a downstream repository. An adopter keeps its own license,
-contribution guide, changelog, and version.
+outside the adopter copy set, so the adoption quickstart never copies them into a
+downstream repository. An adopter keeps its own license, contribution guide,
+changelog, and version.
+
+The copy set itself splits by source. The three bootstrap-mutable files an
+adopter receives — `AGENTS.md`, `opencode.json`, and `.gitignore` — come from the
+framework's **adopter-pristine sources** (`template/AGENTS.md`,
+`template/opencode.json`, and `template/.gitignore`) and are copied to their
+destination names; the framework repository's own root copies of those three are
+maintainer-bootstrapped and are never copied. The rest of the set —
+`.opencode/{agent,command,skill}` and `docs/*.md` — has a single source and is
+**shared verbatim** between the framework repository and adopters.
 
 Because this change adds no files to the copied set, **already-adopted
 repositories need no action**: re-running the quickstart copies nothing new into
