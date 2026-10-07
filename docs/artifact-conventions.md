@@ -416,7 +416,7 @@ updated: YYYY-MM-DD
 - Result: <reconciled | no-op (already up to date) | blocked: <reason>>
 - Resolved paths:
   - `<path>` — <how both branches' intents were preserved>
-- Re-verification: `bash tests/run.sh` → <result>; <item checks> → <result>
+- Re-verification: <the repository's own configured test command — the Project profile `Test:` value> → <result>; <item checks> → <result>
 ```
 
 Its **presence** is the one shipped signal consumed by readiness — defined in
