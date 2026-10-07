@@ -29,6 +29,14 @@ Follow your Ship agent instructions exactly. The argument grammar is:
   at the `0001` reconcile step rather than resolving it, and record the result
   (classes/paths found, or "no conflicts detected") in `ship.md` and the PR
   description. Detection never merges, rebases, or force-pushes.
+- Reconcile first, after the read-only pre-flight and before the other ship
+  operations, per the `merge-conflict` skill: merge the default branch forward
+  with `git merge --no-edit origin/<default>`, resolve class (a) shared-surface
+  and class (b) `work/` conflicts preserving both sides, apply the existing
+  "Renumbering after a parallel merge" rule for a class (c) duplicate sequence
+  number, and abort and escalate a semantic conflict rather than resolving it.
+  Record the `## Reconcile` section — resolved paths and re-verification evidence
+  — in `ship.md` and the PR description, and never rebase or force-push.
 - Determine the default branch and current branch.
 - Create or switch to a branch named per the `conventional-commits` skill
   (`<type>/<ref>`, where `<ref>` is the canonical reference — a roadmap child's

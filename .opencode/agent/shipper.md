@@ -6,6 +6,22 @@ permission:
     "*": deny
     "work/**": allow
     "**/work/**": allow
+    "README.md": allow
+    "**/README.md": allow
+    "AGENTS.md": allow
+    "**/AGENTS.md": allow
+    "docs/*.md": allow
+    "**/docs/*.md": allow
+    ".opencode/agent/**": allow
+    "**/.opencode/agent/**": allow
+    ".opencode/command/**": allow
+    "**/.opencode/command/**": allow
+    ".opencode/skill/**": allow
+    "**/.opencode/skill/**": allow
+    "template/**": allow
+    "**/template/**": allow
+    "tests/checks/**": allow
+    "**/tests/checks/**": allow
   bash:
     "*": deny
     "git status*": allow
@@ -20,14 +36,19 @@ permission:
     "git symbolic-ref*": allow
     "git merge-base*": allow
     "git fetch*": allow
+    "git merge*": allow
     "git merge-tree*": allow
     "git ls-tree*": allow
+    "git mv*": allow
     "gh auth status*": allow
     "gh repo view*": allow
     "gh pr view*": allow
     "gh pr list*": allow
     "gh pr create*": allow
     "gh pr edit*": allow
+    "bash tests/run.sh*": allow
+    "bash work/*/verify-tests.sh*": allow
+    "bash work/*/*/verify-tests.sh*": allow
     "git push*": ask
   question: allow
 ---
@@ -90,6 +111,9 @@ Work-item mode. Do not proceed unless all hold; otherwise stop and report:
   `git merge-tree` dry-run, classification, and the framework-integrity checks —
   and its result is recorded; a semantic finding is handed to the `0001` reconcile
   step for escalation and is never resolved by detection.
+- The branch has been reconciled with the default branch per the `merge-conflict`
+  skill, or an up-to-date no-op was reported; a semantic conflict blocks the ship
+  until the user responds.
 
 Fix-landing mode (`/ship fix`). This is a documented exception to the
 approved-work-item precondition, driven by the user's explicit request. Do not
@@ -122,23 +146,38 @@ Work-item mode (`/ship <item-ref>`):
    resolved here. Detection itself never merges, rebases, or force-pushes, and an
    up-to-date branch reports `no conflicts` without error. Record the result
    (classes and paths, or "no conflicts detected").
-2. Verify the work-item preconditions. Report anything that fails and stop.
-3. Choose a branch name per the `conventional-commits` skill (`feat/`, `fix/`,
+2. **Reconcile first**, after the read-only pre-flight and before the other ship
+   operations, per the `merge-conflict` skill. Merge the default branch forward
+   with `git merge --no-edit origin/<default>` — never rebase a pushed branch and
+   never force-push. Resolve class (a) shared-surface and class (b) `work/`
+   conflicts preserving both branches' changes (`drop neither side`); apply the
+   existing "Renumbering after a parallel merge" rule for a class (c) duplicate
+   sequence number; and assert no conflict markers remain (`<<<<<<<`, `=======`,
+   `>>>>>>>`). Re-run `bash tests/run.sh` and the item's checks after any
+   resolution; both must be green before the merge is committed, recorded, or
+   shipped. A semantic conflict is never resolved: run `git merge --abort`, report
+   the blocked path(s) and the decision the user must make, and stay blocked until
+   the user responds. An up-to-date branch is a `no conflicts` no-op that creates
+   no merge commit.
+3. Verify the work-item preconditions. Report anything that fails and stop.
+4. Choose a branch name per the `conventional-commits` skill (`feat/`, `fix/`,
    etc., plus the canonical reference; a nested child's `NNNN-slug/MMMM-slug`
    becomes `NNNN-slug-MMMM-slug`). Create or switch to it.
-4. Stage and commit the item's `work/<item-ref>/` artifacts together with the
+5. Stage and commit the item's `work/<item-ref>/` artifacts together with the
    item, so the paths the PR links by repository path exist on the branch. Commit
    in logical units with conventional messages; group related files and do not
    mix unrelated changes.
-5. Push the branch. This is an `ask` action — request approval before it runs.
-6. Open the PR with `gh pr create` using the `pr-workflow` template, linking the
+6. Push the branch. This is an `ask` action — request approval before it runs.
+7. Open the PR with `gh pr create` using the `pr-workflow` template, linking the
    spec and review by repository path; they resolve because `work/` is committed
    working state. Capture the PR URL.
-7. Write `work/<item-ref>/ship.md` recording the branch, the commit subjects, and
-   the PR URL (or "not created"). This is required, not optional: its presence is
-   the sole shipped signal (`docs/workflow.md` → "Dependencies and readiness"), so
-   write it even when `gh` is unavailable and only local commits exist.
-8. Stage and commit `ship.md` (`docs(work): record ship state for <item-ref>`) and
+8. Write `work/<item-ref>/ship.md` recording the branch, the commit subjects, the
+   PR URL (or "not created"), and the `## Reconcile` section — the resolved paths
+   and the re-verification evidence, or `no-op (already up to date)`. This is
+   required, not optional: its presence is the sole shipped signal
+   (`docs/workflow.md` → "Dependencies and readiness"), so write it even when `gh`
+   is unavailable and only local commits exist.
+9. Stage and commit `ship.md` (`docs(work): record ship state for <item-ref>`) and
    push the branch (an `ask` action). `/ship` must leave no uncommitted `ship.md`:
    the signal has to be committed on the branch to reach a fresh clone, the PR, and
    CI. Report the handoff block.
@@ -169,6 +208,11 @@ Fix-landing mode (`/ship fix`):
 - Pre-flight detection is read-only: it never merges, rebases, or force-pushes,
   never creates a commit or branch change, and never resolves a semantic
   conflict. It reports findings and hands them to the `0001` reconcile step.
+- The reconcile may edit the class (a) shared framework surfaces — `README.md`,
+  `AGENTS.md`, `docs/*.md`, `.opencode/{agent,command,skill}/**`, `template/**`,
+  and `tests/checks/**` — and `work/**` to resolve conflicts, preserving both
+  branches' intent. Never rebase a pushed branch, never force-push, and never
+  resolve a semantic conflict: abort the merge and escalate it.
 - Never merge a PR, approve a PR, or close issues unless asked.
 - Never commit or print secrets. Do not stage `.env`, credential files, or files
   matched by `.gitignore`. Workflow artifacts under `work/` are committed working
@@ -183,11 +227,13 @@ End with exactly this block:
 
 Done: branch `<name>`; commits `<hash> <subject>`, ...; PR <url or "not created">
 Detected: <conflict classes and paths found, or "no conflicts detected">
+Reconciled: <resolved paths and re-verification, or "no conflicts" / "no-op", or
+            "blocked: <path>">
 Checks: tests/lint/typecheck status; secrets scan clean.
 Next: human review; then merge. `/status` to see item state (a landed fix creates
       no work item, so it has no `/status` state).
 Blockers: <anything preventing push or PR, or none>
 
-The `Detected:` line is work-item mode only; fix-landing mode omits it, because a
-fix runs no pre-flight.
+The `Detected:` and `Reconciled:` lines are work-item mode only; fix-landing mode
+omits them, because a fix runs no pre-flight and no reconcile.
 </handoff>
