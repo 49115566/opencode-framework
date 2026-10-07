@@ -1,0 +1,54 @@
+# ---------------------------------------------------------------------------
+# opencode-framework
+# ---------------------------------------------------------------------------
+
+# Workflow artifacts under work/ are committed working state. Do not ignore
+# them. Only scratch/ and tooling output below are ignored.
+
+# opencode local state (auto-generated when opencode runs; never ship these)
+.opencode/node_modules/
+.opencode/package.json
+.opencode/package-lock.json
+.opencode/bun.lock
+.opencode/cache/
+.opencode/state/
+
+# ---------------------------------------------------------------------------
+# Tooling output (created on demand; never commit)
+# ---------------------------------------------------------------------------
+.playwright-mcp/
+scratch/
+
+# ---------------------------------------------------------------------------
+# Node / TypeScript
+# ---------------------------------------------------------------------------
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.npm/
+.pnpm-store/
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ---------------------------------------------------------------------------
+# Editors / OS
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
