@@ -463,3 +463,7 @@ ships:
 Renumbering is the one sanctioned mechanical cross-phase edit: it changes
 references, never decisions or content. It happens at merge time, before the item
 ships, so it does not rewrite historical records.
+
+Duplicate sequence numbers are one class of merge conflict; the full contract,
+including the non-renumbering classes, lives in `docs/workflow.md` →
+`## Merge conflicts`.
