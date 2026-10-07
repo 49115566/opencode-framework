@@ -185,7 +185,11 @@ which creates a parent roadmap item (`work/<NNNN-slug>/roadmap.md`) enumerating
 child features and their dependencies, each nested at
 `work/<NNNN-slug>/<MMMM-slug>/`. Every child is then addressed by its
 **canonical reference** (`NNNN-slug/MMMM-slug`) and runs the ordinary lifecycle
-unchanged. A standalone item is still just `NNNN-slug`.
+unchanged. A standalone item is still just `NNNN-slug`. The `Children` table's
+`Conflicts with` column records sibling children that touch overlapping surfaces
+and must not be developed concurrently, and before `/build` implements a task it
+runs a report-only pre-development check against the ready in-flight items'
+committed surface declarations.
 
 ## Commands
 

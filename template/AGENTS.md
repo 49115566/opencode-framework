@@ -136,3 +136,4 @@ and report it rather than working around it.
 - `docs/artifact-conventions.md` — templates and frontmatter for every artifact.
 - `docs/customization.md` — how to add or change agents, skills, and commands.
 - `.opencode/skill/merge-conflict/SKILL.md` — the shipper's reconcile procedure; the normative contract is `docs/workflow.md` → `## Merge conflicts`.
+- `docs/workflow.md` → `## Parallel-development plan conflicts` — the report-only check `/build` runs against ready in-flight items before implementing.
