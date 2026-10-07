@@ -22,6 +22,13 @@ Follow your Ship agent instructions exactly. The argument grammar is:
 - Verify the preconditions: `review.md` verdict is `approve` (or the user
   explicitly overrides), the tree contains only work-item changes, no secrets are
   present, and tests/lint/typecheck pass.
+- Run the read-only pre-flight per the `merge-conflict` skill before any ship
+  operation — default branch, `git fetch`, merge base, changed paths, the
+  `git merge-tree` dry-run, classification, and the framework-integrity checks.
+  Report every finding with its class and offender, escalate a semantic conflict
+  at the `0001` reconcile step rather than resolving it, and record the result
+  (classes/paths found, or "no conflicts detected") in `ship.md` and the PR
+  description. Detection never merges, rebases, or force-pushes.
 - Determine the default branch and current branch.
 - Create or switch to a branch named per the `conventional-commits` skill
   (`<type>/<ref>`, where `<ref>` is the canonical reference — a roadmap child's
