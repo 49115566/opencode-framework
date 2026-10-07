@@ -62,9 +62,11 @@ every turn. The set is deliberate, not accidental:
 | **Total per request**           |                                                                                                     | **~9.6k tokens (~38.2 KB)**|
 
 Costs are approximate, estimated from each file's current size at roughly 4
-bytes per token; refresh this table whenever a listed file changes. These three
-are exactly the files the adoption quickstart copies (`README.md` → Quickstart),
-so every listed path exists in a freshly adopted repository.
+bytes per token; refresh this table whenever a listed file changes. These files
+reach an adopted repository by two routes: `AGENTS.md` is copied from the
+adopter-pristine `template/AGENTS.md`, while `docs/workflow.md` and
+`docs/artifact-conventions.md` arrive with the `docs/*.md` copy. Every listed
+path therefore exists in a freshly adopted repository.
 
 The framework repository root also carries `LICENSE`, `CONTRIBUTING.md`,
 `CHANGELOG.md`, and `VERSION`, which are framework-repo/maintainer-only and
