@@ -223,6 +223,9 @@ unchanged. A standalone item is still just `NNNN-slug`.
 | `ask`       | primary           | none                                    | none                        |
 | `doctor`    | primary           | none                                    | read-only, best-effort †    |
 
+The `doctor` agent and `/doctor` command are **framework-maintainer only**; the
+adoption quickstart removes both from the copied set.
+
 > † The "Can run bash" column is a best-effort allowlist, not a sandbox.
 > opencode matches bash rules by command prefix and cannot prevent shell
 > redirection or output-to-file flags. See

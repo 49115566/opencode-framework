@@ -52,13 +52,18 @@ nothing.
    on-disk inventory.
 2. `README.md` — the Agents table, Commands table, Skills table, and the layout
    counts (`# N role prompts`, `# N slash commands`, `# N knowledge skills`).
-3. `AGENTS.md` — the lifecycle table and the supporting-agents / supporting-
-   commands lists.
+3. `AGENTS.md` and `template/AGENTS.md` — the lifecycle table and the
+   supporting-agents / supporting-commands lists. Root `AGENTS.md` is the
+   framework's live, bootstrapped contract; `template/AGENTS.md` is the
+   adopter-facing copy, checked identically. `template/AGENTS.md` is the
+   adopter's pristine copy: its unfilled Project profile is expected and is not
+   a finding. `template/opencode.json` and `template/.gitignore` are not
+   compared to the root copies; byte-identical content is valid.
 4. `docs/workflow.md` — the lifecycle phase tables. An agent is lifecycle exactly
    when it is named in a phase table; only those names are checked against it.
 5. `.gitignore` — the required ignore policy (`.playwright-mcp/`, `scratch/`).
-6. `docs/`, `.opencode/agent/`, `.opencode/command/`, `.opencode/skill/` — for
-   the temp-path scan.
+6. `template/`, `docs/`, `.opencode/agent/`, `.opencode/command/`,
+   `.opencode/skill/` — for the temp-path scan.
 </inputs>
 
 <process>
@@ -69,14 +74,17 @@ nothing.
 
 1. **Agent inventory** (codes `AGENT-UNDOCUMENTED`, `AGENT-PHANTOM`).
    List `.opencode/agent/*.md` and take each basename without `.md`. Each must
-   appear as a row in the README Agents table **and** by name in `AGENTS.md`.
-   A missing on-disk agent is `AGENT-UNDOCUMENTED`; a doc name with no file is
-   `AGENT-PHANTOM`.
+   appear as a row in the README Agents table **and** by name in the lifecycle
+   table or supporting-agents list of **both** `AGENTS.md` and
+   `template/AGENTS.md`. A missing on-disk agent is `AGENT-UNDOCUMENTED`; a name
+   in any of those surfaces with no on-disk file is `AGENT-PHANTOM`.
 
 2. **Command inventory** (codes `COMMAND-UNDOCUMENTED`, `COMMAND-PHANTOM`).
    List `.opencode/command/*.md` and take each basename without `.md`. Each must
-   appear as a row in the README Commands table **and** by name in `AGENTS.md`.
-   An agent need not have a command; a command-less agent is not a finding.
+   appear as a row in the README Commands table **and** by name in the lifecycle
+   table or supporting-commands list of **both** `AGENTS.md` and
+   `template/AGENTS.md`. An agent need not have a command; a command-less agent
+   is not a finding.
 
 3. **Skill inventory** (codes `SKILL-UNDOCUMENTED`, `SKILL-PHANTOM`).
    List the directories under `.opencode/skill/`. Each must appear as a row in
@@ -110,7 +118,7 @@ nothing.
    without requiring either directory to exist. Report each missing entry.
 
 8. **Temp path** (code `TEMP-PATH-OUTSIDE-WORKSPACE`).
-   Scan `README.md`, `AGENTS.md`, `docs/`, `.opencode/agent/`,
+   Scan `README.md`, `AGENTS.md`, `template/`, `docs/`, `.opencode/agent/`,
    `.opencode/command/`, and `.opencode/skill/` for any absolute path that
    points outside the repository into the system temporary directory (the
    Unix temp root: a root component followed by the directory named `tmp`).
@@ -150,6 +158,7 @@ Examples:
 [TEMP-PATH-OUTSIDE-WORKSPACE] temp-file policy <-> .opencode/skill/<skill>/SKILL.md scratch guidance: directs output to the system temp directory instead of scratch/.
 [SKILL-NAME-MISMATCH] .opencode/skill/<dir>/ <-> frontmatter name "<name>".
 [SURFACE-MISSING] README.md Skills table: absent or unreadable; dependent inventory checks skipped.
+[SURFACE-MISSING] template/AGENTS.md: absent or unreadable; dependent template-list checks skipped.
 ```
 </finding_format>
 
@@ -161,14 +170,21 @@ inventory comparison:
   comments (`# N role prompts`, `# N slash commands`, `# N knowledge skills`).
 - `AGENTS.md` — the lifecycle table and the supporting-agents and supporting-
   commands lists.
+- `template/AGENTS.md` — the adopter-facing copy's lifecycle table and
+  supporting-agents and supporting-commands lists. Its unfilled Project profile
+  is the expected pristine state, not a finding; only the inventory, count,
+  permission, ignore-rule, skill, and temp-path checks apply to it.
 
 If a required surface is absent or unreadable, emit exactly one
 `[SURFACE-MISSING] <surface>` finding and skip every comparison that depends on
-it. Never emit one finding per inventory item.
+it. A missing `template/AGENTS.md` skips only the template-list comparisons: the
+README-table, root-`AGENTS.md`, count, permission, ignore-rule, skill, and
+temp-path checks still run. Never emit one finding per inventory item.
 
 Coverage: every on-disk agent and command must appear as a row in the matching
-README table **and** by name in `AGENTS.md`; every on-disk skill must appear as a
-row in the README Skills table.
+README table **and** by name in the lifecycle table or supporting lists of
+**both** `AGENTS.md` and `template/AGENTS.md`; every on-disk skill must appear as
+a row in the README Skills table.
 
 Lifecycle classification is derived from the repository, not from a fixed list:
 an agent is *lifecycle* exactly when it is named in a `docs/workflow.md` phase

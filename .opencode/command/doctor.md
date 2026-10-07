@@ -11,16 +11,24 @@ Follow your Doctor agent instructions exactly. In particular:
 - Resolve the repository root once with `git rev-parse --show-toplevel` and build
   every path from it, so the run works from any working directory.
 - Confirm each required documentation surface (`README.md` tables and Layout
-  count comments; `AGENTS.md` lifecycle table and supporting lists) exists and is
+  count comments; `AGENTS.md` lifecycle table and supporting lists;
+  `template/AGENTS.md` lifecycle table and supporting lists) exists and is
   readable before comparing. If one is absent or unreadable, report exactly one
   `[SURFACE-MISSING]` finding for it and skip the comparisons that depend on it —
   never a per-item cascade. For example:
   `[SURFACE-MISSING] README.md Skills table: absent or unreadable; dependent inventory checks skipped.`
+  `[SURFACE-MISSING] template/AGENTS.md: absent or unreadable; dependent template-list checks skipped.`
 - Run the nine checks and report every finding in the
   `[CODE] <source-of-truth> <-> <stale location>: <detail>` format:
-  - Agent inventory — `AGENT-UNDOCUMENTED`, `AGENT-PHANTOM`.
-  - Command inventory — `COMMAND-UNDOCUMENTED`, `COMMAND-PHANTOM`. An agent need
-    not have a command; a command-less agent is not a finding.
+  - Agent inventory — `AGENT-UNDOCUMENTED`, `AGENT-PHANTOM`; each on-disk agent
+    is cross-checked against the README Agents table and by name in the
+    lifecycle table or supporting lists of **both** `AGENTS.md` and
+    `template/AGENTS.md`.
+  - Command inventory — `COMMAND-UNDOCUMENTED`, `COMMAND-PHANTOM`; each on-disk
+    command is cross-checked against the README Commands table and by name in the
+    lifecycle table or supporting lists of **both** `AGENTS.md` and
+    `template/AGENTS.md`. An agent need not have a command; a command-less agent
+    is not a finding.
   - Skill inventory — `SKILL-UNDOCUMENTED`, `SKILL-PHANTOM`.
   - Counts — `COUNT-MISMATCH` against the README layout comments.
   - Permission work pattern — `PERMISSION-WORK-PATTERN` (both `work/**` and
@@ -28,7 +36,9 @@ Follow your Doctor agent instructions exactly. In particular:
   - Permission table — `PERMISSION-TABLE-MISMATCH` against the README Agents
     table.
   - Ignore rules — `IGNORE-MISSING` (`.playwright-mcp/`, `scratch/`).
-  - Temp path — `TEMP-PATH-OUTSIDE-WORKSPACE` (no system temp directory use).
+  - Temp path — `TEMP-PATH-OUTSIDE-WORKSPACE` (no system temp directory use);
+    the scan covers `README.md`, `AGENTS.md`, `template/`, `docs/`, and
+    `.opencode/**`.
   - Skill name — `SKILL-NAME-MISMATCH` against each skill directory name.
 - Compare names and integers after normalising whitespace and table alignment,
   so formatting differences never produce false positives.
