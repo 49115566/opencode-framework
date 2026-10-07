@@ -15,8 +15,10 @@ Follow your Roadmap agent instructions exactly. In particular:
 - Recon existing work: list `work/` and scan `work/*/roadmap.md` and
   `work/*/spec.md` titles so you do not collide with or duplicate an initiative.
 - Decompose the initiative into child features with stable local ids, scope
-  sufficient to author a spec later, canonical references, and intra-roadmap
-  dependencies. Never store a self-dependency or a cycle.
+  sufficient to author a spec later, canonical references, intra-roadmap
+  dependencies, and a `Conflicts with` cell naming sibling local ids (or `—`).
+  Never store a self-dependency, a self-conflict, or a cycle; every named id must
+  resolve to another row.
 - Write `work/<NNNN-slug>/roadmap.md` using the template in
   `docs/artifact-conventions.md`, allocating the next `NNNN` and a kebab-case
   slug, and create `work/<NNNN-slug>/<MMMM-slug>/.gitkeep` for every child.

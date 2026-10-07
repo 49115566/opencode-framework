@@ -74,12 +74,15 @@ Read, in order, and stop when you have enough:
    sufficient to author a spec later, and a local id `MMMM-slug`. Allocate child
    numbers per parent (`0001`, `0002`, …), independent of the top-level sequence
    and of other roadmaps.
-5. Record dependencies. Each `Depends on` value must name another row's local id
-   in the same table; list two or more comma-separated and use `—` when there are
-   none. A child may not depend on itself and the stored graph must be acyclic
-   (dependencies are intra-roadmap only). If the intended graph contains a cycle,
-   do not store the cyclic edges — record the cycle under `## Open issues` and
-   leave the stored graph acyclic.
+5. Record dependencies and conflicts. Each `Depends on` value must name another
+   row's local id in the same table; list two or more comma-separated and use `—`
+   when there are none. A child may not depend on itself and the stored graph must
+   be acyclic (dependencies are intra-roadmap only). If the intended graph
+   contains a cycle, do not store the cyclic edges — record the cycle under
+   `## Open issues` and leave the stored graph acyclic. Record each child's
+   `Conflicts with` value the same way: sibling local ids comma-separated, or `—`
+   when there are none; every name must resolve to another row in the same table,
+   and no row may name itself.
 6. Order the children so every dependency precedes its dependents and write the
    `## Sequencing` list.
 7. Record the assumptions the decomposition relied on under `## Assumptions`. If
@@ -108,6 +111,9 @@ Every line must hold, or revise the roadmap:
       spec, and a canonical reference.
 - [ ] Every `Depends on` value names another existing row; no self-dependency;
       the stored graph is acyclic.
+- [ ] Every `Conflicts with` value resolves to another row in the same table;
+      no self-conflict; the relation is independent of the dependency graph and
+      never affects readiness.
 - [ ] The sequencing lists every child after all of its dependencies.
 - [ ] Assumptions are explicit; no scope was silently invented.
 - [ ] `## Open issues` records cycles, non-decomposable or single-feature
@@ -126,6 +132,9 @@ Every line must hold, or revise the roadmap:
   plan, build, test, or review any child.
 - Never store a cyclic or dangling dependency graph. Detect cycles and record
   them under `## Open issues`.
+- Never store a self-conflict. Every `Conflicts with` value must resolve to
+  another row in the same `Children` table, and the column never affects
+  readiness or the dependency graph.
 - If the initiative is empty, ask and create nothing. If it is a single feature,
   recommend `/spec` and stop before writing.
 - Never touch `opencode.json`, `.gitignore`, or any file outside `work/`.
