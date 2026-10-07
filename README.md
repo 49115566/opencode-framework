@@ -136,19 +136,19 @@ then land it with `/ship fix`.
 
 ```mermaid
 flowchart LR
-    spec["/spec &lt;feature&gt;"] --> specmd["spec.md"]
+    spec["/spec &lt;feature or problem description | item-ref&gt;"] --> specmd["spec.md"]
     specmd --> plan["/plan &lt;item-ref&gt;"]
     plan --> design["design.md<br/>tasks.md"]
-    design --> build["/build [task]"]
+    design --> build["/build [item-ref or task-id]"]
     build --> code["code + [x] tasks"]
-    code --> test["/test"]
+    code --> test["/test [item-ref]"]
     test --> verify["verify.md"]
-    verify --> review["/review"]
+    verify --> review["/review [item-ref]"]
     review -->|request-changes| build
-    review -->|approve| ship["/ship"]
+    review -->|approve| ship["/ship [item-ref]"]
     ship --> pr["branch, commits, PR, ship.md"]
 
-    test -.->|"UI only · optional"| visual["/visual"]
+    test -.->|"UI only · optional"| visual["/visual [url or item-ref]"]
     visual -.->|visual.md| review
 ```
 
@@ -191,16 +191,16 @@ unchanged. A standalone item is still just `NNNN-slug`.
 
 | Command            | Agent       | What it does                                             |
 | ------------------ | ----------- | -------------------------------------------------------- |
-| `/spec <feature>`  | `product`   | Requirements → `spec.md`                                 |
+| `/spec <feature or problem description \| item-ref>`  | `product`   | Requirements → `spec.md`                                 |
 | `/plan <item-ref>` | `architect` | Design + task breakdown → `design.md`, `tasks.md`        |
-| `/build [task]`    | `builder`   | Implement a task; update `tasks.md`                      |
+| `/build [item-ref or task-id]`    | `builder`   | Implement a task; update `tasks.md`                      |
 | `/test [item-ref]` | `tester`    | Verify acceptance criteria → `verify.md`                 |
-| `/visual [url]`    | `visual`    | Browser QA of a running UI → `visual.md` (optional)      |
+| `/visual [url or item-ref]`    | `visual`    | Browser QA of a running UI → `visual.md` (optional)      |
 | `/review [item-ref]`| `reviewer` | Read-only review → `review.md`                           |
 | `/ship [item-ref]` | `shipper`   | Branch, conventional commits, PR, `ship.md`              |
-| `/fix <bug>`       | `builder`   | Lightweight reproduce → fix → test; land with `/ship fix` |
+| `/fix <bug description>`       | `builder`   | Lightweight reproduce → fix → test; land with `/ship fix` |
 | `/roadmap <initiative>` | `roadmap` | Decompose a multi-feature initiative → `roadmap.md` + child dirs |
-| `/status`          | `status`    | Report each work item's phase (read-only)                |
+| `/status [item-ref]` | `status`  | Report each work item's phase (read-only)                |
 | `/doctor`          | `doctor`    | Read-only framework drift check: inventories, counts, permissions, ignore rules — framework-maintainer only |
 | `/bootstrap`       | `bootstrap` | Adopt the framework into the current repository          |
 
