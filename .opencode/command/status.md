@@ -28,6 +28,13 @@ Follow your Status agent instructions exactly. In particular:
 - Emit `DANGLING-DEP` / `MISSING-CHILD` / `UNLISTED-CHILD` / `CYCLIC-DEP`
   findings for broken or cyclic references. Report them without failing and
   without modifying anything.
+- Also report, as one-line findings with their class labels, `DUPLICATE-PREFIX`
+  `(c)` and `DUPLICATE-CHILD` `(c)` for duplicate top-level `NNNN` prefixes and
+  duplicate per-parent `MMMM` child numbers, and `DRIFT-FACT` `(d)` for
+  disagreement between README.md's Layout counts / Skills table and the on-disk
+  `.opencode/{agent,command,skill}/` sets. This detection is local-only: it
+  inspects the repository's own tree and facts, fetches nothing, hits no remote,
+  runs no dry-run merge, and modifies no file.
 - Report the status table with `checked/total` task progress and the exact next
   command per item, then note any integrity findings and stale or inconsistent
   items.
