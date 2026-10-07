@@ -5,10 +5,15 @@ The committed, canonical test suite for the opencode-framework repository itself
 **Maintainer-only.** This directory and `.github/` are framework-maintainer
 tooling. The root packaging files `LICENSE`, `CONTRIBUTING.md`, `CHANGELOG.md`,
 and `VERSION` are likewise framework-repo/maintainer-only. This directory and
-those files are deliberately outside the adopter quickstart copy set
-(`.opencode/{agent,command,skill}`, `AGENTS.md`, `opencode.json`, `.gitignore`,
-and `docs/*.md`), so adopters neither receive nor are expected to run or copy
-them.
+those files are deliberately outside the adopter quickstart copy set. The three
+bootstrap-mutable files an adopter receives come from the framework's
+adopter-pristine sources — `template/AGENTS.md`, `template/opencode.json`, and
+`template/.gitignore` — copied to their destination names; the framework
+repository's own root copies of those three are maintainer-bootstrapped and are
+never copied. The rest of the set (`.opencode/{agent,command,skill}`, and
+`docs/*.md`) has a single source and is shared verbatim between the framework
+repository and adopters. Adopters neither receive nor are expected to run or copy
+the maintainer tooling or packaging files.
 
 ## Canonical command
 
