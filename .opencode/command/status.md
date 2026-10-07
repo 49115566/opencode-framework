@@ -34,7 +34,9 @@ Follow your Status agent instructions exactly. In particular:
   disagreement between README.md's Layout counts / Skills table and the on-disk
   `.opencode/{agent,command,skill}/` sets. This detection is local-only: it
   inspects the repository's own tree and facts, fetches nothing, hits no remote,
-  runs no dry-run merge, and modifies no file.
+  runs no dry-run merge, and modifies no file. These findings are the
+  merge-integrity guard's offline, read-only window (`docs/workflow.md` →
+  `### Merge-integrity guard`); the report is non-fatal and modifies no file.
 - Report the status table with `checked/total` task progress and the exact next
   command per item, then note any integrity findings and stale or inconsistent
   items.

@@ -51,7 +51,7 @@ under ~72 characters. The PR title will become the squash-merge subject.
 - Result: <reconciled | no-op (already up to date) | blocked: <reason>>
 - Resolved paths:
   - `<path>` — <how both branches' intents were preserved>
-- Re-verification: `bash tests/run.sh` → <result>; <item checks> → <result>
+- Re-verification: <the repository's own configured test command — the Project profile `Test:` value> → <result>; <item checks> → <result>
 
 ## Risks
 

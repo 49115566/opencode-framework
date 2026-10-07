@@ -121,6 +121,11 @@ The pre-flight vocabulary (canonical; the `status` agent repeats it) is:
 
 `TEXTUAL-CONFLICT` is pre-flight-only: `/status` performs no dry-run merge.
 
+This vocabulary is canonical and is consumed unchanged by the merge-integrity
+guard. `docs/workflow.md` → `### Merge-integrity guard` is the single statement
+of the invariant set and its enforcement points; there is no second vocabulary,
+no second policy, and the guard modifies no file.
+
 Both sides changing the same duplicated fact to the same value is not drift:
 report no class `(d)` finding.
 
@@ -203,8 +208,9 @@ escalate).
       file that still contains markers is `unresolved` and must not be
       committed.
 
-   8. **Re-verify.** After any resolution, run `bash tests/run.sh` and the
-      affected item's checks. Both must be `green` before the merge is
+   8. **Re-verify.** After any resolution, run the repository's own configured
+      test command — the Project profile `Test:` value — and the affected item's
+      checks. Both must be `green` before the merge is
       recorded or shipped: a failing check is the blocker, and the resolution is
       not accepted until it passes. When the merge auto-committed cleanly
       (sub-step 1.4) the merge commit already exists, so do not rewrite an
@@ -245,8 +251,9 @@ escalate).
      competing intents — are never accepted silently. Stop and escalate to the
      user for explicit approval (sub-step 1.9).
 
-4. **Re-verify.** After any resolution, run `bash tests/run.sh` and the affected
-   item's checks. Both must be green before the merge is recorded or shipped.
+4. **Re-verify.** After any resolution, run the repository's own configured test
+   command — the Project profile `Test:` value — and the affected item's checks.
+   Both must be green before the merge is recorded or shipped.
    A clean merge is not evidence of correctness: even a merge with no conflict
    markers still runs the suite, because derived-agreement drift is surfaced only
    there.
@@ -264,7 +271,13 @@ escalate).
      prefixes;
    - re-check every roadmap `Depends on` against its `Children` table for
      dangling, missing, unlisted, or cyclic references;
-   - re-run `bash tests/run.sh` to surface derived-agreement drift.
+   - re-run the repository's own configured test command — the Project profile
+     `Test:` value — to surface derived-agreement drift.
+
+   The pass is **report-only**: it reports every finding (the list is never
+   truncated) and **modifies no file** — it never auto-repairs a violation. See
+   `docs/workflow.md` → `### Merge-integrity guard` for the invariant set and
+   the report-only contract.
 
 7. **Stop and escalate.** If a conflict needs a judgment about intent, or an
    overlapping `work/` edit leaves the dependency graph dangling, duplicate, or
@@ -393,7 +406,8 @@ truncated, even for a large collision set.
    decision the user must make, and the ship stays `blocked until the user
    responds`. Otherwise, hand the resolved tree back to the generic Re-verify
    (sub-step 1.8) and Record (procedure step 5) steps instead of restating them:
-   re-run `bash tests/run.sh` and the affected item's checks, and record the
+   re-run the repository's own configured test command — the Project profile
+   `Test:` value — and the affected item's checks, and record the
    `work/` paths resolved and any renumber chosen as a `Resolved paths` entry
    `<old> → <new>` in the existing `## Reconcile` record of `ship.md` and the
    pull-request description.

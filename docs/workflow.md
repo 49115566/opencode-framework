@@ -360,8 +360,9 @@ ship is never built on a stale merge base. The post-merge integrity pass is a
 documented, shipper-owned checklist run on the merged tree: re-scan top-level
 and per-parent `work/` directories for duplicate 4-digit prefixes, re-check
 every roadmap `Depends on` against its `Children` table for dangling, missing,
-unlisted, or cyclic references, and re-run `bash tests/run.sh` to surface
-derived-agreement drift.
+unlisted, or cyclic references, and re-run the repository's own configured test
+command — the Project profile `Test:` value — to surface derived-agreement
+drift.
 
 When the branch is already up to date, both steps are no-ops and do not error.
 
@@ -384,11 +385,50 @@ The `shipper` is the single owner of reconciliation. Reconciliation is a step in
 
 ### Verification
 
-After any resolution, re-run `bash tests/run.sh` and the affected item's checks.
+After any resolution, re-run the repository's own configured test command — the
+Project profile `Test:` value — and the affected item's checks.
 Both must be green before the resolved merge is recorded or shipped. A clean
 merge is not evidence of correctness: even a merge that produced no conflict
 markers still runs the suite, because derived-agreement drift is surfaced only
 there.
+
+### Merge-integrity guard
+
+The invariants this merge-conflict contract protects are stated once here. The
+guard is **prompt behavior only**: there is **no committed checker, script, helper, or executable tool** for it and **no tests/ agreement area**, and no separate checker exists. It runs at two prompt-only enforcement points and adds no separate guard:
+
+- **`/status`** reports the invariants **offline and read-only** on demand, as
+  the guard's read-only window.
+- The **`/ship` post-merge integrity pass** runs **after a merge to the default
+  branch**, as the `shipper`-owned checklist described under "Lifecycle
+  placement".
+
+The guard observes the same invariant set at both points, and neither defines a separate guard. The invariant set, with the finding code that names each invariant and the class it belongs to:
+
+| Invariant | Code | Class |
+| --------- | ---- | ----- |
+| no two top-level `work/` items share a 4-digit `NNNN` prefix | `DUPLICATE-PREFIX` | `(c)` |
+| no two children of one roadmap parent share a 4-digit `MMMM` | `DUPLICATE-CHILD` | `(c)` |
+| every roadmap `Depends on` resolves to an existing `Children` row and child directory | `DANGLING-DEP` | `(b)` |
+| the stored dependency graph is acyclic | `CYCLIC-DEP` | `(b)` |
+| no child is missing — a `Children` row whose child directory is absent | `MISSING-CHILD` | `(b)` |
+| no child is unlisted — a child directory absent from the `Children` table | `UNLISTED-CHILD` | `(b)` |
+| the duplicated inventory/count facts agree with disk | `DRIFT-FACT` | `(d)` |
+
+Findings use the `merge-conflict` skill's `### Finding grammar`
+(`- [<CODE>] (<class>) <offender canonical reference(s)> — <detail>`); this
+subsection defines **no second vocabulary** and **no second policy**. Every
+finding names its code, its class, and the offending canonical reference, and is
+**non-fatal**: the list is **never silently dropped** and **never truncated**,
+findings are **not auto-repaired**, and the guard **modifies no file**. An empty
+`work/` tree and an already-up-to-date branch with no collision are no-ops that
+report **no findings** and **does not error**.
+
+The guard's verification is portable: it names the repository's own
+**configured test command** — the **Project profile** `Test:` value in
+`AGENTS.md` — rather than a maintainer-only path, so an adopter runs their own
+suite. The duplicated-inventory/count-fact invariant is nevertheless
+**observable offline through `/status`**, without that command.
 
 ### Relationship to renumbering
 

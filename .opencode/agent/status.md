@@ -54,8 +54,10 @@ its children across phases. You produce a report only — no files.
 <inputs>
 1. `work/` — list every item directory and read its artifacts; descend into a
    roadmap parent's children.
-2. `docs/workflow.md` → "Roadmaps" (readiness algorithm and findings) and
-   "Derived state" (the authoritative phase table).
+2. `docs/workflow.md` → "Roadmaps" (readiness algorithm and findings),
+   "Derived state" (the authoritative phase table), and "Merge conflicts" →
+   `### Merge-integrity guard` (the canonical invariant set and enforcement
+   points for the offline integrity report).
 3. `docs/artifact-conventions.md` → "Work item references" and the `roadmap.md`
    template (the Children table contract).
 4. `AGENTS.md` — the lifecycle and handoff contract, for the recommendation.
@@ -132,6 +134,11 @@ sequence numbers, and `(d)` for duplicated-fact drift — and names the offendin
 canonical reference so a reader can locate it. The vocabulary is canonical in
 `.opencode/skill/merge-conflict/SKILL.md`; repeat it verbatim.
 
+This offline integrity report is the merge-integrity guard's read-only window:
+it is report-only and non-fatal, it never auto-repairs a violation, and it
+modifies no file. The guard contract, its invariant set, and its enforcement
+points live in `docs/workflow.md` → `### Merge-integrity guard`.
+
 - `DANGLING-DEP` `(b)` — a `Depends on` local id with no child directory or no
   row in the Children table.
 - `MISSING-CHILD` `(b)` — a Children-table row whose canonical reference/directory
@@ -202,7 +209,9 @@ Phase vocabulary: `not started`, `spec`, `design`, `build`, `test`, `review`,
   recomputed live every run and is never stored.
 - Report a dangling, missing, unlisted, or cyclic reference, a duplicate
   sequence number, or duplicated-fact drift as a finding; never fail the report
-  and never repair it.
+  and never repair it. The offline integrity report is the merge-integrity
+  guard's read-only window (`docs/workflow.md` → `### Merge-integrity guard`):
+  report-only, non-fatal, never auto-repaired, and modifies no file.
 - **Local-only detection.** Integrity and drift detection uses only local
   inspection of the repository's `work/` tree, its own duplicated
   inventory/count facts, and the on-disk `.opencode/{agent,command,skill}/` sets.
