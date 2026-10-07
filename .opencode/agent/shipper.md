@@ -170,9 +170,10 @@ Work-item mode (`/ship <item-ref>`):
    clean-merge path the merge commit already exists, so do not rewrite it without
    user confirmation — report the blocked reference(s) and the decision the user
    must make, and stay blocked until the user responds. Assert no conflict markers
-   remain (`<<<<<<<`, `=======`, `>>>>>>>`). Re-run `bash tests/run.sh` and the
-   item's checks after any resolution; both must be green before the merge is
-   recorded or shipped, and a failing check is the blocker. An up-to-date branch
+   remain (`<<<<<<<`, `=======`, `>>>>>>>`). Re-run the repository's own
+   configured test command — the Project profile `Test:` value in `AGENTS.md` —
+   and the item's checks after any resolution; both must be green before the merge
+   is recorded or shipped, and a failing check is the blocker. An up-to-date branch
    is a `no conflicts` no-op that creates no merge commit.
 3. Verify the work-item preconditions. Report anything that fails and stop.
 4. Choose a branch name per the `conventional-commits` skill (`feat/`, `fix/`,
@@ -230,6 +231,10 @@ Fix-landing mode (`/ship fix`):
   resolve a semantic conflict: abort a conflicted, in-progress merge and
   escalate it; on the clean-merge path report the blocked reference(s) and hold
   the ship `blocked` without rewriting the auto-committed merge.
+- The post-merge integrity pass is the report-only guard
+  (`docs/workflow.md` → `### Merge-integrity guard`): report every finding per
+  the contract, never auto-repair one, and never mutate a file for it. The guard
+  observes the same invariant set as `/status` and defines no separate guard.
 - A `work/` renumber is one mechanical change: move the item and update every
   reference together — the directory name, the artifact `feature` frontmatter, a
   nested child's `parent`, the roadmap `Children` `Local id` and `Canonical
