@@ -34,20 +34,20 @@ command runs as the named agent.
 
 | Phase       | Command            | Agent       | Reads                    | Writes                         |
 | ----------- | ------------------ | ----------- | ------------------------ | ------------------------------ |
-| Requirements| `/spec <feature>`  | `product`   | repo, request            | `spec.md`                      |
-| Design      | `/plan <feature>`  | `architect` | `spec.md`                | `design.md`, `tasks.md`        |
-| Build       | `/build [task-id]` | `builder`   | `design.md`, `tasks.md`  | code, updated `tasks.md`       |
-| Test        | `/test`            | `tester`    | `spec.md`, `tasks.md`    | tests, `verify.md` †           |
-| Review      | `/review`          | `reviewer`  | diff, `spec.md`, `tasks.md` | `review.md`                 |
-| Ship        | `/ship`            | `shipper`   | `review.md`              | branch, commits, PR, `ship.md` |
+| Requirements| `/spec <feature or problem description \| item-ref>` | `product`   | repo, request            | `spec.md`                      |
+| Design      | `/plan <item-ref>` | `architect` | `spec.md`                | `design.md`, `tasks.md`        |
+| Build       | `/build [item-ref or task-id]` | `builder`   | `design.md`, `tasks.md`  | code, updated `tasks.md`       |
+| Test        | `/test [item-ref]` | `tester`    | `spec.md`, `tasks.md`    | tests, `verify.md` †           |
+| Review      | `/review [item-ref]` | `reviewer`  | diff, `spec.md`, `tasks.md` | `review.md`                 |
+| Ship        | `/ship [item-ref]` | `shipper`   | `review.md`              | branch, commits, PR, `ship.md` |
 
 † For work with a user-facing UI, an optional `/visual` pass drives a real
 browser and writes `visual.md` plus screenshots. Review must consider it when
 present. Non-UI projects skip it.
 
-Supporting commands: `/fix <bug>` (lightweight fix), `/status` (phase report),
+Supporting commands: `/fix <bug description>` (lightweight fix), `/status [item-ref]` (phase report),
 `/roadmap <initiative>` (author a multi-feature roadmap), `/bootstrap` (adopt
-into a project), `/visual [url|slug]` (browser QA), `/doctor` (read-only drift
+into a project), `/visual [url or item-ref]` (browser QA), `/doctor` (read-only drift
 diagnostic; framework-maintainer only).
 Supporting agents: `scout` (recon), `scribe` (artifact editing), `bootstrap`
 (provisioning), `status` (read-only reporting), `roadmap` (roadmap authoring),
