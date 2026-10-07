@@ -40,6 +40,12 @@ under ~72 characters. The PR title will become the squash-merge subject.
 - `<command>` → <result>
 - Acceptance criteria covered: <AC1, AC2, ...>
 
+## Conflict detection
+
+- <The read-only pre-flight result: one line per finding in the
+  `[<CODE>] (<class>) <offender(s)> — <detail>` form (classes (a)–(d)), or
+  `No conflicts detected`.>
+
 ## Risks
 
 - <Risk and mitigation, or "None identified.">
