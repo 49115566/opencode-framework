@@ -17,7 +17,11 @@ permission:
     "git checkout*": allow
     "git switch*": allow
     "git rev-parse*": allow
+    "git symbolic-ref*": allow
     "git merge-base*": allow
+    "git fetch*": allow
+    "git merge-tree*": allow
+    "git ls-tree*": allow
     "gh auth status*": allow
     "gh repo view*": allow
     "gh pr view*": allow
@@ -70,7 +74,7 @@ Read, in order:
 2. `git status`, `git diff`, and `git log --oneline -10` to understand the tree.
 3. The default branch (`gh repo view --json defaultBranchRef` or
    `git symbolic-ref refs/remotes/origin/HEAD`), and the current branch.
-4. The `conventional-commits` and `pr-workflow` skills.
+4. The `conventional-commits`, `merge-conflict`, and `pr-workflow` skills.
 </inputs>
 
 <preconditions>
@@ -81,6 +85,11 @@ Work-item mode. Do not proceed unless all hold; otherwise stop and report:
   and no secrets in the diff.
 - Tests, lint, and typecheck pass (from `verify.md` or re-run if stale).
 - The current branch is not the default branch, or a new branch will be created.
+- The read-only pre-flight (per the `merge-conflict` skill) runs before any ship
+  operation — default branch, `git fetch`, merge base, changed paths, the
+  `git merge-tree` dry-run, classification, and the framework-integrity checks —
+  and its result is recorded; a semantic finding is handed to the `0001` reconcile
+  step for escalation and is never resolved by detection.
 
 Fix-landing mode (`/ship fix`). This is a documented exception to the
 approved-work-item precondition, driven by the user's explicit request. Do not
@@ -104,23 +113,32 @@ proceed unless all hold; otherwise stop and report:
 
 <process>
 Work-item mode (`/ship <item-ref>`):
-1. Verify the work-item preconditions. Report anything that fails and stop.
-2. Choose a branch name per the `conventional-commits` skill (`feat/`, `fix/`,
+1. Run the read-only pre-flight per the `merge-conflict` skill before any ship
+   operation: determine the default branch and merge base, `git fetch`, list the
+   paths each branch changed, run the `git merge-tree` dry-run, classify each
+   conflicting path, and run the framework-integrity checks. Report every finding
+   with its class and offender; a finding that needs a judgment about intent is a
+   semantic conflict handed to the `0001` reconcile step for escalation, not
+   resolved here. Detection itself never merges, rebases, or force-pushes, and an
+   up-to-date branch reports `no conflicts` without error. Record the result
+   (classes and paths, or "no conflicts detected").
+2. Verify the work-item preconditions. Report anything that fails and stop.
+3. Choose a branch name per the `conventional-commits` skill (`feat/`, `fix/`,
    etc., plus the canonical reference; a nested child's `NNNN-slug/MMMM-slug`
    becomes `NNNN-slug-MMMM-slug`). Create or switch to it.
-3. Stage and commit the item's `work/<item-ref>/` artifacts together with the
+4. Stage and commit the item's `work/<item-ref>/` artifacts together with the
    item, so the paths the PR links by repository path exist on the branch. Commit
    in logical units with conventional messages; group related files and do not
    mix unrelated changes.
-4. Push the branch. This is an `ask` action — request approval before it runs.
-5. Open the PR with `gh pr create` using the `pr-workflow` template, linking the
+5. Push the branch. This is an `ask` action — request approval before it runs.
+6. Open the PR with `gh pr create` using the `pr-workflow` template, linking the
    spec and review by repository path; they resolve because `work/` is committed
    working state. Capture the PR URL.
-6. Write `work/<item-ref>/ship.md` recording the branch, the commit subjects, and
+7. Write `work/<item-ref>/ship.md` recording the branch, the commit subjects, and
    the PR URL (or "not created"). This is required, not optional: its presence is
    the sole shipped signal (`docs/workflow.md` → "Dependencies and readiness"), so
    write it even when `gh` is unavailable and only local commits exist.
-7. Stage and commit `ship.md` (`docs(work): record ship state for <item-ref>`) and
+8. Stage and commit `ship.md` (`docs(work): record ship state for <item-ref>`) and
    push the branch (an `ask` action). `/ship` must leave no uncommitted `ship.md`:
    the signal has to be committed on the branch to reach a fresh clone, the PR, and
    CI. Report the handoff block.
@@ -148,6 +166,9 @@ Fix-landing mode (`/ship fix`):
 <rules>
 - Never push to the default branch directly. Never force-push. Never `reset
   --hard`, `clean -fd`, or delete branches without explicit confirmation.
+- Pre-flight detection is read-only: it never merges, rebases, or force-pushes,
+  never creates a commit or branch change, and never resolves a semantic
+  conflict. It reports findings and hands them to the `0001` reconcile step.
 - Never merge a PR, approve a PR, or close issues unless asked.
 - Never commit or print secrets. Do not stage `.env`, credential files, or files
   matched by `.gitignore`. Workflow artifacts under `work/` are committed working
@@ -161,8 +182,12 @@ Fix-landing mode (`/ship fix`):
 End with exactly this block:
 
 Done: branch `<name>`; commits `<hash> <subject>`, ...; PR <url or "not created">
+Detected: <conflict classes and paths found, or "no conflicts detected">
 Checks: tests/lint/typecheck status; secrets scan clean.
 Next: human review; then merge. `/status` to see item state (a landed fix creates
       no work item, so it has no `/status` state).
 Blockers: <anything preventing push or PR, or none>
+
+The `Detected:` line is work-item mode only; fix-landing mode omits it, because a
+fix runs no pre-flight.
 </handoff>
