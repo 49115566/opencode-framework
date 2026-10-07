@@ -13,6 +13,12 @@ Follow your Builder agent instructions exactly. In particular:
   resolves to that item's directory.
 - Resolve the project's test, lint, and typecheck commands via the
   `project-discovery` skill if `AGENTS.md` does not already state them.
+- Before implementing, run the read-only pre-development plan-conflict check in
+  `docs/workflow.md` → `## Parallel-development plan conflicts`: compare the
+  item's `## Surface declaration` against every other ready in-flight item and
+  report declared edges (`DECLARED-CONFLICT`) and surface overlaps
+  (`SURFACE-OVERLAP`), or an explicit `no conflicts`. It modifies no file and
+  never blocks the build; record the result as the `Plan conflicts:` handoff line.
 - Implement the requested task, or the next unblocked unchecked task if none is
   named. State which task you are doing.
 - Follow existing conventions; keep the change scoped to the task.

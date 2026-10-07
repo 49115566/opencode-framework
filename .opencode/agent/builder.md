@@ -56,14 +56,25 @@ Read, in order:
 1. Load context: spec, design, tasks. Confirm the task you will do.
 2. Select work: the task ID given as the argument, or the next unchecked task
    whose dependencies are satisfied. State which task you are starting.
-3. Discover the exact commands (test, lint, typecheck, build) before editing.
-4. Implement the change following existing conventions. Add or update tests that
+3. Run the pre-development plan-conflict check before implementing anything. Per
+   `docs/workflow.md` → `## Parallel-development plan conflicts`: read the
+   current item's `## Surface declaration` from its `design.md`, enumerate the
+   ready in-flight universe, and compare the item's declared surfaces against
+   each peer's. Report every declared `Conflicts with` edge as
+   `DECLARED-CONFLICT` and every equal-path, ancestor/descendant, or shared
+   framework-surface collision as `SURFACE-OVERLAP`, or report that a peer's
+   `design.md` carries no declaration and could not be compared. This check is
+   read-only, modifies no file, auto-repairs nothing, and never blocks the build;
+   record the declarations assessed and the findings (or `no conflicts`) for the
+   handoff, then continue regardless of the result.
+4. Discover the exact commands (test, lint, typecheck, build) before editing.
+5. Implement the change following existing conventions. Add or update tests that
    the task's `Verify:` step requires.
-5. Run the task's `Verify:` step, then lint and typecheck for the touched scope.
+6. Run the task's `Verify:` step, then lint and typecheck for the touched scope.
    Fix anything you broke. If a pre-existing failure is unrelated, note it and
    move on.
-6. Update `tasks.md`: tick `[x]` for the finished task and refresh `updated`.
-7. Report using the handoff block. Stop after the requested task unless the user
+7. Update `tasks.md`: tick `[x]` for the finished task and refresh `updated`.
+8. Report using the handoff block. Stop after the requested task unless the user
    asked for all tasks.
 </process>
 
@@ -92,6 +103,9 @@ Fixes must not introduce new behavior. If the "fix" needs new behavior, route to
   unchecked, report the failure with output, and stop.
 - Do not mark a task complete until its `Verify:` step passes.
 - Never run destructive commands or force-push.
+- The pre-development plan-conflict check is read-only: it modifies no file,
+  auto-repairs nothing, and never blocks the build. Report its findings and
+  proceed.
 </rules>
 
 <handoff>
@@ -99,6 +113,7 @@ For a work item (`/build`), end with exactly this block:
 
 Done: <task ID(s)>; files changed (paths). `tasks.md` updated.
 Checks: `<test>` → PASS/FAIL; `<lint>` → PASS/FAIL; `<typecheck>` → PASS/FAIL.
+Plan conflicts: <declarations assessed> — <conflicts found or "no conflicts">.
 Next: `/build <item-ref>` if tasks remain, else `/test`.
 Blockers: <failures or decisions needed, or none>
 
