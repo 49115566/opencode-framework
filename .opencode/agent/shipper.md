@@ -112,8 +112,12 @@ Work-item mode. Do not proceed unless all hold; otherwise stop and report:
   and its result is recorded; a semantic finding is handed to the `0001` reconcile
   step for escalation and is never resolved by detection.
 - The branch has been reconciled with the default branch per the `merge-conflict`
-  skill, or an up-to-date no-op was reported; a semantic conflict blocks the ship
-  until the user responds.
+  skill, or an up-to-date no-op was reported. A class (b) `work/` artifact conflict
+  and a class (c) duplicate sequence number are handled by the skill's `work/`
+  artifact reconcile, so a `work/` sequence collision or a roadmap graph fault —
+  including one that surfaces only on the merged tree, after the pre-flight —
+  is either resolved or escalated — never shipped unresolved. A semantic conflict
+  blocks the ship until the user responds.
 
 Fix-landing mode (`/ship fix`). This is a documented exception to the
 approved-work-item precondition, driven by the user's explicit request. Do not
@@ -149,16 +153,27 @@ Work-item mode (`/ship <item-ref>`):
 2. **Reconcile first**, after the read-only pre-flight and before the other ship
    operations, per the `merge-conflict` skill. Merge the default branch forward
    with `git merge --no-edit origin/<default>` — never rebase a pushed branch and
-   never force-push. Resolve class (a) shared-surface and class (b) `work/`
-   conflicts preserving both branches' changes (`drop neither side`); apply the
-   existing "Renumbering after a parallel merge" rule for a class (c) duplicate
-   sequence number; and assert no conflict markers remain (`<<<<<<<`, `=======`,
-   `>>>>>>>`). Re-run `bash tests/run.sh` and the item's checks after any
-   resolution; both must be green before the merge is committed, recorded, or
-   shipped. A semantic conflict is never resolved: run `git merge --abort`, report
-   the blocked path(s) and the decision the user must make, and stay blocked until
-   the user responds. An up-to-date branch is a `no conflicts` no-op that creates
-   no merge commit.
+   never force-push. Resolve class (a) shared-surface conflicts preserving both
+   branches' changes. For class (b) `work/` conflicts and a class (c) duplicate
+   sequence number, run the skill's `work/` artifact reconcile: merge the `work/`
+   content preserving both branches' records (`drop neither side`); re-check every
+   roadmap graph so each `Depends on` local id resolves and the stored graph is
+   acyclic; detect top-level, per-parent, and cross-branch sequence-prefix
+   collisions; apply the existing "Renumbering after a parallel merge" rule to
+   choose and `git mv` one item; rewrite every reference in one change; never reuse
+   a spent number. A clean merge that touched any `work/` path, or that carries
+   a pre-flight class (b) or class (c) finding, is not finished:
+   `git merge --no-edit` auto-commits it, so run the `work/` artifact reconcile
+   on the already-merged tree before re-verifying.
+   Escalate a semantic conflict, an undecidable renumber, or an intent fault
+   rather than guessing: on a conflicted merge run `git merge --abort`; on the
+   clean-merge path the merge commit already exists, so do not rewrite it without
+   user confirmation — report the blocked reference(s) and the decision the user
+   must make, and stay blocked until the user responds. Assert no conflict markers
+   remain (`<<<<<<<`, `=======`, `>>>>>>>`). Re-run `bash tests/run.sh` and the
+   item's checks after any resolution; both must be green before the merge is
+   recorded or shipped, and a failing check is the blocker. An up-to-date branch
+   is a `no conflicts` no-op that creates no merge commit.
 3. Verify the work-item preconditions. Report anything that fails and stop.
 4. Choose a branch name per the `conventional-commits` skill (`feat/`, `fix/`,
    etc., plus the canonical reference; a nested child's `NNNN-slug/MMMM-slug`
@@ -212,7 +227,19 @@ Fix-landing mode (`/ship fix`):
   `AGENTS.md`, `docs/*.md`, `.opencode/{agent,command,skill}/**`, `template/**`,
   and `tests/checks/**` — and `work/**` to resolve conflicts, preserving both
   branches' intent. Never rebase a pushed branch, never force-push, and never
-  resolve a semantic conflict: abort the merge and escalate it.
+  resolve a semantic conflict: abort a conflicted, in-progress merge and
+  escalate it; on the clean-merge path report the blocked reference(s) and hold
+  the ship `blocked` without rewriting the auto-committed merge.
+- A `work/` renumber is one mechanical change: move the item and update every
+  reference together — the directory name, the artifact `feature` frontmatter, a
+  nested child's `parent`, the roadmap `Children` `Local id` and `Canonical
+  reference` cells, every `Depends on` cell naming the old local id, the `ship.md`
+  record, the PR/handoff paths, and any prose naming the old reference — so no
+  reference to the old canonical reference remains; never reuse a spent number.
+  Never resolve a cycle or an undecidable renumber: abort a conflicted,
+  in-progress merge and escalate; when the merge already auto-committed cleanly,
+  do not rewrite it — report the blocked reference(s) and hold the ship `blocked`
+  until the user responds.
 - Never merge a PR, approve a PR, or close issues unless asked.
 - Never commit or print secrets. Do not stage `.env`, credential files, or files
   matched by `.gitignore`. Workflow artifacts under `work/` are committed working
@@ -228,7 +255,7 @@ End with exactly this block:
 Done: branch `<name>`; commits `<hash> <subject>`, ...; PR <url or "not created">
 Detected: <conflict classes and paths found, or "no conflicts detected">
 Reconciled: <resolved paths and re-verification, or "no conflicts" / "no-op", or
-            "blocked: <path>">
+            "blocked: <path>">. A renumbered item is reported as <old> → <new>.
 Checks: tests/lint/typecheck status; secrets scan clean.
 Next: human review; then merge. `/status` to see item state (a landed fix creates
       no work item, so it has no `/status` state).

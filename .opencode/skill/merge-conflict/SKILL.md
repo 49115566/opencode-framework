@@ -167,9 +167,19 @@ escalate).
    4. **Merge the default branch forward.** Otherwise run
       `git merge --no-edit origin/<default>` to merge the default branch forward
       into the item branch. The rule is absolute — never rebase a pushed branch
-      and never force-push. A merge that completes with no conflict markers has
-      nothing to resolve and proceeds directly to sub-step 8 — a clean merge is
-      not evidence of correctness.
+      and never force-push. A merge that completes with no conflict markers,
+      touched no `work/` path, and carries no pre-flight class (b) `work/`
+      finding and no class (c) sequence collision has nothing to reconcile and
+      proceeds directly to sub-step 1.8 — a clean merge is not evidence of
+      correctness. A **clean merge that touched any `work/` path or carries a
+      pre-flight class (b) or class (c) finding is not finished**, because the
+      pre-flight ran before the merge: the merge can introduce or expose a
+      `work/` graph fault or sequence collision the pre-flight could not see. A
+      class (c) duplicate sequence number and a class (b) graph fault are
+      precisely the clean-merge case, because the two branches add distinct
+      directories and the merge produces no conflict. Continue to sub-step 1.6 to
+      run the `work/` artifact reconcile on the already-merged tree, and re-verify
+      (sub-step 1.8) after it.
 
    5. **List every conflicted path.** Enumerate the unmerged paths with
       `git status --short` and `git diff --name-only --diff-filter=U`. Report
@@ -178,14 +188,15 @@ escalate).
 
    6. **Resolve.** Resolve the set per step 3: preserve **both** branches'
       changes, `drop neither side`; keep class (b) `work/` records from both
-      branches rather than dropping one; send a class (c) duplicate sequence
-      number to `Renumbering after a parallel merge` in
-      `docs/artifact-conventions.md` (`git mv`; automated renumbering and graph
-      repair remain sibling `0004`). Auto-resolve only `mechanical or
-      structural` conflicts that `does not require choosing between competing
-      intents`, subject to sub-step 8. A conflict that requires a judgment
-      between competing intents is a `semantic conflict`: do not resolve it —
-      go to sub-step 9.
+      branches rather than dropping one. For a class (b) `work/` path — and for a
+      class (c) duplicate sequence number — run the `work/` artifact reconcile
+      subsection below: it merges the colliding content preserving both branches'
+      records, re-checks the roadmap dependency graph, and applies
+      `Renumbering after a parallel merge` in `docs/artifact-conventions.md`
+      (`git mv`). Auto-resolve only `mechanical or structural` conflicts that
+      `does not require choosing between competing intents`, subject to
+      sub-step 1.8. A conflict that requires a judgment between competing intents
+      is a `semantic conflict`: do not resolve it — go to sub-step 1.9.
 
    7. **Assert no conflict markers remain.** Read each previously conflicted
       file and confirm that none of `<<<<<<<`, `=======`, `>>>>>>>` remains. A
@@ -193,17 +204,23 @@ escalate).
       committed.
 
    8. **Re-verify.** After any resolution, run `bash tests/run.sh` and the
-      affected item's checks (step 4). Both must be `green` before the resolved
-      merge is committed, recorded, or shipped. A resolution whose
-      re-verification fails is not accepted; report the failing check as the
-      blocker.
+      affected item's checks. Both must be `green` before the merge is
+      recorded or shipped: a failing check is the blocker, and the resolution is
+      not accepted until it passes. When the merge auto-committed cleanly
+      (sub-step 1.4) the merge commit already exists, so do not rewrite an
+      already-created merge commit without explicit user confirmation (the
+      workflow's destructive-recovery rule) — hold the ship `blocked` instead.
 
    9. **Stop and escalate a semantic conflict.** On a `semantic conflict`, run
       `git merge --abort` to restore a clean working tree, report the specific
       blocked path(s) and the decision the user must make, and keep the ship
-      `blocked until the user responds` (step 7). Never commit, record, or ship
-      a partial or unresolved merge; if the abort cannot complete, report that
-      and stop rather than committing a partial merge.
+      `blocked until the user responds` (procedure step 7). If the conflict
+      arrived on the clean-merge path there is no in-progress merge to abort: the
+      merge already auto-committed, so report the blocked reference(s) and hold
+      the ship `blocked` rather than rewriting the merge commit without user
+      confirmation. Never commit, record, or ship a partial or unresolved merge;
+      if the abort cannot complete, report that and stop rather than committing a
+      partial merge.
 
 2. **Classify** each conflicting path into one of the four classes from the
    `### Conflict taxonomy` in `docs/workflow.md`:
@@ -226,7 +243,7 @@ escalate).
      changes; never drop one side.
    - **Semantic** conflicts — any resolution that requires a judgment about
      competing intents — are never accepted silently. Stop and escalate to the
-     user for explicit approval (step 7).
+     user for explicit approval (sub-step 1.9).
 
 4. **Re-verify.** After any resolution, run `bash tests/run.sh` and the affected
    item's checks. Both must be green before the merge is recorded or shipped.
@@ -237,7 +254,8 @@ escalate).
 5. **Record.** Record the reconcile, the resolved paths, and the re-verification
    evidence in the `## Reconcile` section of `ship.md` and in the pull-request
    description, so the reviewer can confirm what was resolved and that it was
-   re-verified. Do not invent a new artifact or field for this beyond the
+   re-verified. Record a renumber as a `Resolved paths` entry of the form
+   `<old> → <new>`. Do not invent a new artifact or field for this beyond the
    documented `ship.md` `## Reconcile` record.
 
 6. **Post-merge integrity pass.** After a merge to the default branch, run this
@@ -256,6 +274,130 @@ escalate).
    blocked by escalation stays blocked until the user responds. If the abort
    cannot complete, report that and stop rather than committing a partial merge.
 
+### `work/` artifact reconcile
+
+This is the class (b) `work/` and class (c) sequence-number half of the resolve
+sequence above. It runs **after the conflict set is listed** (sub-step 1.5) and
+**before the re-verification** (sub-step 1.8), so the merged tree is re-verified
+after the `work/` repairs. It runs on a conflicted merge and also on any clean
+merge that touched any `work/` path or carries a pre-flight class (b) or class (c)
+finding (sub-step 1.4), because the pre-flight ran before the merge: a class (c)
+duplicate sequence number and a class (b) graph fault can merge cleanly and
+surface only on the merged tree. It consumes the read-only pre-flight's class
+(b)/(c)
+findings — `DUPLICATE-PREFIX`, `DUPLICATE-CHILD`, `DANGLING-DEP`,
+`MISSING-CHILD`, `UNLISTED-CHILD`, and `CYCLIC-DEP` — but because the pre-flight
+ran **before the merge** it does not treat them as a post-merge picture: after
+`git merge --no-edit origin/<default>` it `re-scan the merged tree` for the same
+codes, since the merge can introduce or expose a collision the pre-flight could
+not see. Report every colliding prefix and every fault; the list is never
+truncated, even for a large collision set.
+
+1. **Merge `work/` artifact content preserving both branches' records.** For a
+   class (b) path, `preserve both branches' records` and `drop neither side`:
+   - **Roadmap `Children` rows** — take the union of both branches' rows. A
+     local id added by one branch survives; a row that both branches added
+     identically is de-duplicated to one.
+   - **`Depends on` cells** — never silently discard a branch's dependency:
+     take the union of both branches' dependencies added by distinct rows; a
+     dependency listed twice is collapsed to one. When both branches change the
+     *same* row's `Depends on` to different values, that divergence is a
+     `judgment about intent` rather than an additive union: never pick one
+     silently — escalate to sub-step 1.9.
+   - **artifact frontmatter** — merge field-by-field. Identical or single-sided
+     fields keep their value; the mechanical reference fields (`feature`,
+     `parent`) are handled by the renumber reference sweep in reconcile step 3. A
+     scalar field on which the two branches genuinely disagree, or a duplicate
+     `Children` row whose title/scope/intent differs, is a `judgment about
+     intent`: never pick one silently — escalate to sub-step 1.9.
+
+2. **Re-check the roadmap dependency graph.** In every `roadmap.md`, each
+   `Depends on` local id `resolves to an existing row and child directory`, and
+   the stored graph is `acyclic`. Classify each fault as a `structural fault`
+   (auto-repaired mechanically) or a `judgment about intent` (escalated to
+   sub-step 1.9):
+   - **Structural, auto-repaired:** a `Depends on` cell, `Local id`, `Canonical
+     reference`, `feature`, or `parent` value left stale by this reconcile's own
+     renumber — updated to the new value by the same reference sweep that moves
+     the item (reconcile step 3); a `Children` row duplicated because both
+     branches added the identical row — keep one; a duplicated dependency entry —
+     collapse to one. Repair only a fault with an unambiguous structural repair;
+     never drop a branch's record.
+   - **Intent, escalated to sub-step 1.9:** a `DANGLING-DEP` whose correct
+     target is ambiguous; a `CYCLIC-DEP` cycle (cannot be mechanically broken); a
+     `deliberately removed child`; an `UNLISTED-CHILD` whose row must be
+     restored and whose title/scope/intent would have to be chosen; a
+     `MISSING-CHILD` or duplicate local id whose intent is ambiguous.
+
+3. **Sequence-prefix collisions.** A class (c) duplicate sequence number is not
+   a new problem: apply `Renumbering after a parallel merge` in
+   `docs/artifact-conventions.md` — the single normative definition — rather
+   than inventing a rule. This skill `never defines a second renumbering rule`.
+   The `work/` renumber procedure is:
+
+   1. **Detect.** After the merge, scan the merged tree for two different
+      top-level `work/` references that share an `NNNN` 4-digit prefix, and for
+      two child references of one roadmap parent that share an `MMMM` 4-digit
+      prefix. Include a collision that exists only between the item branch and
+      the default branch: compare the local `work/` names with
+      `git ls-tree --name-only origin/<default>:work` (and, for each roadmap
+      parent, `git ls-tree --name-only origin/<default>:work/<parent>`). Two
+      directories that share a prefix under different slugs are a class (c)
+      collision too. Report each collision with its `canonical reference(s)`;
+      report every colliding prefix, `never truncated`, even for a large set.
+
+   2. **Choose the item to renumber by the existing rule**, in order. Renumber
+      the item that is `not yet approved or shipped` — shipped is the presence
+      of `work/<ref>/ship.md`, and approved is a `review.md` verdict of
+      `approve`; if both are unshipped, renumber the one whose directory was
+      `added later by commit time` (`git log --diff-filter=A --format=%ct --
+      work/<ref>`, comparing the added commit times); break a tie by
+      `slug order`. Allocate the `next number` from the sequence-allocation
+      contract: for a top-level `NNNN` collision, the greatest 4-digit prefix
+      that has ever appeared in the committed `work/` history plus one; for a
+      per-parent `MMMM` collision, the greatest 4-digit prefix that has ever
+      appeared in that parent's committed `work/<parent>/` history plus one.
+      `never reuse` a spent number: never reallocate a number whose directory
+      was deleted — allocate the next free number instead.
+
+   3. **Move the chosen item and rewrite every reference `in the same change`.**
+      Move it with `git mv work/<old> work/<new>`, and in the same change update
+      the directory name; the artifact `feature` frontmatter; a nested child's
+      `parent` value; the roadmap `Children` table's `Local id` and
+      `Canonical reference` cells for the renumbered row; every `Depends on`
+      cell that names the old local id; the `ship.md` record and the PR/handoff
+      paths; and any `prose` naming the old reference. Assert that
+      `no reference to the old canonical reference remains`, by scanning the
+      repository for the old canonical reference.
+
+   4. **Escalate an undecidable renumber rather than guess.** If the child
+      cannot be distinguished (`both are already shipped`, or approval/shipped
+      state `cannot be determined`, or git history is `unavailable`, for example
+      a `shallow clone`, so `added later` cannot be established, or the two
+      branches propose `two different new numbers` for one item), do not
+      reassign a number arbitrarily — escalate to sub-step 1.9.
+
+   5. **No-op.** When the branch is already up to date and there is no
+      sequence-prefix collision between the branches and no graph fault, report
+      `no conflicts`: there is `no renumber` and `no move`, the reconcile
+      `does not error`, and it creates no merge commit.
+
+4. **Escalate an intent fault or undecidable renumber, then hand back to
+   re-verify and record.** A `judgment about intent` from step 1 or step 2, or
+   an undecidable renumber from step 3, is never resolved silently: escalate it
+   to the generic Stop-and-escalate step (sub-step 1.9). On a conflicted merge
+   that step runs `git merge --abort`; on the clean-merge path the merge has
+   already auto-committed, so it reports the blocked reference(s) and holds the
+   ship `blocked` rather than rewriting the merge commit without user
+   confirmation. Either way it reports the specific blocked reference(s) and the
+   decision the user must make, and the ship stays `blocked until the user
+   responds`. Otherwise, hand the resolved tree back to the generic Re-verify
+   (sub-step 1.8) and Record (procedure step 5) steps instead of restating them:
+   re-run `bash tests/run.sh` and the affected item's checks, and record the
+   `work/` paths resolved and any renumber chosen as a `Resolved paths` entry
+   `<old> → <new>` in the existing `## Reconcile` record of `ship.md` and the
+   pull-request description.
+
 ## Rules
 
 - The pre-flight is read-only: it never merges, rebases, or force-pushes, and it
@@ -265,6 +407,6 @@ escalate).
   force-push.
 - Preserve both branches' intent; never drop one side's records.
 - Auto-resolve only mechanical/structural conflicts, always subject to
-  step 4's re-verification.
+  the procedure's Re-verify step.
 - Class (c) defers to "Renumbering after a parallel merge" in
   `docs/artifact-conventions.md`; this skill never defines a second rule.
