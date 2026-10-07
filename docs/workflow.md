@@ -136,7 +136,7 @@ existing file, and status still reports the child's dependency state afterwards.
 Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 **Exit criteria**, **Artifact**, **Next**.
 
-### 1. Requirements — `/spec <feature>`
+### 1. Requirements — `/spec <feature or problem description | item-ref>`
 
 - **Purpose**: Convert an informal request into a precise, testable,
   implementation-free specification.
@@ -150,7 +150,7 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 - **Artifact**: `work/<item-ref>/spec.md`, frontmatter `phase: spec`.
 - **Next**: `/plan <item-ref>`.
 
-### 2. Design — `/plan <feature>`
+### 2. Design — `/plan <item-ref>`
 
 - **Purpose**: Decide *how* to satisfy the spec and decompose the work into
   independently verifiable tasks.
@@ -167,7 +167,7 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   `phase: tasks` respectively.
 - **Next**: `/build` (or `/build <task-id>` for a specific task).
 
-### 3. Build — `/build [task-id]`
+### 3. Build — `/build [item-ref or task-id]`
 
 - **Purpose**: Implement the tasks.
 - **Entry**: `tasks.md` exists with unchecked items.
@@ -181,7 +181,7 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 - **Next**: `/build` again for more tasks, then `/test` when all boxes are
   checked.
 
-### 4. Test — `/test`
+### 4. Test — `/test [item-ref]`
 
 - **Purpose**: Independently verify the implementation against the acceptance
   criteria and close coverage gaps.
@@ -201,7 +201,7 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   findings into review. It is optional so that non-UI projects never need a
   browser; when present, review must consider it.
 
-### 5. Review — `/review`
+### 5. Review — `/review [item-ref]`
 
 - **Purpose**: A skeptical, read-only pass over the diff against the spec and
   project standards.
@@ -214,7 +214,7 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 - **Artifact**: `work/<item-ref>/review.md`, frontmatter `phase: review`.
 - **Next**: `/ship` if `approve`; otherwise `/build` to address blockers.
 
-### 6. Ship — `/ship`
+### 6. Ship — `/ship [item-ref]`
 
 - **Purpose**: Turn a reviewed work item into a reviewable pull request.
 - **Entry**: `review.md` exists with verdict `approve` (or the user explicitly
@@ -303,7 +303,7 @@ both are in flight.
   the framework's documented inventories, counts, permission blocks, and ignore
   rules. It reports drift and never edits; safe to run at any time, including
   before release.
-- **`/visual [url or slug]`** — to inspect a running user-facing frontend in a
+- **`/visual [url or item-ref]`** — to inspect a running user-facing frontend in a
   real browser for layout, interaction, responsiveness, and accessibility. Use
   for UI-bearing work; harmless to skip for backend-only work.
 - **`/bootstrap`** — once, when adopting the framework into a repository.
