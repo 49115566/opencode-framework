@@ -28,6 +28,11 @@ Follow your Status agent instructions exactly. In particular:
 - Emit `DANGLING-DEP` / `MISSING-CHILD` / `UNLISTED-CHILD` / `CYCLIC-DEP`
   findings for broken or cyclic references. Report them without failing and
   without modifying anything.
+- Validate each roadmap `Conflicts with` cell against the same `Children` table:
+  every named local id must resolve to another row and must not name the
+  declaring row itself. Report an invalid reference as a non-fatal
+  `DANGLING-CONFLICT` `(b)` finding naming the roadmap, the offending row, and
+  the invalid reference; never reject or abort the roadmap.
 - Also report, as one-line findings with their class labels, `DUPLICATE-PREFIX`
   `(c)` and `DUPLICATE-CHILD` `(c)` for duplicate top-level `NNNN` prefixes and
   duplicate per-parent `MMMM` child numbers, and `DRIFT-FACT` `(d)` for

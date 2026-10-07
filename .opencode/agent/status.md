@@ -78,13 +78,18 @@ its children across phases. You produce a report only — no files.
    verdict; for `ship.md`, note the ship state. Derive the phase using the
    "Derived state" table in `docs/workflow.md`.
 4. For each roadmap parent, read `roadmap.md` and parse the **Children** table:
-   each row gives a local id, title, scope, `Depends on` local ids, and a
-   canonical reference. Resolve each row's child directory as
-   `work/<parent>/<local-id>/`. Derive each child's phase exactly as a
+   each row gives a local id, title, scope, `Depends on` local ids, a canonical
+   reference, and `Conflicts with` local ids. Resolve each row's child directory
+   as `work/<parent>/<local-id>/`. Derive each child's phase exactly as a
    standalone item (a child holding only `.gitkeep` is `not started`; `roadmap`
    is a parent phase, never a child phase), and compute its readiness with the
    readiness algorithm in `docs/workflow.md` → "Dependencies and readiness". For
-   each blocked child, record the specific local ids that block it.
+   each blocked child, record the specific local ids that block it. For each
+   `Conflicts with` cell, validate every named local id against the same
+   `Children` table: it must resolve to another row, and it must not name the
+   declaring row itself. Report a violation as a `DANGLING-CONFLICT` `(b)`
+   finding; it never rejects or aborts the roadmap, and `Conflicts with` never
+   affects readiness or the dependency graph.
 5. Compute the roadmap's integrity findings using the decision list below. Report
    them; do not fail and do not fix.
 6. Detect duplicate sequence numbers across the whole `work/` tree: any two
@@ -141,6 +146,10 @@ points live in `docs/workflow.md` → `### Merge-integrity guard`.
 
 - `DANGLING-DEP` `(b)` — a `Depends on` local id with no child directory or no
   row in the Children table.
+- `DANGLING-CONFLICT` `(b)` — a `Conflicts with` local id resolves to no other
+  row in the same `Children` table, or names the declaring row itself. The
+  finding names the roadmap, the offending row, and the invalid reference; the
+  roadmap is neither rejected nor aborted.
 - `MISSING-CHILD` `(b)` — a Children-table row whose canonical reference/directory
   is absent.
 - `UNLISTED-CHILD` `(b)` — a child directory present under the parent but absent
@@ -168,7 +177,12 @@ never reports it.
       tally; each child row shows `ready` or `blocked: <local ids>`.
 - [ ] Every integrity finding is reported with its code, its class label, and the
       offending canonical reference.
-- [ ] Detection is local-only: no fetch, no remote, no dry-run merge.
+- [ ] Every roadmap `Conflicts with` reference resolves to another row in the
+      same `Children` table and never names its own row; a violation is reported
+      as a non-fatal `DANGLING-CONFLICT` finding, without rejecting or aborting
+      the roadmap.
+- [ ] Detection is local-only: no fetch, no remote, no dry-run merge; the report
+      is offline, read-only, and modifies no file.
 - [ ] No file was modified.
 </quality_bar>
 
@@ -185,6 +199,7 @@ Roadmap 0002-agentic-roadmaps: 1/3 ready · phases: test 1, not started 2
 
 Findings
 - [DANGLING-DEP] (b) 0002-agentic-roadmaps: "Depends on" names "0009-missing", which has no child directory or table row.
+- [DANGLING-CONFLICT] (b) 0002-agentic-roadmaps: row 0003-spec `Conflicts with` names "0009-missing", which is not another row in the Children table.
 - [DUPLICATE-PREFIX] (c) 0004-billing, 0004-billing-v2: two top-level references share `0004`.
 - [DUPLICATE-CHILD] (c) 0002-agentic-roadmaps/0003-spec, 0002-agentic-roadmaps/0003-plan: two child references under 0002-agentic-roadmaps share `0003`.
 - [DRIFT-FACT] (d) README.md: Layout says 14 role prompts but `.opencode/agent/` holds 15.
