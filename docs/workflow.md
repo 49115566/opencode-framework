@@ -427,6 +427,133 @@ resolution rules are the single authority in "Declared conflicts
 (`conflicts-with`)"; a plan's declaration home is the `design.md` frontmatter
 `conflicts-with` value.
 
+## Declared-conflict check
+
+The `conflicts-with` declarations of the unshipped plans under `work/` are
+compared by one read-only check whose algorithm is stated once here. Every other
+surface — the `/conflicts` command, the `/status` report, and the `/build` plan
+gate — references this section and restates nothing. Like the merge-integrity
+guard, the check is **prompt behavior only**: there is **no committed checker,
+script, helper, or executable tool** for it and **no committed fixture or
+agreement area**; fixture-based guards and mutation coverage are a separate work
+item.
+
+### The compared set
+
+The check reads only committed `work/` state and the local repository (for target
+resolution). It considers every **unshipped item** under `work/` — a roadmap
+child or a standalone item — and derives that item's **declared set**:
+
+- **Roadmap parent** — never an entity itself; it is a container. Its `Children`
+  table supplies each row's declaration. A roadmap authored before the
+  `conflicts-with` column existed has no column, treated as `—` for every row.
+- **Roadmap child** — one entity per `Children` row, even when the child
+  directory holds only `.gitkeep` (the parent cell still represents it). A child
+  whose `work/<parent>/<local-id>/ship.md` exists is **excluded**; a child with no
+  `ship.md` is included.
+  - `own` is the child's `design.md` frontmatter `conflicts-with` (absent or `—`
+    → empty); `cell` is the row's `conflicts-with` cell (absent column or `—` →
+    empty).
+  - The child's declared set is `own ∪ cell`.
+  - When `own` and `cell` are **both present** (neither `—`) and the two sets are
+    **not identical** — a subset relationship still counts — the check reports
+    the discrepancy (`DRIFT-FACT`, below) and prefers neither. A one-sided record
+    is the union and is not a discrepancy.
+- **Standalone item** — one entity per top-level item directory that is not a
+  roadmap parent and has a `spec.md`. Its declaration is its `design.md`
+  frontmatter `conflicts-with`. A `ship.md` excludes it.
+
+An item with an empty declared set — absent field, absent column, or `—` —
+contributes no declared target of its own, so it yields no finding **from its own
+declaration** and historical items remain valid with no migration. It is still an
+unshipped item: a declared target that names it is a counterpart under the
+one-sided naming clause below, even though the named item declares nothing. A
+**shipped** item still **resolves** as a target but is not a counterpart: naming
+it produces neither a conflict nor an unresolved finding.
+
+Each target token is resolved with the single algorithm in "Declared conflicts
+(`conflicts-with`)" above — the reference-vs-path discriminator, the sibling-first
+precedence for a bare `MMMM-slug`, exact repository-relative surface paths, and
+the prohibition on glob metacharacters, `..`, and absolute paths. A reference
+token resolves to a canonical item reference (a sibling row's
+`<parent>/<local-id>` or a `work/<NNNN-slug>[/<MMMM-slug>]/` directory); a surface
+token resolves to its repository-relative path. A token that is malformed (empty
+or whitespace-only, a glob metacharacter, `..`, or absolute) or that resolves to
+no sibling row, no `work/<ref>/`, and no existing repository path is an
+**unresolved declaration**: it is reported (`DANGLING-DEP`, below) and never
+dropped or auto-repaired.
+
+### The pair predicate
+
+`conflict(A, B)` is evaluated between any two **unshipped items** `A` and `B` and
+is true exactly when one of:
+
+1. **Shared target** — some target of `A` and some target of `B` are the same
+   target. Two targets share identity when their trimmed repository-relative
+   paths are equal (surface targets) or when both resolve to the same canonical
+   item reference (reference targets). Equal trimmed tokens that resolve to
+   *different* items — for example the same `MMMM-slug` in two different roadmaps
+   — are **not** the same target.
+2. **One side names the other** — a target of `A` resolves to `B`'s canonical
+   reference, or a target of `B` resolves to `A`'s. A one-sided declaration
+   suffices; no reciprocity is required. The named item need not declare anything
+   itself: an unshipped item with an empty declared set is still a counterpart
+   under this clause, so a declaration that names it is reported even though that
+   item contributes no target of its own.
+
+Each unordered pair is reported **once**: reciprocal naming, or a pair that both
+shares a target and names the other, yields exactly one finding. The finding list
+is never truncated; repeated runs on unchanged plans yield identical findings;
+concurrent runs take no lock and write nothing.
+
+### Findings
+
+Findings use the shipped finding-line grammar
+`- [<CODE>] (<class>) <offender canonical reference(s)> — <detail>` and a class
+label from the shipped `(a)`–`(d)` set (`## Merge conflicts` and
+`.opencode/skill/merge-conflict/SKILL.md` → "Finding grammar"); no new class,
+code, or policy is introduced. The check reuses the shipped codes and broadens
+their **planning-time meaning**:
+
+| Situation | Code | Class | Offender / detail |
+| --------- | ---- | ----- | ----------------- |
+| Two unshipped plans share a surface target outside `work/` | `TEXTUAL-CONFLICT` | `(a)` | the two item refs; detail names the shared path |
+| Two unshipped plans share a `work/` path or name each other | `TEXTUAL-CONFLICT` | `(b)` | the two item refs; detail names the shared target |
+| A declared target is malformed or resolves to nothing | `DANGLING-DEP` | `(b)` | the declaring item ref; detail names the target |
+| A child's own declaration and parent cell disagree (both non-`—`, sets unequal) | `DRIFT-FACT` | `(d)` | the child ref; detail shows both sets |
+
+The shipped merge-time meanings of these codes are unchanged. The two notes that
+scope `TEXTUAL-CONFLICT` to the dry-run-detected case remain true of that case,
+while `/status` and `/conflicts` may additionally report a *declared*
+`TEXTUAL-CONFLICT` without performing a dry-run merge.
+
+### Contract and enforcement points
+
+The check is **advisory, offline, local, and read-only**. It performs no fetch,
+remote read, merge, or dry-run merge; it takes no lock; and it modifies no file.
+It operates on committed plan declarations only and does **not** perform or
+reproduce the shipped pre-ship branch/textual detection of `## Merge conflicts`:
+that contract acts on branches at merge time, while this check compares
+declarations at planning time. It is distinct from `Depends on` as well: a
+declared conflict adds no readiness edge, reorders no child, and changes no
+child's readiness, so no phase is blocked.
+
+The check runs at three prompt-only enforcement points:
+
+- **`/conflicts [item-ref]`** — the dedicated read-only command. With no argument
+  it reports every declared conflict, unresolved declaration, and declaration
+  discrepancy across the whole `work/` tree. With an item-ref it reports only the
+  findings that involve that item and names each counterpart.
+- **`/status`** — its existing integrity window reports the same findings,
+  read-only and local-only.
+- **The `/build` plan gate** — after a `PROCEED` outcome the builder runs the
+  focused check for the item and prints the findings before selecting a task; the
+  findings never change the gate outcome and never stop the build. The check
+  itself performs no fetch; the gate's own best-effort ref refresh is separate.
+
+An empty compared set — no unshipped plans, no declarations, or all plans already
+shipped — reports no findings and does not error.
+
 ## Derived state
 
 There is no state file. `/status` derives each item's phase from artifacts and
@@ -492,6 +619,10 @@ both are in flight.
   several interdependent features; a single, self-contained feature still goes
   straight to `/spec`.
 - **`/status`** — when unsure where things stand.
+- **`/conflicts [item-ref]`** — to compare the `conflicts-with` declarations of
+  unshipped plans before development and report overlaps in the shipped conflict
+  classes. Advisory, offline, and read-only; it blocks no phase and names each
+  counterpart for a focused item. See `## Declared-conflict check`.
 - **`/doctor`** — a **framework-maintainer only**, read-only consistency check of
   the framework's documented inventories, counts, permission blocks, and ignore
   rules. It reports drift and never edits; safe to run at any time, including
