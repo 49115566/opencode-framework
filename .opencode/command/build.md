@@ -13,6 +13,17 @@ Follow your Builder agent instructions exactly. In particular:
   resolves to that item's directory.
 - Resolve the project's test, lint, and typecheck commands via the
   `project-discovery` skill if `AGENTS.md` does not already state them.
+- Before selecting a task, run the `/build` plan gate in `docs/workflow.md` →
+  "Plan publication": refresh refs best-effort first — `git fetch origin
+  <default>`, and, when the remote advertises one, the `plan/<ref>` branch too
+  (an offline fetch ignored) — then verify the plan is published on the default
+  branch. If the plan is not published there, or a `plan/<ref>` branch (local or
+  via `git ls-remote` on origin) carries plan artifacts that differ from the
+  default branch (an unmerged publication or a later revision), refuse and report
+  the plan pull request that must be merged first. A plan branch the remote
+  advertises but that has no resolvable local ref cannot be compared; refuse
+  rather than guess. If neither exists, proceed and note that no plan publication
+  was found (historical/pre-flow item); an unreachable `origin` never hard-fails.
 - Implement the requested task, or the next unblocked unchecked task if none is
   named. State which task you are doing.
 - Follow existing conventions; keep the change scoped to the task.
