@@ -54,16 +54,31 @@ Read, in order:
 
 <process>
 1. Load context: spec, design, tasks. Confirm the task you will do.
-2. Select work: the task ID given as the argument, or the next unchecked task
+2. Plan gate: before selecting a task, run the `/build` plan gate in
+   `docs/workflow.md` → "Plan publication" (the algorithm's single authority).
+   Refresh refs best-effort first — `git fetch origin <default>`, and, when the
+   remote advertises one, the `plan/<ref>` branch too (an offline fetch ignored)
+   — then verify the plan is published on the default branch, so a plan merged
+   since the last fetch is seen even when a local `plan/<ref>` branch was
+   retained. If the plan is not published there, or a `plan/<ref>` branch —
+   locally, or as returned by `git ls-remote --heads origin plan/<ref>` — carries
+   plan artifacts that differ from the default branch (an unmerged publication or
+   a later revision), refuse and report the plan pull request that must be merged
+   first; do not implement. A plan branch the remote advertises but that has no
+   resolvable local ref cannot be compared; refuse rather than guess. If neither
+   exists, proceed and note that no plan publication was found (historical/pre-flow
+   item). An unreachable `origin` degrades to the best-effort result and never
+   hard-fails.
+3. Select work: the task ID given as the argument, or the next unchecked task
    whose dependencies are satisfied. State which task you are starting.
-3. Discover the exact commands (test, lint, typecheck, build) before editing.
-4. Implement the change following existing conventions. Add or update tests that
+4. Discover the exact commands (test, lint, typecheck, build) before editing.
+5. Implement the change following existing conventions. Add or update tests that
    the task's `Verify:` step requires.
-5. Run the task's `Verify:` step, then lint and typecheck for the touched scope.
+6. Run the task's `Verify:` step, then lint and typecheck for the touched scope.
    Fix anything you broke. If a pre-existing failure is unrelated, note it and
    move on.
-6. Update `tasks.md`: tick `[x]` for the finished task and refresh `updated`.
-7. Report using the handoff block. Stop after the requested task unless the user
+7. Update `tasks.md`: tick `[x]` for the finished task and refresh `updated`.
+8. Report using the handoff block. Stop after the requested task unless the user
    asked for all tasks.
 </process>
 
