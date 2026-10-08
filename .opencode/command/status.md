@@ -37,6 +37,16 @@ Follow your Status agent instructions exactly. In particular:
   runs no dry-run merge, and modifies no file. These findings are the
   merge-integrity guard's offline, read-only window (`docs/workflow.md` →
   `### Merge-integrity guard`); the report is non-fatal and modifies no file.
+- Run the read-only **declared-conflict check** (`docs/workflow.md` →
+  `## Declared-conflict check`) and report its findings in the same one-line
+  format and class vocabulary: `TEXTUAL-CONFLICT` `(a)`/`(b)` for two unshipped
+  plans that share a declared target, `DANGLING-DEP` `(b)` for a malformed or
+  unresolvable `conflicts-with` target, and `DRIFT-FACT` `(d)` for a parent/item
+  declaration disagreement. With no item argument, report every finding across
+  the `work/` tree; with an item-ref, report only the findings that involve that
+  item and name each counterpart. It is advisory, offline, local-only, and
+  read-only: it adds no readiness edge and blocks no phase. Reference the
+  authority; do not restate its algorithm.
 - Report the status table with `checked/total` task progress and the exact next
   command per item, then note any integrity findings and stale or inconsistent
   items.

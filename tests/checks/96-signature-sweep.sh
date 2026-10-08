@@ -46,6 +46,7 @@ canonical_signature() {
     /fix)     printf '%s' '/fix <bug description>' ;;
     /roadmap) printf '%s' '/roadmap <initiative>' ;;
     /status)  printf '%s' '/status [item-ref]' ;;
+    /conflicts) printf '%s' '/conflicts [item-ref]' ;;
     /doctor|/bootstrap) printf '%s' "$1" ;;
   esac
 }
@@ -218,15 +219,15 @@ EOF
 }
 
 # --- required sets per surface ----------------------------------------------
-# Root/template AGENTS.md: the six lifecycle commands plus the six supporting
+# Root/template AGENTS.md: the six lifecycle commands plus the seven supporting
 # commands. docs/workflow.md: the six phase commands plus `/visual`.
-# README.md: the twelve Commands-table commands (a superset of the mermaid
-# labels). The skill: the nine routing targets.
-AGENTS_REQUIRED="/spec /plan /build /test /review /ship /fix /status /roadmap /bootstrap /visual /doctor"
+# README.md: the thirteen Commands-table commands (a superset of the mermaid
+# labels). The skill: the ten routing targets.
+AGENTS_REQUIRED="/spec /plan /build /test /review /ship /fix /status /roadmap /bootstrap /visual /doctor /conflicts"
 WF_REQUIRED="/spec /plan /build /test /review /ship /visual"
-README_REQUIRED="/spec /plan /build /test /visual /review /ship /fix /roadmap /status /doctor /bootstrap"
+README_REQUIRED="/spec /plan /build /test /visual /review /ship /fix /roadmap /status /doctor /bootstrap /conflicts"
 MERMAID_REQUIRED="/spec /plan /build /test /review /ship /visual"
-SKILL_REQUIRED="/roadmap /spec /plan /build /test /visual /review /ship /status"
+SKILL_REQUIRED="/roadmap /spec /plan /build /test /visual /review /ship /status /conflicts"
 
 TEMPLATE_AGENTS="template/AGENTS.md"
 SWEEP_SKILL="$SKILL_DIR/workflow-lifecycle/SKILL.md"
@@ -247,7 +248,7 @@ run_surface "$WF" "$WF_REQUIRED" "$wf_data"
 # Commands table and the mermaid labels). Each position is checked against its
 # own required set, so the table cannot silently drop a signature that a mermaid
 # label happens to supply (design "Required sets per surface": the table carries
-# all twelve commands, the mermaid labels the seven lifecycle ones).
+# all thirteen commands, the mermaid labels the seven lifecycle ones).
 readme_table=""
 [ -f "$README" ] && readme_table="$(extract_readme_commands "$README")"
 run_surface "$README" "$README_REQUIRED" "$readme_table"
@@ -266,7 +267,7 @@ run_surface "$SWEEP_SKILL" "$SKILL_REQUIRED" "$skill_data"
 # so each command file's `description:` line must carry `Usage: <canonical>`.
 # The two repaired commands (`/spec`, `/ship`) are included in the loop; the
 # `/ship` fix-landing clause is asserted separately below.
-ALL_COMMANDS='/spec /plan /build /test /review /ship /visual /fix /roadmap /status /doctor /bootstrap'
+ALL_COMMANDS='/spec /plan /build /test /review /ship /visual /fix /roadmap /status /doctor /bootstrap /conflicts'
 for _cmd in $ALL_COMMANDS; do
   _cmd_file="$CMD_DIR/${_cmd#/}.md"
   _cmd_canon="$(canonical_signature "$_cmd")"

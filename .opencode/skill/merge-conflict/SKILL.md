@@ -119,7 +119,21 @@ The pre-flight vocabulary (canonical; the `status` agent repeats it) is:
 | `DUPLICATE-CHILD` | `(c)` | two different per-parent child references share an `MMMM` |
 | `DRIFT-FACT` | `(d)` | a duplicated count/table fact disagrees with disk or the other branch |
 
-`TEXTUAL-CONFLICT` is pre-flight-only: `/status` performs no dry-run merge.
+`TEXTUAL-CONFLICT` is pre-flight-only for the `dry-run-detected` case: `/status`
+performs no dry-run merge. That note scopes the detected case only.
+
+Three of these codes also carry a **planning-time** meaning, stated once in
+`docs/workflow.md` → `## Declared-conflict check`; their merge-time meanings
+above are unchanged and no code is added:
+
+- `TEXTUAL-CONFLICT` (`(a)` or `(b)`) — two unshipped plans **share a declared
+  target**: a repository surface outside `work/` for `(a)`, or a `work/` path or a
+  one-sided naming of the other item for `(b)`.
+- `DANGLING-DEP` (`(b)`) — a declared `conflicts-with` target is malformed or
+  resolves to no sibling row, no `work/<ref>/`, and no existing repository path.
+- `DRIFT-FACT` (`(d)`) — a roadmap child's own `design.md` declaration and its
+  parent `Children` `conflicts-with` cell are both present and their target sets
+  disagree.
 
 This vocabulary is canonical and is consumed unchanged by the merge-integrity
 guard. `docs/workflow.md` → `### Merge-integrity guard` is the single statement

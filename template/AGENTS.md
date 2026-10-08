@@ -46,7 +46,7 @@ browser and writes `visual.md` plus screenshots. Review must consider it when
 present. Non-UI projects skip it.
 
 Supporting commands: `/fix <bug description>` (lightweight fix), `/status [item-ref]` (phase report),
-`/roadmap <initiative>` (author a multi-feature roadmap), `/bootstrap` (adopt
+`/conflicts [item-ref]` (declared-conflict report), `/roadmap <initiative>` (author a multi-feature roadmap), `/bootstrap` (adopt
 into a project), `/visual [url or item-ref]` (browser QA), `/doctor` (read-only drift
 diagnostic; framework-maintainer only).
 Supporting agents: `scout` (recon), `scribe` (artifact editing), `bootstrap`

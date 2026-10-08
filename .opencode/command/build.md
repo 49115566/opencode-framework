@@ -24,6 +24,12 @@ Follow your Builder agent instructions exactly. In particular:
   advertises but that has no resolvable local ref cannot be compared; refuse
   rather than guess. If neither exists, proceed and note that no plan publication
   was found (historical/pre-flow item); an unreachable `origin` never hard-fails.
+- After a **PROCEED** outcome from that gate, run the read-only focused
+  declared-conflict check for the item (`docs/workflow.md` →
+  `## Declared-conflict check`) and print the findings that involve it before
+  selecting a task. The findings are advisory: they never change the gate outcome
+  and never stop the build, and the check itself performs no fetch (the gate's own
+  best-effort ref refresh is separate).
 - Implement the requested task, or the next unblocked unchecked task if none is
   named. State which task you are doing.
 - Follow existing conventions; keep the change scoped to the task.
