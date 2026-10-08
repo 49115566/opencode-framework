@@ -107,10 +107,10 @@ What the initiative is and who it serves.
 
 ## Children
 
-| Local id | Title | Scope | Depends on | Canonical reference |
-| -------- | ----- | ----- | ---------- | ------------------- |
-| 0001-model | Core model | <scope sufficient to author a spec> | — | NNNN-slug/0001-model |
-| 0002-api   | API layer  | ...                                 | 0001-model | NNNN-slug/0002-api |
+| Local id | Title | Scope | Depends on | conflicts-with | Canonical reference |
+| -------- | ----- | ----- | ---------- | -------------- | ------------------- |
+| 0001-model | Core model | <scope sufficient to author a spec> | — | — | NNNN-slug/0001-model |
+| 0002-api   | API layer  | ...                                 | 0001-model | — | NNNN-slug/0002-api |
 
 ## Sequencing
 
@@ -131,6 +131,10 @@ What the initiative is and who it serves.
   dependency may not name its own row, and the stored graph must be acyclic. If
   the initiative's dependencies form a cycle, record the cycle under
   `## Open issues` and leave the stored graph acyclic.
+- **conflicts-with** declares the targets the row expects to collide with. Use `—`
+  when the row declares none, or one `ConflictTargetList`. The grammar is defined
+  in `docs/workflow.md` → "Declared conflicts (`conflicts-with`)". The declaration
+  is advisory and never changes `Depends on` or readiness.
 
 ### `spec.md` (product)
 

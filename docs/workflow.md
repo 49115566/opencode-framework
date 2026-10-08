@@ -107,6 +107,64 @@ over a `request-changes` verdict; a `request-changes` verdict or a missing
 `review.md` (with no `ship.md`) is not satisfied.
 A child in a cycle is never `ready`.
 
+### Declared conflicts (`conflicts-with`)
+
+A **planning-time conflict** is a *declared, committed claim* by one plan that it
+expects to collide with one or more targets. It is plan state recorded before
+development, not a detected collision: it is distinct from the merge-time
+`## Merge conflicts` contract, which acts on branches after they exist, and
+distinct from `Depends on`, which is a readiness edge. A declaration is advisory —
+it adds, removes, or reorders no `Depends on` edge and changes no child's
+readiness; only `Depends on` gates readiness. A pair is a declared conflict when
+at least one side names the other, so a declaration does not require a reciprocal
+declaration.
+
+The `Children` table carries the declaration in a `conflicts-with` column. The
+same grammar defines the intended conflict set of a child or standalone work item;
+that grammar is independent of where such an item's declaration is stored. A
+roadmap authored before the column existed has no `conflicts-with` column, and its
+absence is treated as no declared conflicts (`—` for every row).
+
+A `conflicts-with` cell holds one `ConflictTargetList`:
+
+```
+ConflictTargetList ::= "—"                              # no declared conflicts
+                    | ConflictTarget ("," ConflictTarget)*
+
+ConflictTarget     ::= SiblingOrItemRef | SurfacePath
+SiblingOrItemRef   ::= [0-9]{4}-[a-z0-9-]+( /[0-9]{4}-[a-z0-9-]+ )?
+SurfacePath        ::= repository-relative file or directory path
+```
+
+- **Three target kinds.** Each target is exactly one of: an **intra-roadmap
+  sibling local id** (`MMMM-slug`) naming a different row in the same `Children`
+  table; a **canonical work-item reference** — a top-level `NNNN-slug` (including a
+  roadmap parent) or a nested `NNNN-slug/MMMM-slug` — resolving to `work/<ref>/`;
+  or a **repository-relative surface path**, an exact file or directory path (for
+  example `docs/workflow.md`, `tests/checks`). Surface paths are exact: no glob
+  metacharacters, no `..`, no absolute paths.
+- **Separation and empty value.** Targets are comma-separated and each is trimmed
+  of surrounding whitespace. Repository paths and references contain no comma, so
+  a comma always separates targets. A cell that is `—` (em dash, the same
+  convention as `Depends on`) declares no conflicts; an empty or whitespace-only
+  cell is malformed, not equivalent to `—`.
+- **Reference-vs-path discriminator.** A target matching
+  `^[0-9]{4}-[a-z0-9-]+(/[0-9]{4}-[a-z0-9-]+)?$` is a reference (a sibling local id
+  or a canonical work-item reference); any other target is a surface path. For a
+  reference with no `/`, resolution precedence is the **sibling row in the same
+  table first, then `work/<token>/`**, so a bare `MMMM-slug` is deterministic when
+  a sibling row and a top-level item could share the same text.
+- **Well-formedness.** A reference may not name the declaring row's own local id
+  (no self-reference), and a list may not repeat a target after trimming.
+- **Unresolved declarations.** A malformed cell, or a target that resolves to no
+  sibling row, no `work/<ref>/` directory, and no existing path, is an
+  **unresolved declaration**. It is reported by a later read-only check and never
+  silently dropped or auto-repaired.
+- **Reporting vocabulary is reused.** A declared conflict, when reported, uses the
+  shipped `(a)`–`(d)` class labels and the finding-line grammar defined in
+  `## Merge conflicts` and `.opencode/skill/merge-conflict/SKILL.md`. There is no
+  new class, finding code, or policy defined for declarations.
+
 ### Status reporting
 
 `/status` reports a roadmap parent separately from its children. The roadmap row

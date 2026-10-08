@@ -79,7 +79,12 @@ Read, in order, and stop when you have enough:
    none. A child may not depend on itself and the stored graph must be acyclic
    (dependencies are intra-roadmap only). If the intended graph contains a cycle,
    do not store the cyclic edges — record the cycle under `## Open issues` and
-   leave the stored graph acyclic.
+   leave the stored graph acyclic. Each row may optionally declare, in its
+   `conflicts-with` cell, the targets it expects to collide with, using the
+   `ConflictTargetList` grammar in `docs/workflow.md` → "Declared conflicts
+   (`conflicts-with`)"; use `—` when the row declares none. A declaration is
+   advisory: it never adds, removes, or reorders a `Depends on` edge and never
+   changes a child's readiness.
 6. Order the children so every dependency precedes its dependents and write the
    `## Sequencing` list.
 7. Record the assumptions the decomposition relied on under `## Assumptions`. If
@@ -108,6 +113,10 @@ Every line must hold, or revise the roadmap:
       spec, and a canonical reference.
 - [ ] Every `Depends on` value names another existing row; no self-dependency;
       the stored graph is acyclic.
+- [ ] Every `conflicts-with` cell is `—` or a well-formed `ConflictTargetList`:
+      comma-separated targets per the grammar in `docs/workflow.md` → "Declared
+      conflicts (`conflicts-with`)", with no self-reference and no duplicate
+      target.
 - [ ] The sequencing lists every child after all of its dependencies.
 - [ ] Assumptions are explicit; no scope was silently invented.
 - [ ] `## Open issues` records cycles, non-decomposable or single-feature
