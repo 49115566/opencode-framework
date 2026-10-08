@@ -64,9 +64,18 @@ reference, so name its branch `fix/<short-description>`: the `fix` type plus a
 short kebab-case description of the defect, e.g. `fix/login-timeout`. Never reuse
 a work item's branch for a fix.
 
+Pre-development **plan publication** — `/ship plan <item-ref>` before development
+begins (see `docs/workflow.md` → "Plan publication") — uses a dedicated
+`plan/<ref>` branch, where `<ref>` is the canonical reference with `/` replaced
+by `-`, the same joined form a ship branch uses. The fixed `plan` prefix replaces
+the `<type>` segment and marks the branch as the pre-development plan rather than
+the item's final `<type>/<ref>` ship branch: never reuse the plan branch for the
+ship. A roadmap child keeps its joined reference, e.g.
+`plan/0006-parallel-plan-conflicts-0002-plan-record`.
+
 Examples: `feat/0001-add-dark-mode`,
 `feat/0002-agentic-roadmaps-0001-roadmap-model`, `fix/login-timeout`,
-`docs/update-readme`.
+`docs/update-readme`, `plan/0006-parallel-plan-conflicts-0002-plan-record`.
 
 ## Rules
 
