@@ -12,7 +12,7 @@
 #   1. runs `bash tests/run.sh <copy>` and asserts exit 0 (AC2);
 #   2. runs it with FRAMEWORK_TEST_NO_PY/_OPENCODE/_NPM=1 and asserts exit 0 with
 #      visible skips (AC14);
-#   3. for each agreement area AC6-AC13 and AC18-AC21, applies exactly one
+#   3. for each agreement area AC6-AC13, AC18-AC22, and AC23, applies exactly one
 #      mutation, asserts the suite exits non-zero and names that area, restores
 #      the file, and asserts the clean copy passes again (AC15);
 #   4. exits non-zero if any mutation is not caught or any clean run fails, and
@@ -69,6 +69,7 @@ stage() {
   cp -R "$REPO_ROOT/.opencode/command" "$COPY/.opencode/command"
   cp -R "$REPO_ROOT/.opencode/skill"   "$COPY/.opencode/skill"
   cp -R "$REPO_ROOT/tests/fixtures/cyclic-roadmap" "$COPY/tests/fixtures/cyclic-roadmap"
+  cp -R "$REPO_ROOT/tests/fixtures/declared-conflicts" "$COPY/tests/fixtures/declared-conflicts"
 }
 
 # ---------------------------------------------------------------------------
@@ -291,6 +292,47 @@ check_mutation AC22 \
   "diverged the README Commands /build cell"
 restore_file README.md
 assert_clean_absent "after AC22 restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC23 conflict guards column layout =="
+replace_first "$COPY/tests/fixtures/declared-conflicts/items/9001-roadmap-a/roadmap.md" \
+  'conflicts-with' 'conflicts'
+check_mutation AC23 'FAIL  AC23 column-layout' "renamed the conflicts-with fixture column"
+restore_file tests/fixtures/declared-conflicts/items/9001-roadmap-a/roadmap.md
+assert_clean_absent "after AC23 column-layout restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC23 conflict guards positional parse =="
+replace_first "$COPY/tests/fixtures/declared-conflicts/items/9001-roadmap-a/roadmap.md" \
+  '| Local id | Title | Scope | Depends on | conflicts-with | Canonical reference |' \
+  '| Local id | Title | Scope | conflicts-with | Depends on | Canonical reference |'
+check_mutation AC23 'FAIL  AC23 positional-parse' "reordered the fixture Children header"
+restore_file tests/fixtures/declared-conflicts/items/9001-roadmap-a/roadmap.md
+assert_clean_absent "after AC23 positional-parse restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC23 conflict guards cell resolution =="
+replace_first "$COPY/tests/fixtures/declared-conflicts/items/9010-surface-shared/design.md" \
+  'docs/artifact-conventions.md' 'docs/does-not-exist.md'
+check_mutation AC23 'FAIL  AC23 cell-resolution' "broke a fixture target's resolution"
+restore_file tests/fixtures/declared-conflicts/items/9010-surface-shared/design.md
+assert_clean_absent "after AC23 cell-resolution restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC23 conflict guards pair predicate =="
+replace_first "$COPY/tests/fixtures/declared-conflicts/items/9010-surface-shared/design.md" \
+  'docs/artifact-conventions.md' 'README.md'
+check_mutation AC23 'FAIL  AC23 pair-predicate' "broke the fixture's declared-conflict pair predicate"
+restore_file tests/fixtures/declared-conflicts/items/9010-surface-shared/design.md
+assert_clean_absent "after AC23 pair-predicate restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC23 conflict guards reporting vocabulary =="
+replace_first "$COPY/.opencode/skill/merge-conflict/SKILL.md" \
+  '- [<CODE>] (<class>)' '- [<CODE>] <class>'
+check_mutation AC23 'FAIL  AC23 reporting-vocabulary' "dropped the class from the finding grammar"
+restore_file .opencode/skill/merge-conflict/SKILL.md
+assert_clean_absent "after AC23 reporting-vocabulary restore"
 
 # ---------------------------------------------------------------------------
 printf '\nMUTATION TOTAL: %s checked passed, %s failed\n' "$mpass" "$mfail"
