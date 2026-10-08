@@ -23,10 +23,10 @@ artifact tree and no sequence number is allocated.
 
 ## Children
 
-| Local id | Title | Scope | Depends on | Canonical reference |
-| -------- | ----- | ----- | ---------- | ------------------- |
-| 0001-alpha | Alpha | First fixture child | 0002-beta | fixture-cyclic-roadmap/0001-alpha |
-| 0002-beta | Beta | Second fixture child | 0001-alpha | fixture-cyclic-roadmap/0002-beta |
+| Local id | Title | Scope | Depends on | conflicts-with | Canonical reference |
+| -------- | ----- | ----- | ---------- | -------------- | ------------------- |
+| 0001-alpha | Alpha | First fixture child | 0002-beta | — | fixture-cyclic-roadmap/0001-alpha |
+| 0002-beta | Beta | Second fixture child | 0001-alpha | — | fixture-cyclic-roadmap/0002-beta |
 
 ## Sequencing
 

@@ -12,7 +12,7 @@ parent: 0006-parallel-plan-conflicts
 Ordered, dependency-aware. One task ≈ one focused commit. After every task,
 `bash tests/run.sh` must stay green.
 
-- [ ] **T1** — Roll the cyclic fixture and its check onto the current `Children`
+- [x] **T1** — Roll the cyclic fixture and its check onto the current `Children`
       layout: in `tests/fixtures/cyclic-roadmap/roadmap.md` change the header to
       `| Local id | Title | Scope | Depends on | conflicts-with | Canonical reference |`
       and add a `—` cell to each row; in `tests/checks/80-cycle-fixture.sh` update
@@ -23,7 +23,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       `grep -n 'Depends on | conflicts-with' tests/fixtures/cyclic-roadmap/roadmap.md tests/checks/80-cycle-fixture.sh`;
       `grep -n 'dep = a\[5\]' tests/checks/80-cycle-fixture.sh`.
 
-- [ ] **T2** — Add the `tests/fixtures/declared-conflicts/items/` fixture-local
+- [x] **T2** — Add the `tests/fixtures/declared-conflicts/items/` fixture-local
       item tree exactly as designed: the 6-column `9001-roadmap-a/roadmap.md`
       (rows `0001-shared` cell `docs/artifact-conventions.md, 0002-sibling`;
       `0002-sibling` cell `0001-shared`; `0003-drift` cell `docs/workflow.md`
@@ -40,7 +40,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       and `test -f tests/fixtures/declared-conflicts/items/9001-roadmap-a/0004-shipped/ship.md`;
       `grep -rn 'work/' tests/fixtures/declared-conflicts` prints nothing.
 
-- [ ] **T3** — Add `tests/checks/85-conflict-guards.sh` (stable token `AC23`,
+- [x] **T3** — Add `tests/checks/85-conflict-guards.sh` (stable token `AC23`,
       pure bash/awk, Bash 3.2 compatible, sourced by `run.sh`, never `exit`):
       implement the four analyzers (`fixture_resolution`, `fixture_conflicts`,
       `fixture_unresolved`, `fixture_drift`) over
@@ -58,7 +58,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       lines present; each analyzer's output block matches the expected block; the
       `AC23 negative-control` assertions pass.
 
-- [ ] **T4** — Extend `tests/mutation.sh`: in `stage()` add
+- [x] **T4** — Extend `tests/mutation.sh`: in `stage()` add
       `cp -R "$REPO_ROOT/tests/fixtures/declared-conflicts" "$COPY/tests/fixtures/declared-conflicts"`;
       add the five mutation blocks from design §5, each followed by
       `restore_file` and an `assert_clean_absent`, using the expected sub-area
@@ -69,7 +69,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       Verify: `bash tests/mutation.sh` → exit 0, with five `AC23` mutation lines
       reported "caught and named"; every clean run passes.
 
-- [ ] **T5** — Document the new area in `tests/README.md`: add the Checks-table
+- [x] **T5** — Document the new area in `tests/README.md`: add the Checks-table
       row `| `tests/checks/85-conflict-guards.sh` | declared-conflict declaration
       model and check guards (suite token `AC23`) |`; add the paragraph mapping
       stable token `AC23` to this item's acceptance criteria (spec AC1 → AC23,
@@ -81,7 +81,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       `grep -n 'AC23' tests/README.md` shows the Checks row and the mapping
       paragraph, and the existing area list/tokens `AC18`–`AC22` are unchanged.
 
-- [ ] **T6** — Final integration pass, no new behavior: confirm the new area is
+- [x] **T6** — Final integration pass, no new behavior: confirm the new area is
       independent of the existing agreements and fresh-clone-clean. [AC10, AC13,
       AC11] [depends: T1, T4, T5]
       Verify: `bash tests/run.sh` → exit 0 (`10-readiness`, `80-cycle-fixture`,

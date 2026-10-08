@@ -76,6 +76,7 @@ with a stable `ACn` token.
 | `60-default-agent.sh` | default-agent agreement |
 | `70-pin.sh` | external pin agreement |
 | `80-cycle-fixture.sh` | roadmap cycle rule and committed fixture |
+| `85-conflict-guards.sh` | declared-conflict declaration model and check guards (suite token `AC23`) |
 | `90-packaging.sh` | packaging agreement: manifest ↔ changelog, copy-set, `Layout` (suite tokens `AC18`–`AC20`) |
 | `95-split-guard.sh` | adoption split guard: quickstart sources, `docs/customization.md` contract, `template/AGENTS.md` placeholder profile, copy-set surfaces, `bootstrap` deny rules (suite token `AC21`) |
 | `96-signature-sweep.sh` | command signature agreement across the in-scope surfaces plus the `ask` agent description (suite token `AC22`) |
@@ -107,6 +108,30 @@ description. The check extracts each stated signature from a designated position
 on a surface, decodes the markdown-table and mermaid encodings, and compares it
 to the canonical registry, failing with both the file and command named on any
 divergence.
+
+`85-conflict-guards.sh` uses the stable suite token `AC23`, which maps to the
+`0006-parallel-plan-conflicts/0004-conflict-guards` acceptance criteria: spec AC1
+→ `AC23 column-layout`/`AC23 positional-parse` (the declaration fixture's
+6-column `Children` header keeps `Depends on` at pipe-field 5; the cyclic
+fixture's own cycle agreement stays with `80-cycle-fixture.sh`), spec AC2 →
+`AC23 cell-resolution` (every `conflicts-with` cell is `—` or a well-formed target
+list, and a malformed or unresolved target fails and names the area), spec
+AC3/AC4 → `AC23 pair-predicate` (a shared target and the one-sided naming of a
+silent counterpart are each a genuine declared conflict), spec AC5 → `AC23
+cell-resolution` (sibling-first, canonical item, file and directory surface,
+`—`/absent, and each malformed/self/duplicate/empty/non-existent case resolves as
+expected), spec AC6 → `AC23 cell-resolution` (a child's declared set is the union
+of its own declaration and the parent cell; a both-present unequal pair is named
+drift while a one-sided record is not), spec AC7 → `AC23 pair-predicate` (a
+shipped item still resolves as a target but is excluded as a counterpart), spec
+AC8 → `AC23 reporting-vocabulary` (the authority's codes, classes, and grammar,
+the skill grammar, and the operative-prompt references, with no new class or code
+introduced), spec AC9/AC13 → the fixture-existence and read-only-contract
+assertions (fixture-only reads, no live `work/**`, no committed executable
+checker), and spec AC10/AC11/AC12 → the existing agreements staying green, the
+`tests/mutation.sh` cases, and this README. A live `/conflicts`, `/status`, or
+`/build`-gate model run is not executable in CI; like the cycle diagnostic's
+LLM-run residual, it remains a documented manual check.
 
 ## Mutation self-check
 
