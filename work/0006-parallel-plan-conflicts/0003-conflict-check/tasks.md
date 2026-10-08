@@ -12,7 +12,7 @@ parent: 0006-parallel-plan-conflicts
 Ordered, dependency-aware. One task ≈ one focused commit. After each task,
 `bash tests/run.sh` must stay green.
 
-- [ ] **T1** — Add the single authoritative `## Declared-conflict check` section
+- [x] **T1** — Add the single authoritative `## Declared-conflict check` section
       to `docs/workflow.md` (between `## Plan publication` and `## Derived
       state`) and a `/conflicts [item-ref]` bullet to `## Routing heuristics`.
       State: the compared set (unshipped plans with a non-empty declaration;
@@ -32,7 +32,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After each task,
       and the `### Declared conflicts` grammar/`### Merge-integrity guard`
       sections are unchanged.
 
-- [ ] **T2** — Record the planning-time finding meanings in
+- [x] **T2** — Record the planning-time finding meanings in
       `.opencode/skill/merge-conflict/SKILL.md`: `TEXTUAL-CONFLICT` also covers a
       *declared* conflict (`(a)`/`(b)`), `DANGLING-DEP` also covers a malformed
       or unresolvable `conflicts-with` target, and `DRIFT-FACT` also covers a
@@ -44,7 +44,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After each task,
       planning-time meanings and the scoped note are present and no new code is
       introduced; `bash tests/run.sh` → exit 0.
 
-- [ ] **T3** — Make the `status` agent the reporting owner:
+- [x] **T3** — Make the `status` agent the reporting owner:
       `.opencode/agent/status.md` and `.opencode/command/status.md` describe and
       report the declared-conflict check (global mode, item-ref focused mode, and
       the `/status` integrity window), referencing `docs/workflow.md` →
@@ -56,7 +56,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After each task,
       `80-cycle-fixture` green); read both files and confirm the check is
       described and the authority is referenced, not restated.
 
-- [ ] **T4** — Surface the advisory check at the `/build` plan gate:
+- [x] **T4** — Surface the advisory check at the `/build` plan gate:
       `.opencode/agent/builder.md` and `.opencode/command/build.md` run a
       read-only focused check for the item after a PROCEED outcome and print the
       findings before selecting a task, without changing the gate outcome or
@@ -65,7 +65,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After each task,
       Verify: `bash tests/run.sh` → exit 0; read the gate step in both files and
       confirm findings are printed post-PROCEED and the outcome is unchanged.
 
-- [ ] **T5** — Add the `/conflicts` command and register it in every command
+- [x] **T5** — Add the `/conflicts` command and register it in every command
       inventory in one change: create `.opencode/command/conflicts.md`
       (`agent: status`; `description:` carries `Usage: /conflicts [item-ref]`);
       add the command to the `README.md` `Commands` table and change `Layout`
@@ -82,7 +82,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After each task,
       green); `rg -n '/conflicts' README.md AGENTS.md template/AGENTS.md
       .opencode/skill/workflow-lifecycle/SKILL.md tests/checks/96-signature-sweep.sh`.
 
-- [ ] **T6** — Cross-surface consistency pass: confirm the command surface, the
+- [x] **T6** — Cross-surface consistency pass: confirm the command surface, the
       `workflow-lifecycle` routing, the `status` agent/command, and the builder
       prompt each describe the check's surface, its advisory nature, and its
       reuse of the shipped vocabulary consistently, with the algorithm stated
