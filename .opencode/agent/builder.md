@@ -68,7 +68,12 @@ Read, in order:
    resolvable local ref cannot be compared; refuse rather than guess. If neither
    exists, proceed and note that no plan publication was found (historical/pre-flow
    item). An unreachable `origin` degrades to the best-effort result and never
-   hard-fails.
+   hard-fails. After a **PROCEED** outcome, run the read-only focused
+   declared-conflict check for the item (`docs/workflow.md` → `## Declared-conflict
+   check`) and print the findings that involve it before selecting a task. The
+   findings are advisory: they never change the gate outcome and never stop the
+   build, and the check itself performs no fetch (the gate's own best-effort ref
+   refresh is separate).
 3. Select work: the task ID given as the argument, or the next unchecked task
    whose dependencies are satisfied. State which task you are starting.
 4. Discover the exact commands (test, lint, typecheck, build) before editing.
