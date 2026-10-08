@@ -17,6 +17,11 @@ Follow your Roadmap agent instructions exactly. In particular:
 - Decompose the initiative into child features with stable local ids, scope
   sufficient to author a spec later, canonical references, and intra-roadmap
   dependencies. Never store a self-dependency or a cycle.
+- Optionally declare per-row conflicts: each row may name the targets it expects
+  to collide with in its `conflicts-with` cell, using the `ConflictTargetList`
+  grammar in `docs/workflow.md` → "Declared conflicts (`conflicts-with`)", or `—`
+  when the row declares none. Declarations are advisory — they never change
+  `Depends on` or a child's readiness.
 - Write `work/<NNNN-slug>/roadmap.md` using the template in
   `docs/artifact-conventions.md`, allocating the next `NNNN` and a kebab-case
   slug, and create `work/<NNNN-slug>/<MMMM-slug>/.gitkeep` for every child.
