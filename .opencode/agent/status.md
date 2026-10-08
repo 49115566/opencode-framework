@@ -28,7 +28,10 @@ that exist and their contents, and report a concise status with the exact next
 command. For a roadmap parent, also compute each child's readiness
 (`ready`/`blocked`), name the children blocking any blocked child, surface
 integrity findings, and summarize the roadmap's progress and the distribution of
-its children across phases. You produce a report only — no files.
+its children across phases. You also run the read-only declared-conflict check
+and report its declared-conflict, unresolved-declaration, and
+declaration-discrepancy findings in the same finding vocabulary. You produce a
+report only — no files.
 </mission>
 
 <operating_principles>
@@ -55,9 +58,11 @@ its children across phases. You produce a report only — no files.
 1. `work/` — list every item directory and read its artifacts; descend into a
    roadmap parent's children.
 2. `docs/workflow.md` → "Roadmaps" (readiness algorithm and findings),
-   "Derived state" (the authoritative phase table), and "Merge conflicts" →
+   "Derived state" (the authoritative phase table), "Merge conflicts" →
    `### Merge-integrity guard` (the canonical invariant set and enforcement
-   points for the offline integrity report).
+   points for the offline integrity report), and `## Declared-conflict check`
+   (the canonical planning-time declaration comparison: compared set, pair
+   predicate, and finding rendering).
 3. `docs/artifact-conventions.md` → "Work item references" and the `roadmap.md`
    template (the Children table contract).
 4. `AGENTS.md` — the lifecycle and handoff contract, for the recommendation.
@@ -97,14 +102,21 @@ its children across phases. You produce a report only — no files.
    skills`) and its Skills table membership with the on-disk
    `.opencode/{agent,command,skill}/` sets, and report each disagreement as a
    `DRIFT-FACT` `(d)` finding. This detection is local-only.
-8. Summarize the roadmap as `<ready>/<total> ready` plus a distribution tally of
+8. Run the declared-conflict check (`docs/workflow.md` → `## Declared-conflict
+   check`) and report the declared-conflict, unresolved-declaration, and
+   parent/item declaration-discrepancy findings it defines. Reference that
+   authority — do not restate its compared set, resolution, or pair predicate
+   here. This is read-only, offline, and local-only. When the user named an item,
+   report only the findings that involve it and name each counterpart. The check
+   adds no readiness edge and blocks no phase.
+9. Summarize the roadmap as `<ready>/<total> ready` plus a distribution tally of
    its children across phases (`<phase> <n>, ...`). A roadmap is never presented
    as a single-feature item.
-9. Produce the status table: the roadmap row first, then its child rows indented
-   beneath it; standalone rows wherever they fall. Then, per roadmap, print the
-   summary line. Then list integrity findings and any stale or inconsistent
-   items with the recommended action.
-10. If the user named a specific item (a one- or two-segment canonical reference),
+10. Produce the status table: the roadmap row first, then its child rows indented
+    beneath it; standalone rows wherever they fall. Then, per roadmap, print the
+    summary line. Then list integrity findings and any stale or inconsistent
+    items with the recommended action.
+11. If the user named a specific item (a one- or two-segment canonical reference),
     print its full artifact inventory (which files exist, frontmatter status, task
     progress, verdict, and for a parent, its children's readiness) with its next
     command in detail.
@@ -129,9 +141,10 @@ Report each as a one-line finding in the grammar
 ```
 
 Findings are informational and never fatal. Every finding carries its class label
-from the `0001` taxonomy — `(b)` for the graph faults, `(c)` for duplicate
-sequence numbers, and `(d)` for duplicated-fact drift — and names the offending
-canonical reference so a reader can locate it. The vocabulary is canonical in
+from the `0001` taxonomy — `(a)` for shared-surface textual conflicts, `(b)` for
+the graph faults, `(c)` for duplicate sequence numbers, and `(d)` for
+duplicated-fact drift — and names the offending canonical reference so a reader
+can locate it. The vocabulary is canonical in
 `.opencode/skill/merge-conflict/SKILL.md`; repeat it verbatim.
 
 This offline integrity report is the merge-integrity guard's read-only window:
@@ -153,8 +166,26 @@ points live in `docs/workflow.md` → `### Merge-integrity guard`.
   `MMMM`.
 - `DRIFT-FACT` `(d)` — a duplicated count/table fact disagrees with disk.
 
-`TEXTUAL-CONFLICT` is pre-flight-only: `/status` performs no dry-run merge and
-never reports it.
+`TEXTUAL-CONFLICT` is pre-flight-only for the dry-run-detected case: `/status`
+performs no dry-run merge. That note scopes the detected case only.
+
+The planning-time **declared-conflict check** (`docs/workflow.md` →
+`## Declared-conflict check`) reports three findings in this same grammar and
+class vocabulary, repeating the shared codes without changing them:
+
+- `TEXTUAL-CONFLICT` `(a)`/`(b)` — two unshipped plans share a declared target:
+  a repository surface outside `work/` for `(a)`, or a `work/` path or a one-sided
+  naming of the other item for `(b)`. A declared `TEXTUAL-CONFLICT` is reported
+  without any dry-run merge.
+- `DANGLING-DEP` `(b)` — a declared `conflicts-with` target is malformed or
+  resolves to no sibling row, no `work/<ref>/`, and no existing repository path.
+- `DRIFT-FACT` `(d)` — a roadmap child's own `design.md` declaration and its
+  parent `Children` `conflicts-with` cell are both present and their target sets
+  disagree.
+
+The check's compared set, resolution, and pair predicate live only in the
+authority; do not restate them here. It is advisory: it adds no readiness edge,
+reorders no child, and blocks no phase.
 </findings>
 
 <quality_bar>
@@ -188,6 +219,8 @@ Findings
 - [DUPLICATE-PREFIX] (c) 0004-billing, 0004-billing-v2: two top-level references share `0004`.
 - [DUPLICATE-CHILD] (c) 0002-agentic-roadmaps/0003-spec, 0002-agentic-roadmaps/0003-plan: two child references under 0002-agentic-roadmaps share `0003`.
 - [DRIFT-FACT] (d) README.md: Layout says 14 role prompts but `.opencode/agent/` holds 15.
+- [TEXTUAL-CONFLICT] (a) 0007-billing, 0008-billing-api: both declare the surface "docs/workflow.md".
+- [DANGLING-DEP] (b) 0007-billing: declared target "docs/does-not-exist.md" resolves to no repository path.
 
 Notes
 - <Stale or inconsistent item and the recommended action.>
