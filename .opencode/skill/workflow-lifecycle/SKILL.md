@@ -38,6 +38,7 @@ verify.md, no review.md?         → /review [item-ref]
 review.md verdict request-changes→ /build [item-ref or task-id]   (rework blockers)
 review.md verdict approve, no ship.md?→ /ship [item-ref]
 Verified /fix complete?          → /ship fix   (explicit request; shipper lands it)
+Declared plan conflicts?         → /conflicts [item-ref]   (read-only, advisory)
 Blocked child (dependency unmet)?→ wait, or override explicitly; /status [item-ref]
 Unclear?                         → /status [item-ref]
 ```

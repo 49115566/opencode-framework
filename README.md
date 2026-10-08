@@ -201,6 +201,7 @@ unchanged. A standalone item is still just `NNNN-slug`.
 | `/fix <bug description>`       | `builder`   | Lightweight reproduce → fix → test; land with `/ship fix` |
 | `/roadmap <initiative>` | `roadmap` | Decompose a multi-feature initiative → `roadmap.md` + child dirs |
 | `/status [item-ref]` | `status`  | Report each work item's phase (read-only)                |
+| `/conflicts [item-ref]` | `status`  | Report declared conflicts among unshipped plans (read-only) |
 | `/doctor`          | `doctor`    | Read-only framework drift check: inventories, counts, permissions, ignore rules — framework-maintainer only |
 | `/bootstrap`       | `bootstrap` | Adopt the framework into the current repository          |
 
@@ -269,7 +270,7 @@ permission model.
 ```
 .opencode/
   agent/     # 14 role prompts
-  command/   # 12 slash commands
+  command/   # 13 slash commands
   skill/     # 11 knowledge skills
 docs/
   workflow.md               # lifecycle, phases, state, routing
