@@ -28,7 +28,7 @@ CYCLE_FIXTURE="tests/fixtures/cyclic-roadmap/roadmap.md"
 if [ -f "$CYCLE_FIXTURE" ]; then
   ok "AC13 committed cycle fixture exists at $CYCLE_FIXTURE"
   need "$CYCLE_FIXTURE" 'phase: roadmap' "AC13 cycle fixture declares phase: roadmap"
-  need "$CYCLE_FIXTURE" '| Local id | Title | Scope | Depends on | Canonical reference |' \
+  need "$CYCLE_FIXTURE" '| Local id | Title | Scope | Depends on | conflicts-with | Canonical reference |' \
     "AC13 cycle fixture has a Children table header"
 else
   bad "AC13 committed cycle fixture missing at $CYCLE_FIXTURE"
