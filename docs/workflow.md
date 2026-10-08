@@ -15,10 +15,10 @@ diff is the complete state of the work, visible to a fresh clone, a teammate,
 and CI.
 
 ```
-/spec ──▶ spec.md ──▶ /plan ──▶ design.md + tasks.md ──▶ /build ──▶ code + [x] tasks
-                                                                          │
-                      /ship ◀── review.md ◀── /review ◀── verify.md ─────┤ (/test)
-                                                                          └─ visual.md (/visual, optional, UI only)
+/spec ──▶ spec.md ──▶ /plan ──▶ design.md + tasks.md ──▶ /ship plan ──▶ merge ──▶ /build ──▶ code + [x] tasks
+                                                                                  │
+                              /ship ◀── review.md ◀── /review ◀── verify.md ──────┤ (/test)
+                                                                                  └─ visual.md (/visual, optional, UI only)
 ```
 
 A work item is *done* when its PR is open (or merged) and `review.md` records an
@@ -125,6 +125,17 @@ that grammar is independent of where such an item's declaration is stored. A
 roadmap authored before the column existed has no `conflicts-with` column, and its
 absence is treated as no declared conflicts (`—` for every row).
 
+A child or standalone item's own declaration is stored in its `design.md`
+frontmatter `conflicts-with` value; the field is optional and holds one
+`ConflictTargetList`, the grammar defined below. Absence of the field or a `—`
+value means no declared conflicts, and no separate container or artifact is
+required. A roadmap child's declared set is the **union** of that `design.md`
+value and its parent `Children` row's `conflicts-with` cell; when the two
+disagree, the later read-only check reports the disagreement rather than silently
+preferring one. A malformed or unresolved item value is likewise reported by the
+later check, never dropped or auto-repaired. The declaration is advisory: it adds
+no readiness edge, reorders no child, and changes no child's readiness.
+
 A `conflicts-with` cell holds one `ConflictTargetList`:
 
 ```
@@ -223,12 +234,16 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   `spec.md` maps to at least one task.
 - **Artifact**: `design.md` and `tasks.md`, frontmatter `phase: design` and
   `phase: tasks` respectively.
-- **Next**: `/build` (or `/build <task-id>` for a specific task).
+- **Next**: `/ship plan <item-ref>` to publish the plan (see
+  "Plan publication"); then `/build` once the plan is merged.
 
 ### 3. Build — `/build [item-ref or task-id]`
 
 - **Purpose**: Implement the tasks.
-- **Entry**: `tasks.md` exists with unchecked items.
+- **Entry**: `tasks.md` exists with unchecked items, and the plan is published —
+  see the `/build` plan gate in "Plan publication". An unmerged `plan/<ref>`
+  branch blocks development; an item with no publication recorded (historical or
+  pre-flow) proceeds with a note.
 - **Process**: Read `spec.md`, `design.md`, `tasks.md` → select the requested
   task or the next unblocked unchecked task → implement following existing
   conventions → run the project's checks → tick the box in `tasks.md`.
@@ -293,6 +308,124 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   (branch, commits, and PR URL). Presence of `ship.md` is the shipped signal; see
   "Dependencies and readiness".
 - **Next**: Human review and merge. `/status` will show the item as shipped.
+
+## Plan publication
+
+A work item's **plan** is its committed requirements and design artifacts —
+`work/<item-ref>/spec.md`, `design.md`, and `tasks.md` when present. The plan is
+published to the shared default branch before development begins so other
+maintainers can cross-reference intended surfaces before any code exists. It is a
+process step, not a lifecycle phase: it adds no artifact, no `phase` value, and
+no derived-state row.
+
+Publication is a **mode of `/ship`** — `/ship plan <item-ref>` — performed by the
+shipper, the only agent that writes git (see `AGENTS.md` → guardrails). Plan mode:
+
+- **Preconditions.** `work/<item-ref>/spec.md` and `design.md` exist (the item has
+  completed `/plan`; `tasks.md` is included when present). No `review.md` is
+  required — plan mode is a documented exception to the approved-work-item entry
+  criterion, like fix mode. The plan diff contains no secrets.
+- **Branch.** A dedicated `plan/<ref>` branch, where `<ref>` is the canonical
+  reference with `/` replaced by `-` (for example
+  `plan/0006-parallel-plan-conflicts-0002-plan-record`). Each item gets its own
+  branch, so concurrent publications do not overwrite one another, and the plan
+  branch is distinct from the item's final ship branch.
+- **Commit and pull request.** The plan artifacts under `work/<item-ref>/` are
+  committed as one conventional commit and pushed; a pull request is opened with
+  the plan description template. The PR links the plan artifacts by repository
+  path and prints the item's declared conflicts, or `—`.
+- **Approval and merge.** At least one human approval is required before the plan
+  pull request is merged (a process precondition the framework documents but does
+  not verify offline). The shipper neither approves nor merges; the merge is a
+  human action, and the repository may enforce approval via branch protection.
+- **No shipped state.** Plan mode never writes `ship.md`, never runs the ship
+  pre-flight or reconcile, and never creates the final ship branch or pull request.
+  `ship.md` remains the sole shipped signal.
+- **Revision.** When a later `/plan` revision changes the intended surfaces or
+  declared targets, it is republished through the same flow: a commit is added to
+  the existing `plan/<ref>` branch and its pull request updated (or a new one
+  opened if the branch was pruned). A pushed branch is never force-pushed.
+- **Idempotence.** Re-invoking publication when the plan is already on the default
+  branch and unchanged is a no-op: it reports that and creates nothing.
+
+### The `/build` plan gate
+
+Development does not begin while a plan pull request is unmerged. Before
+selecting a task, the builder runs an offline-first, git-only gate — it requires
+no `gh` and never hard-fails:
+
+```
+plan_gate(item_ref):
+  ref         = item_ref with "/" -> "-"
+  plan_branch = "plan/" + ref
+  default_ref = "origin/<default>" if origin exists, else "<default>"
+  # 0. Refresh refs best-effort (an offline fetch is ignored). Refresh the
+  #    default branch, and the plan branch too when the remote advertises one,
+  #    so the comparison below sees a later revision and a retained, already-
+  #    merged branch is not mistaken for an unmerged one.
+  remote_plan = false
+  if origin exists:
+      git fetch origin <default>
+      remote_plan = git ls-remote --heads origin plan/<ref> returns a ref
+      if remote_plan: git fetch origin plan/<ref>
+  # Resolve the plan branch (remote first, then local) and flag it unmerged when
+  # its plan artifacts differ from the default branch — a first publication or a
+  # later revision. Branch existence alone is not enough, because a merged plan
+  # branch may be retained. A ref the remote advertises but that does not resolve
+  # locally cannot be compared, so it is refused rather than read as matching or
+  # differing.
+  plan_ref = none
+  unmerged_plan = false
+  unresolved_plan = false
+  if remote_plan and origin/plan/<ref> resolves:
+      plan_ref = "origin/plan/<ref>"
+  elif a local branch plan/<ref> exists:
+      plan_ref = "plan/<ref>"
+  elif remote_plan:
+      unresolved_plan = true
+  if plan_ref is not none:
+      unmerged_plan = git diff --quiet <plan_ref> <default_ref> -- work/<item_ref>/ is false
+  # 1. Published / merged? (a differing plan branch is not yet published)
+  if <default_ref> has work/<item_ref>/design.md
+     and not unmerged_plan and not unresolved_plan                  -> PROCEED
+  # 2. An unmerged plan branch — or one the remote advertises but that cannot be
+  #    resolved and compared — blocks development
+  if plan_ref is not none or unresolved_plan                         -> REFUSE
+  # 3. No publication recorded (historical / pre-flow item)
+  otherwise                                                          -> PROCEED (note it)
+```
+
+- Step 0 refreshes refs best-effort before the default-branch check: it fetches
+  `origin/<default>`, and the `plan/<ref>` branch too when the remote advertises
+  one, so a plan merged since the last fetch is seen even when the local
+  `plan/<ref>` branch was retained and a later revision is not hidden by a stale
+  remote-tracking ref. The refresh is ignored when `origin` is unreachable.
+- An unmerged `plan/<ref>` branch (case 2) refuses development: the builder stops
+  before implementing and reports the plan branch or pull request that must be
+  merged first.
+- Case 2 is content-aware, not mere branch existence: a `plan/<ref>` branch whose
+  plan artifacts differ from the default branch — a first publication **or a
+  later revision** — refuses development; a retained branch whose plan artifacts
+  already match the default branch (a merged publication) does not. An unmerged
+  revision therefore blocks development even after the first plan merged.
+- An item with no plan pull request — historical, or created before this flow —
+  is not blocked and needs no migration; the builder proceeds and notes that no
+  plan publication was found (case 3).
+- A plan present on the default branch proceeds even if a merged `plan/<ref>`
+  branch is retained, because step 0 refreshes the ref and step 1 treats a
+  branch whose plan artifacts already match the default branch as merged, not
+  unmerged (case 2 is content-aware).
+- A `plan/<ref>` branch the remote advertises but that has no resolvable local
+  ref — for example when the best-effort fetch of it fails — cannot be compared,
+  so the gate refuses rather than read it as matching or differing.
+- An unreachable `origin` degrades to the best-effort result and never hard-fails
+  the build.
+
+The declaration remains advisory throughout: it adds no readiness edge, reorders
+no child, and changes no child's readiness. The declared-conflict grammar and its
+resolution rules are the single authority in "Declared conflicts
+(`conflicts-with`)"; a plan's declaration home is the `design.md` frontmatter
+`conflicts-with` value.
 
 ## Derived state
 

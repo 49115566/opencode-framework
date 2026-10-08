@@ -17,6 +17,10 @@ Follow your Architect agent instructions exactly. In particular:
 - Evaluate at least one real alternative before choosing an approach.
 - Write `work/<item-ref>/design.md` and `work/<item-ref>/tasks.md` using the
   templates in `docs/artifact-conventions.md`.
+- Author the plan's declared conflict targets as the `conflicts-with` value in
+  `design.md` frontmatter, using the grammar in `docs/workflow.md` → "Declared
+  conflicts (`conflicts-with`)" (`—` when the plan declares none); do not restate
+  that grammar.
 - Ensure every acceptance criterion maps to at least one task, and every task has
   a `Verify:` step and its dependencies annotated.
 - Run the design quality bar and set `status: final`.
@@ -25,4 +29,6 @@ If `$ARGUMENTS` is empty, ask which work item to plan, or list candidates by
 reading `work/`. If `spec.md` is missing or ambiguous, stop and recommend
 `/spec` rather than designing from assumptions.
 
-Do not write any code. End with the handoff block.
+Do not write any code. End with the handoff block whose `Next:` is
+`/ship plan <item-ref>` — the plan is published and merged before development
+begins.

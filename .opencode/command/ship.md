@@ -1,5 +1,5 @@
 ---
-description: "Ship an approved work item as a branch, conventional commits, and a PR. Usage: /ship [item-ref] | /ship fix [short description]"
+description: "Ship an approved work item as a branch, conventional commits, and a PR. Usage: /ship [item-ref] | /ship fix [short description] | /ship plan <item-ref>"
 agent: shipper
 ---
 
@@ -8,8 +8,9 @@ Run the **Ship** phase for: $ARGUMENTS
 Follow your Ship agent instructions exactly. The argument grammar is:
 
 ```
-/ship [item-ref | fix [short description]]
+/ship [item-ref | plan <item-ref> | fix [short description]]
   item-ref  -> work-item mode (unchanged)
+  plan      -> plan-publication mode (new); publishes the plan before development
   fix       -> fix-landing mode (new); the optional description disambiguates
   (empty)   -> ask which work item to ship (unchanged)
 ```
@@ -83,6 +84,39 @@ Follow your Ship agent instructions exactly. The argument grammar is:
 - Do **not** write `ship.md`: a fix creates no work item and no shipped-state
   record. Report the branch, commits, and PR; when `gh` is unavailable, finish the
   local commits and report the exact commands to push and open the PR.
+
+**Plan-publication mode** (`/ship plan <item-ref>`):
+
+- Publish the item's plan — `work/<item-ref>/spec.md`, `design.md`, and `tasks.md`
+  when present — before development begins. This is a documented exception to the
+  approved-work-item precondition, like fix mode: no `review.md` is required. The
+  plan diff must contain no secrets.
+- Create or switch to a dedicated `plan/<ref>` branch, where `<ref>` is the
+  canonical reference with `/` replaced by `-` (a nested child's
+  `NNNN-slug/MMMM-slug` becomes `NNNN-slug-MMMM-slug`); e.g.
+  `plan/0006-parallel-plan-conflicts-0002-plan-record`. The plan branch is distinct
+  from the item's final ship branch, and each item gets its own branch so
+  concurrent publications are independent.
+- Stage the plan artifacts under `work/<item-ref>/` (never `git add -A`), scan
+  them for secrets, and commit them as one conventional commit
+  (`docs(plan): record plan for <item-ref>`). Push (this requires approval), then
+  open a PR using the `pr-workflow` plan template, which links the plan artifacts
+  by repository path and prints the item's declared conflicts — its `design.md`
+  frontmatter `conflicts-with` value per `docs/workflow.md` → "Declared conflicts
+  (`conflicts-with`)" — or `—`.
+- At least one human approval is required before the plan PR is merged. The
+  shipper neither approves nor merges; the merge is a human action, and the
+  repository may enforce approval via branch protection.
+- Never write `ship.md`, never run the ship pre-flight or reconcile, and never
+  create the final ship branch or PR. `ship.md` remains the sole shipped signal.
+- A later `/plan` revision that changes the intended surfaces or declared targets
+  is republished through the same flow: add a commit to the existing `plan/<ref>`
+  branch and update its PR (or open a new one if the branch was pruned). Never
+  force-push a pushed branch.
+- Re-invoking publication when the plan is already on the default branch and
+  unchanged is a no-op: report that and create nothing.
+- When `gh` is unavailable, make the local commits on `plan/<ref>` and report the
+  exact commands to push and open the PR.
 
 If `$ARGUMENTS` is empty, ask which work item to ship, or list candidates from
 `work/`.

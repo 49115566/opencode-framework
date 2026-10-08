@@ -36,6 +36,11 @@ Rules:
 - `status: final` means the owning agent considers the artifact complete for its
   phase. `blocked` means work cannot proceed without user input; say why in the
   body.
+- `conflicts-with` is optional and appears only on `design.md`; it holds one
+  `ConflictTargetList` declaring the item's intended conflict targets. Absent or
+  `—` means no declared conflicts, and the declaration is advisory — it never
+  affects phase derivation or readiness. The grammar is defined in
+  `docs/workflow.md` → "Declared conflicts (`conflicts-with`)".
 - Never remove frontmatter. Never edit a file owned by another phase.
 
 ## Work item references
@@ -197,6 +202,7 @@ phase: design
 status: final
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
+conflicts-with: "—"           # optional: one ConflictTargetList; `—` or absent = none
 ---
 
 # Design — <Feature title>

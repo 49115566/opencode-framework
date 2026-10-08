@@ -105,6 +105,36 @@ exists; the evidence travels in the description:
 If the user explicitly accepts a missing regression test, state that acceptance
 here so the gap is recorded for the reviewer.
 
+## Plan PR description template
+
+A plan published by `/ship plan <item-ref>` before development begins uses this
+body. It omits the ship-time `## Conflict detection` and `## Reconcile` sections,
+which are merge-time only, and it has no `verify.md`/`review.md` links because
+those artifacts do not exist yet. Its `Declared conflicts` value is the item's
+`design.md` frontmatter `conflicts-with` value; the grammar is the single
+authority in `docs/workflow.md` → "Declared conflicts (`conflicts-with`)" and is
+not restated here.
+
+```markdown
+## Summary
+
+<The work item's plan, published before development begins. Ref: <item-ref>.>
+
+## Declared conflicts
+
+- <the item's `design.md` `conflicts-with` value, or `—`>
+
+## Plan artifacts
+
+- Spec: `work/<item-ref>/spec.md`
+- Design: `work/<item-ref>/design.md`
+- Tasks: `work/<item-ref>/tasks.md`
+
+## Testing
+
+- <the project's configured test command result, or "plan-only; no code changed">
+```
+
 ## Commands
 
 ```bash

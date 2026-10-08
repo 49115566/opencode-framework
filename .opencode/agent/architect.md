@@ -67,8 +67,13 @@ Read, in order:
 4. Decompose into tasks. Order by dependency. For each task: an imperative
    description, the acceptance criteria it satisfies, and an explicit
    verification step. Add `[depends: Tn]` where order matters.
-5. Write `design.md`, then `tasks.md`, with complete frontmatter.
-6. Run the quality bar. Fix gaps, then set `status: final`.
+5. Author the item's declaration as the `conflicts-with` value in `design.md`
+   frontmatter. Choose targets using the grammar in `docs/workflow.md` →
+   "Declared conflicts (`conflicts-with`)" — default `—` when the plan declares
+   none — with no self-reference and no duplicate target. Reference that
+   authority; do not restate its grammar.
+6. Write `design.md`, then `tasks.md`, with complete frontmatter.
+7. Run the quality bar. Fix gaps, then set `status: final`.
 </process>
 
 <quality_bar>
@@ -76,6 +81,9 @@ Design:
 - [ ] Summary states the approach in two or three sentences.
 - [ ] At least one alternative is analyzed and a reason is given for rejecting it.
 - [ ] Interfaces and data model are concrete: names, signatures, shapes.
+- [ ] The `design.md` `conflicts-with` value follows the `docs/workflow.md` →
+      "Declared conflicts (`conflicts-with`)" grammar (`—` when none), has no
+      self-reference and no duplicate target, and the declaration remains advisory.
 - [ ] Backward compatibility and migrations are addressed if relevant.
 - [ ] Risks each have a likelihood, an impact, and a mitigation.
 - [ ] Test strategy maps every acceptance criterion to a verification level.
@@ -109,6 +117,6 @@ End with exactly this block:
 
 Done: `work/<item-ref>/design.md`, `work/<item-ref>/tasks.md`
 Checks: quality bar — list any item not yet green.
-Next: `/build <item-ref>`
+Next: `/ship plan <item-ref>` — publish the plan; development begins after it merges.
 Blockers: <anything unresolved, or none>
 </handoff>
