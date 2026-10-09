@@ -109,8 +109,9 @@ over a `request-changes` verdict; a `request-changes` verdict or a missing
 `review.md` (with no `ship.md`) is not satisfied.
 A non-recalled `ship.md` presence and an `approve` verdict satisfy exactly as
 before. A **recalled** item — its `ship.md` carrying a `reopened:` marker — does
-not satisfy the dependency, and its dependents are reported blocked until it
-re-ships; the revocation is defined by `### Shipped items and reopen`.
+not satisfy the dependency, and its dependents are reported `blocked`, naming the
+recalled item as the unsatisfied dependency, until it re-ships; the revocation is
+defined by `### Shipped items and reopen`.
 A child in a cycle is never `ready`.
 
 ### Declared conflicts (`conflicts-with`)
@@ -1033,7 +1034,7 @@ content:
 | ---------------------------------------------------------- | ------------ |
 | earliest `stale:` marker among the item's artifacts names phase `P` | `P` (backtracked) |
 | `ship.md` present with a `reopened:` marker naming phase `P` | `P` (reopened) |
-| an open challenge in `challenges.md` (no matching `Response`/`Withdrawal`) | challenged (blocked) |
+| an open challenge in `challenges.md` (no matching `Response`/`Withdrawal`) on an item that has no `ship.md` | challenged (blocked) |
 | `roadmap.md` present (check before `spec.md`)              | roadmap      |
 | `spec.md` missing                                          | not started  |
 | `spec.md` present, `design.md` missing                     | spec         |
@@ -1062,19 +1063,35 @@ rendered instance of the general backtrack model
 (`## Phase reversal (backtracking)`): it is retained verbatim, defines no second
 rework mechanism, and its routing literal and consumers are unchanged.
 
-The **challenged** condition is a blocked overlay evaluated after the
-`stale:`/`reopened:` structural derivations and before the forward-action and
-`ship.md`/verdict rows, so an item with an open challenge is never read as ready
-to advance or ship even when its artifact-presence and verdict rows would
-otherwise derive a forward phase. While `challenges.md` holds a `Challenge <n>`
-with no matching `Response n`/`Withdrawal n`, the item derives `challenged`
-(blocked), the next forward phase — including `/ship` — refuses and reports the
-open challenge(s), and the open challenge escalates to the user; the condition
-reuses the `0001` marker model (the record's open entry is the marker, plus the
-derived label) and introduces no new `phase` value. Its raising, adjudication,
-and outcome are defined once in `## Findings challenge and adjudication`; the
-full `/status` reporting vocabulary and dependency-readiness reporting remain the
-scope of `0006-status-and-derived-state`.
+The **challenged** condition is a blocked overlay that applies to **unshipped
+items only**; it is evaluated after the `stale:`/`reopened:` structural
+derivations and before the forward-action and `ship.md`/verdict rows, so an
+unshipped item with an open challenge is never read as ready to advance or ship
+even when its artifact-presence and verdict rows would otherwise derive a forward
+phase. While an unshipped item's `challenges.md` holds a `Challenge <n>` with no
+matching `Response n`/`Withdrawal n`, the item derives `challenged` (blocked), the
+next forward phase — including `/ship` — refuses and reports the open challenge(s),
+and the open challenge escalates to the user; the condition reuses the `0001`
+marker model (the record's open entry is the marker, plus the derived label) and
+introduces no new `phase` value. The unshipped precondition is what keeps the
+overlay from masking a completed item: a `ship.md`-present item derives `shipped`
+(or `P` (reopened) when it also carries a `reopened:` marker) and its open
+challenge is **out-of-scope for a challenge**, because post-ship reversal is
+recall's domain (`0005`, `### Shipped items and reopen`); therefore no shipped
+item is ever derived `challenged`. Its raising, adjudication, and outcome are
+defined once in `## Findings challenge and adjudication`.
+
+`/status` reports the Phase column by mirroring this table's Phase cell — the
+base phases plus `P` (backtracked), `P` (reopened), `build (rework)`, and
+`challenged (blocked)` — and adds a per-item Notes line for the derived states.
+For a backtracked item the Notes name the target phase being revised and the
+affected upstream artifact from the open `backtracks.md` finding, and list the
+downstream artifacts the backtrack invalidated (the `stale:`-marked ones), or
+`none` when no downstream artifact exists; for a reopened item they name the
+recall and the re-entered phase; for an unshipped challenged item they name the
+open challenge(s); and for a shipped item carrying an open challenge they surface
+that challenge as out-of-scope. The report reuses this table and the readiness
+authority as its single sources and restates neither.
 
 A directory containing `roadmap.md` is a roadmap parent and is derived as
 `roadmap` before the single-feature rows. A roadmap child is derived like any

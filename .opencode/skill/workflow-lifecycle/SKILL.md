@@ -53,6 +53,39 @@ Blocked child (dependency unmet)?→ wait, or override explicitly; /status [item
 Unclear?                         → /status [item-ref]
 ```
 
+## Derived states
+
+`docs/workflow.md` → "Derived state" is the authority; this is the quick view.
+The Phase column mirrors that table's Phase cell: the base phases (`not started`,
+`spec`, `design`, `build`, `test`, `review`, `ship`, `shipped`, `roadmap`) plus
+these derived labels.
+
+- `P (backtracked)` — the earliest `stale:` marker across the item's artifacts
+  names phase `P`. The marked artifact is not the item's current phase artifact
+  and is never read as a satisfied downstream prerequisite.
+- `P (reopened)` — the item's `ship.md` carries a `reopened:` marker naming phase
+  `P`. The shipped signal is revoked: the item derives `P` and does not satisfy
+  its dependents until it re-ships.
+- `build (rework)` — the existing `review.md` verdict `request-changes` row. It
+  is distinct from `backtracked` and is not a second rework state.
+- `challenged (blocked)` — an open `challenges.md` challenge (a `Challenge <n>`
+  with no matching `Response n`/`Withdrawal n`) on an item **that has no
+  `ship.md`**. The item is blocked from advancing or shipping until the challenge
+  is adjudicated or withdrawn.
+
+The `challenged` overlay applies to **unshipped items only**. A `ship.md`-present
+item derives `shipped` (or `P (reopened)` when recalled) and its open challenge is
+out-of-scope for a challenge, because post-ship reversal is recall's domain
+(`/ship recall`); no shipped item is ever derived `challenged`. The
+`stale:`/`reopened:` structural states are evaluated before the challenged
+overlay, which is evaluated before the artifact-presence and verdict rows. A
+`stale: roadmap` token maps to `spec`. `/status` adds a per-item Notes line naming
+the target phase and affected upstream artifact and the invalidated downstream
+artifacts (or `none`), the recall, or the open challenge; readiness is unchanged —
+a recalled dependency does not satisfy a dependent, while a non-recalled `ship.md`
+presence and an `approve` verdict still do (`docs/workflow.md` → "Dependencies
+and readiness").
+
 ## Handoff block
 
 End every phase with:
