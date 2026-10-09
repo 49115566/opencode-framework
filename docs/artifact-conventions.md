@@ -140,6 +140,14 @@ What the initiative is and who it serves.
 ## Open issues
 
 - <cycles / non-decomposable initiative / duplicate / single-feature / unresolved>
+- **Withdrawn child — `<MMMM-slug>`.** Withdrawn by user decision on <YYYY-MM-DD>
+  and removed from the Children table and Sequencing above. Its directory
+  `work/<parent-NNNN-slug>/<MMMM-slug>/` and spent local number are preserved; the
+  number is never reused. Rationale: <why>. Former scope: <what it covered>.
+- **Revised <YYYY-MM-DD>.** Triggered by `work/<parent>/<child-ref>/` (finding in
+  its `backtracks.md`). Operations: <re-scope/add/withdraw/re-sequence>.
+  Invalidated: <affected child refs>. See git history for the pre-revision
+  roadmap.
 ```
 
 - **Local id** is the child's directory name, `MMMM-slug`, and is the key used
@@ -155,6 +163,18 @@ What the initiative is and who it serves.
   when the row declares none, or one `ConflictTargetList`. The grammar is defined
   in `docs/workflow.md` → "Declared conflicts (`conflicts-with`)". The declaration
   is advisory and never changes `Depends on` or readiness.
+- **Withdrawal record** — a revision that withdraws a child removes its row from
+  the `Children` table and `## Sequencing` but preserves the child directory and
+  its spent local number (never reused), recording the withdrawal and its rationale
+  under `## Open issues` in the shape above. The named directory is the recognition
+  signal for a deliberate withdrawal: an `UNLISTED-CHILD` observation for it is
+  report-only and never auto-repaired. See `docs/workflow.md` →
+  "Revising a roadmap".
+- **Revision note** — a revision changes the frontmatter `updated` date and appends
+  a revision note under `## Open issues` naming the date, the triggering child, the
+  operations applied, and the invalidated children; the pre-revision content stays
+  recoverable from committed git history. See `docs/workflow.md` →
+  "Revising a roadmap".
 
 ### `spec.md` (product)
 
