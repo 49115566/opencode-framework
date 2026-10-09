@@ -56,3 +56,18 @@ Recommendation: the specific change to make.
 - `request-changes` if any Blocker or Major survives scrutiny.
 - `approve` otherwise. Approving is not a rubber stamp; state why it is ready.
 - Never invent blockers to seem thorough, and never approve to be agreeable.
+
+## Disputed findings
+
+A finding can be disputed, and there is a recorded route for it. A `review.md`
+finding — or a defect reported in `verify.md` — is contested by appending a
+challenge entry to the item's committed `challenges.md`; the phase that produced
+the finding re-evaluates it and appends the decision. Never silently comply with
+or override a disputed finding, and never leave it as obey-or-ignore: use the
+authority `docs/workflow.md` → "Findings challenge and adjudication", with the
+record shapes in `docs/artifact-conventions.md`.
+
+Adjudicating a sustained challenge recomputes the verdict: `approve` if and only
+if no Blocker or Major remains. Reuse the severity scale above and the
+`approve`/`request-changes` verdict — a challenge introduces no second severity
+scale, finding format, or verdict.

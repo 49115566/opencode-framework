@@ -519,6 +519,99 @@ finding `n` is `resolved` when a matching `Resolution n` entry exists, and `open
 otherwise. A resolution recorded before its finding is malformed and is
 reported, not reordered.
 
+### `challenges.md` (challenges) — per-item challenge record
+
+An item MAY carry a committed, append-only `challenges.md` record beside its
+phase artifacts. It is **not a phase artifact**: it carries no `phase` value, is
+not one of the artifact-presence rows, and does not by itself determine the
+item's derived **phase**. Its role is defined in `docs/workflow.md` →
+"Findings challenge and adjudication". An absent file means nothing is
+challenged, and historical items need no migration.
+
+Its frontmatter is minimal and distinct from the phase-artifact frontmatter — it
+carries no `phase`:
+
+```yaml
+---
+feature: NNNN-slug
+record: challenges
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+The body is append-only. A **challenge entry** records who disputed the finding,
+which finding (the artifact and its finding id), the challenge type, the
+evidence, the rationale, and a status of `open`:
+
+```markdown
+## Challenge <n> — YYYY-MM-DD
+
+- challenger: `/build`
+- challenged: `review.md` [M1]
+- type: severity
+- evidence: <observable observation>
+- rationale: <why the finding or its severity is disputed>
+- status: open
+```
+
+`challenger` is the phase raising the challenge; `type` is one of `finding`,
+`severity`, or `acceptance-criterion`; `challenged` names the artifact that
+produced the disputed item (a `review.md` finding id, or a `verify.md` defect).
+
+When the producing phase adjudicates, a **response entry** is appended:
+
+```markdown
+## Response <n> — YYYY-MM-DD
+
+- resolves: Challenge <n>
+- adjudicator: `/review` | `user`
+- decision: sustained | rejected
+- basis: <spec/criterion/diff evidence>
+- outcome: <overturned | severity adjusted to <X> | verdict recomputed to <approve|request-changes> | finding unchanged | reclassified as a spec or design fault>
+```
+
+`adjudicator` is the producing phase command (`/review` or `/test`) or `user`;
+`decision` is `sustained` or `rejected`. The severity, finding-format, and
+verdict vocabulary is the existing one (`Blocker`/`Major`/`Minor`/`Nit` and
+`approve`/`request-changes`); this record introduces no second scale or verdict.
+
+The author may withdraw a challenge by appending a **withdrawal entry**:
+
+```markdown
+## Withdrawal <n> — YYYY-MM-DD
+
+- withdraws: Challenge <n>
+- reason: <why the challenge is withdrawn>
+```
+
+A later decision that supersedes an earlier response is appended as a
+**reversal entry**; it never rewrites the prior entry:
+
+```markdown
+## Reversal <n> — YYYY-MM-DD
+
+- reverses: Response <n>
+- adjudicator: <producing phase command | user>
+- decision: sustained | rejected
+- basis: <spec/criterion/diff evidence>
+```
+
+Entries are numbered sequentially from `1` and appended in order. No entry is
+ever edited, reordered, or removed. The effective status of challenge `n` is
+`open` until a matching `Response n` or `Withdrawal n` entry exists, then
+`resolved` (or `withdrawn`); a `Reversal n` supersedes the recorded decision but
+does not reopen the challenge. A `Response`/`Withdrawal`/`Reversal n` recorded
+before its `Challenge n` is malformed and is reported, not reordered.
+
+The **challenged condition** is derived from the record, not from a frontmatter
+field: it holds while a `Challenge <n>` has no matching `Response n`/`Withdrawal
+n`. The open entry is the marker and the derived label is `challenged` (blocked);
+it is not a `phase` value. Its precedence in derived state — evaluated as a
+blocked overlay before the forward-action and `ship.md`/verdict rows, after the
+`stale:`/`reopened:` structural derivations — is stated in `docs/workflow.md` →
+"Derived state".
+
 ## Sequence allocation
 
 To allocate a top-level `NNNN`, take the greatest 4-digit prefix that has **ever**

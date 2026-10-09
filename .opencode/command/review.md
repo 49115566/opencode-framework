@@ -11,6 +11,15 @@ Follow your Review agent instructions exactly. In particular:
 - A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item or
   `NNNN-slug/MMMM-slug` for a roadmap child; every `work/<item-ref>/` path
   resolves to that item's directory.
+- If `work/<item-ref>/challenges.md` holds an open challenge against a
+  `review.md` finding, adjudicate it first: re-evaluate the finding against the
+  spec and diff, append a `## Response <n>` recording `adjudicator`, `decision`,
+  `basis`, and `outcome`, and — when sustained — revise `review.md` and recompute
+  the verdict (`approve` if and only if no `Blocker` or `Major` remains); when
+  rejected leave the finding and verdict unchanged; when unresolved escalate on
+  the question surface and record the user's decision. Never adjudicate a
+  challenge you raised. See `docs/workflow.md` → "Findings challenge and
+  adjudication".
 - Determine the base ref and produce the full diff. State the exact commands you
   used. If the base is ambiguous, ask rather than reviewing the wrong range.
 - Walk every acceptance criterion and mark it met / partial / not met.
