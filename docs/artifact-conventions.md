@@ -22,6 +22,8 @@ created: 2026-01-31           # ISO-8601 date, first creation
 updated: 2026-02-04           # ISO-8601 date, last edit
 notes: ""                     # optional: skipped phases, caveats
 parent: ""                    # optional: the parent <NNNN-slug> when this item is a nested roadmap child
+stale: ""                     # optional: the backtrack target phase that invalidated this artifact
+reopened: ""                  # optional on ship.md: the phase a recalled item re-enters
 ---
 ```
 
@@ -41,6 +43,19 @@ Rules:
   `—` means no declared conflicts, and the declaration is advisory — it never
   affects phase derivation or readiness. The grammar is defined in
   `docs/workflow.md` → "Declared conflicts (`conflicts-with`)".
+- `stale` is optional and marks this artifact as invalidated by a backtrack whose
+  target phase is the named token. Its token is a target phase label
+  (`spec | design | build | test | review`) — plus `roadmap` for a
+  phase→parent-`roadmap.md` backtrack — not a new `phase` value. The owning phase
+  clears the marker when it re-runs; until then the artifact is neither the item's
+  current phase artifact nor a satisfied downstream prerequisite. See
+  `docs/workflow.md` → "Phase reversal (backtracking)".
+- `reopened` is optional and appears only on `ship.md`; it names the phase a
+  recalled item re-enters. Producing it and revoking the shipped signal are owned
+  by a separate post-ship path; readiness still keys on `ship.md` **presence
+  only**.
+- `stale` and `reopened` are distinct from the frontmatter `status`
+  (`draft`/`final`/`blocked`) and never overload it.
 - Never remove frontmatter. Never edit a file owned by another phase.
 
 ## Work item references
@@ -432,6 +447,57 @@ updated: YYYY-MM-DD
 Its **presence** is the one shipped signal consumed by readiness — defined in
 `docs/workflow.md` → "Dependencies and readiness" — and is keyed on the file
 existing, never on its contents.
+
+### `backtracks.md` (backtracks) — per-item backtrack record
+
+An item MAY carry a committed, append-only `backtracks.md` record beside its
+phase artifacts. It is **not a phase artifact**: it carries no `phase` value, is
+not one of the artifact-presence rows, and does not by itself determine the
+item's derived phase. Its role is defined in `docs/workflow.md` → "Phase
+reversal (backtracking)"; `/status` reads it for reporting, never for
+derivation. An absent file means no backtracks, and historical items need no
+migration.
+
+Its frontmatter is minimal and distinct from the phase-artifact frontmatter:
+
+```yaml
+---
+feature: NNNN-slug
+record: backtracks
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+The body is append-only. A **finding entry** records the detecting phase, the
+target phase, the affected artifact or output, the observable evidence, and a
+status of `open`:
+
+```markdown
+## Finding <n> — YYYY-MM-DD
+
+- detecting phase: `/test`
+- target phase: `/plan`
+- affected: `design.md`
+- evidence: <observable observation>
+- status: open
+```
+
+When the target phase's revision completes, a **resolution entry** for that
+finding is appended:
+
+```markdown
+## Resolution <n> — YYYY-MM-DD
+
+- resolves: Finding <n>
+- revision: <what the target phase changed>
+```
+
+Finding and resolution entries are numbered sequentially from `1` and appended
+in order. No entry is ever edited, reordered, or removed. The effective status of
+finding `n` is `resolved` when a matching `Resolution n` entry exists, and `open`
+otherwise. A resolution recorded before its finding is malformed and is
+reported, not reordered.
 
 ## Sequence allocation
 
