@@ -5,7 +5,7 @@ status: final
 created: 2026-10-09
 updated: 2026-10-09
 parent: 0007-phase-backtracking
-notes: "Resolves the spec's deferred design choices: stable suite token AC24; check file tests/checks/87-backtrack-guards.sh; fixture tree tests/fixtures/backtracking/ with a fixture-local items/ root; eight declared sub-areas (reverse-edge, record-status, stale-downstream, challenge-loop, roadmap-revision, readiness-revocation, derived-state, contract-pins). Treats the spec's two design-blocking assumptions as confirmed by its own non-goals: the 0001-0006 contracts are final and only the committed test suite and its documentation are touched, offline with no provider. Re-entry revision: Finding 1 (recorded by /build) corrected the §5 mutation anchor for `challenge-loop` — it referenced a nonexistent `## Response 2`; the anchor is now the fixture's sole `## Reversal 3` header, which drops the Reversal entry and trips only `challenge-loop`. Resolution 1 appended to backtracks.md."
+notes: "Resolves the spec's deferred design choices: stable suite token AC24; check file tests/checks/87-backtrack-guards.sh; fixture tree tests/fixtures/backtracking/ with a fixture-local items/ root; eight declared sub-areas (reverse-edge, record-status, stale-downstream, challenge-loop, roadmap-revision, readiness-revocation, derived-state, contract-pins). Treats the spec's two design-blocking assumptions as confirmed by its own non-goals: the 0001-0006 contracts are final and only the committed test suite and its documentation are touched, offline with no provider. Re-entry revision: Finding 1 (recorded by /build) corrected the §5 mutation anchor for `challenge-loop` — it referenced a nonexistent `## Response 2`; the anchor is now the fixture's sole `## Reversal 3` header, which drops the Reversal entry and trips only `challenge-loop`. Resolution 1 appended to backtracks.md. Re-entry revision 2: Finding 2 (recorded by /build) corrected the §5 `record-status` mutation anchor — `fixture_backtrack_status` matches on the `## Resolution <n>` header number, not the `- resolves: Finding <n>` body field, so the anchor now renames the resolution header to `## Resolution 9`; §4 names the matching key explicitly. Resolution 2 appended to backtracks.md; `tasks.md` needed no edit because T5 delegates to design §5."
 conflicts-with: "tests/checks, tests/fixtures, tests/README.md, tests/mutation.sh"
 ---
 
@@ -119,8 +119,11 @@ roadmap", "Dependencies and readiness", "Derived state"; and
   intra-item edges (`/build`→`/plan`, `/plan`→`/spec`, `/test`→`/plan`,
   `/test`→`/spec`, `/test`→`/build`).
 - **`record-status` (AC2).** `fixture_backtrack_status` emits
-  `<ref>|<finding-n>|<open|resolved>|<wellformed 0|1>`. A finding with a matching
-  `Resolution <n>` is `resolved`; otherwise `open`. A resolution recorded before
+  `<ref>|<finding-n>|<open|resolved>|<wellformed 0|1>`. A finding `n` is
+  `resolved` when a `## Resolution <n>` entry exists; otherwise `open`. Matching
+  is keyed on the resolution's `## Resolution <n>` **header number**, as the
+  authority defines, not on the `- resolves: Finding <n>` body field (that
+  literal is pinned separately by `contract-pins`). A resolution recorded before
   its finding sets `wellformed=0` and is listed in `fixture_backtrack_malformed`
   (expected `{9108-malformed}`); entries are never reordered. Expected status
   block: `9101`–`9104` open; `9107`/`9108` resolved.
@@ -208,7 +211,7 @@ dependent), targeting the copy only:
 | # | Mutation (on the copy) | Expected named sub-area |
 | - | ---------------------- | ----------------------- |
 | 1 | delete the `- target phase:` line from `items/9101-build-design/backtracks.md` | `AC24 reverse-edge` |
-| 2 | change `items/9107-resolved/backtracks.md` `- resolves: Finding 1` → `- resolves: Finding 9` | `AC24 record-status` |
+| 2 | rename `items/9107-resolved/backtracks.md` the resolution header `## Resolution 1` → `## Resolution 9` (Finding 1 is then unmatched and open) | `AC24 record-status` |
 | 3 | change `items/9101-build-design/verify.md` `stale: design` → `stale: spec` | `AC24 stale-downstream` |
 | 4 | change `items/9110-challenge-mixed/challenges.md` the Reversal header `## Reversal 3` → `## Ack 3` (the fixture's sole `Reversal`, so the entry drops and Challenge 3 stays `resolved`) | `AC24 challenge-loop` |
 | 5 | reorder `items/9120-revised-roadmap/roadmap.md` Children header so `Depends on` is not pipe-field 5 | `AC24 roadmap-revision` |
