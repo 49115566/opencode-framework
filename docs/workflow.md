@@ -188,7 +188,7 @@ Status also reports integrity findings rather than failing:
 
 - `DANGLING-DEP` — a `Depends on` local id with no child directory or no table row.
 - `MISSING-CHILD` — a table row whose canonical reference/directory is absent.
-- `UNLISTED-CHILD` — a child directory present under the parent but absent from the Children table (possible rename).
+- `UNLISTED-CHILD` — a child directory present under the parent but absent from the Children table (possible rename). When the parent's `## Open issues` names that directory as a withdrawn child, it is a **deliberate withdrawal**: reported report-only and never auto-repaired, not treated as an accidental graph fault.
 - `CYCLIC-DEP` — a cycle in a manually edited graph; cycle members are never reported ready.
 
 ### Starting a blocked child
@@ -199,6 +199,92 @@ the specific blocking children and stops before writing `spec.md`. It proceeds
 only on an explicit user override, and then records the override and the blocking
 dependencies in the new `spec.md` frontmatter `notes`. Refusing touches no
 existing file, and status still reports the child's dependency state afterwards.
+
+### Revising a roadmap
+
+The `/roadmap` command has two modes: `/roadmap <initiative>` authors a new
+parent (above), and `/roadmap revise <item-ref>` revises an **existing** parent in
+place. `<item-ref>` must resolve to `work/<item-ref>/roadmap.md`; a reference that
+is not a roadmap parent is refused, because the revise mode revises a parent and
+never creates one. The **roadmap agent is the sole writer of the parent
+`roadmap.md`**: a child phase that discovers the parent is wrong records a finding
+in its own committed `backtracks.md` (below, and `## Phase reversal
+(backtracking)`) and recommends the revise route; it never edits the parent. The
+revision writes autonomously, with no pre-write approval gate, exactly as the
+create mode does; the user reviews the committed revision after the fact. A
+revision request that changes nothing is a no-op and modifies no file.
+
+A revision applies four operations to the loaded parent, in one pass, and
+validates the result **after all four** (never on an intermediate state):
+
+1. **Re-scope** — replace an existing row's `Title` and/or `Scope` in place. The
+   row's `Local id`, child directory, and `Canonical reference` are preserved.
+2. **Add** — append a row for a newly enumerated feature. Its `Local id` is the
+   next local number: the greatest 4-digit `MMMM` prefix **ever committed** under
+   `work/<parent>/` plus one, per `docs/artifact-conventions.md` → "Sequence
+   allocation" applied within the parent. A spent number is never reused. Create
+   `work/<parent>/<MMMM-slug>/.gitkeep`, and set the row's `Canonical reference`
+   to resolve to that directory.
+3. **Withdraw** — remove the row from the `Children` table and from
+   `## Sequencing`. The child's directory and spent local number are **preserved**
+   (the number is never reused). Record the withdrawal and its rationale under the
+   parent's `## Open issues`, naming the retained directory; the record shape is in
+   `docs/artifact-conventions.md` → the `roadmap.md` template. A withdrawal does
+   not mark the child stale — it leaves the active set.
+4. **Re-sequence** — edit `Depends on` cells as required and rewrite
+   `## Sequencing` as a topological order of the stored graph, so every child
+   follows all of its dependencies.
+
+After all four operations, the revision runs one validation predicate over the
+final state and **stores no fault**:
+
+- every `Depends on` token names another row's `Local id` in the same `Children`
+  table, and no row depends on itself;
+- the stored graph is acyclic;
+- every row's `Canonical reference` resolves to an existing child directory, and
+  every active child directory (all child directories except recorded withdrawals)
+  appears as a row;
+- `## Sequencing` lists every active child after all of its dependencies;
+- the six-column `Children` header is unchanged — `Depends on` stays at pipe-field
+  5 and `conflicts-with` at pipe-field 6 — and every `conflicts-with` cell is `—`
+  or a well-formed target list.
+
+If the intended dependencies would create a cycle, the revision stores no cyclic
+edge, leaves the stored graph acyclic, and records the cycle under
+`## Open issues`. If an operation would leave a dependency dangling — for example
+withdrawing a child another child depends on — the revision does not silently
+choose a resolution: it either applies the re-point or withdrawal that removes the
+dangling edge in the same revision, or refuses and reports the ambiguous intent.
+
+An existing unshipped child is **affected** when the revision changes any cell of
+its `Children` row (`Title`, `Scope`, `Depends on`, `conflicts-with`) or
+explicitly re-sequences it. For each affected existing unshipped child, the
+revision marks each present phase artifact (`spec.md`, `design.md`, `tasks.md`,
+`verify.md`, `review.md`) `stale: roadmap`, per `## Phase reversal (backtracking)`;
+nothing is deleted or silently rewritten, and the pre-revision content stays
+recoverable from committed git history. `stale: roadmap` maps to `spec` when the
+child's phase is derived, so the child must re-run forward. A child holding only
+`.gitkeep` marks nothing and simply derives `not started`; an unaffected child is
+untouched.
+
+A **shipped** child — its `ship.md` present — is excluded from a backtrack by the
+model above. A revision that would re-scope or re-sequence a shipped child
+**refuses and surfaces** the conflict for the user rather than rewriting the
+shipped child's artifacts; the post-ship path is `0005-post-ship-pr-denial`.
+
+A revision records its provenance in committed state. The triggering child's
+detecting phase appends a finding entry to `work/<child-ref>/backtracks.md` — a
+target phase of `roadmap` (the `stale` token), the affected
+`work/<parent-ref>/roadmap.md`, observable evidence, and status `open` — and, when
+the revision completes, the roadmap agent appends the matching resolution entry
+naming what changed. `backtracks.md` is item-level backtrack state, not a phase
+artifact, so appending it does not breach the ownership invariant; the roadmap
+agent appends only this entry and writes no child phase artifact. The parent
+`roadmap.md` changes its frontmatter `updated` date and appends a revision note
+under `## Open issues` naming the date, the triggering child, the operations
+applied, and the invalidated children. The pre-revision roadmap remains
+recoverable from committed git history. The entry shapes are in
+`docs/artifact-conventions.md` → "`backtracks.md`" and the `roadmap.md` template.
 
 ## Phases
 
@@ -579,7 +665,7 @@ each revises:
 | `/test`         | `/plan`             | `design.md`, `tasks.md`        |
 | `/test`         | `/spec`             | `spec.md`                      |
 | `/review`       | `/build`            | `tasks.md` + code (rework)     |
-| any child phase | parent `roadmap.md` | `roadmap.md` (owned by `0004`) |
+| any child phase | parent `roadmap.md` | `roadmap.md` (see `### Revising a roadmap`) |
 
 The general later→earlier rule and the table are the model; these exceptions
 restrict it:
@@ -705,9 +791,10 @@ both are in flight.
   (see "The fix track"). Fixes never introduce new behavior.
 - **Full lifecycle** — new features, behavior changes, cross-cutting work,
   anything touching public interfaces, data, or security.
-- **`/roadmap <initiative>`** — decompose a broad, multi-feature initiative into
-  a parent roadmap item and nested child work items, sequencing them and
-  recording intra-roadmap dependencies. Use before `/spec` when a request spans
+- **`/roadmap <initiative> | /roadmap revise <item-ref>`** — decompose a broad,
+  multi-feature initiative into a parent roadmap item and nested child work items,
+  or revise an existing parent in place, sequencing them and recording
+  intra-roadmap dependencies. Use before `/spec` when a request spans
   several interdependent features; a single, self-contained feature still goes
   straight to `/spec`.
 - **`/status`** — when unsure where things stand.
