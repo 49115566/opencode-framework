@@ -47,6 +47,13 @@ Follow your Builder agent instructions exactly. In particular:
   strictly downstream of `/plan` (`verify.md`, `review.md`) `stale: design`, do
   not edit `design.md`, `tasks.md`, or `spec.md`, leave the task unchecked, and
   end the handoff with Next: `/plan <item-ref>`.
+- To dispute a `review.md` finding or a `verify.md` defect instead of complying
+  with or overriding it, raise a challenge: append a `## Challenge <n>` entry to
+  `work/<item-ref>/challenges.md` (`type`, `evidence`, `rationale`), never edit
+  the producing phase's artifact, and hand off to the producing phase —
+  `Next: /review <item-ref>` for a review finding, `Next: /test <item-ref>` for
+  a verify defect (see `docs/workflow.md` → "Findings challenge and
+  adjudication").
 - Follow existing conventions; keep the change scoped to the task.
 - Run the task's `Verify:` step plus lint and typecheck for the touched scope.
 - Tick `[x]` for the finished task in `tasks.md` and refresh `updated`.

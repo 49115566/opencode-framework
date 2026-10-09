@@ -13,7 +13,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. Deliverable is
 documentation and prompts; no new command, agent, skill, phase value, or state
 file. Committed fixtures and mutation coverage are `0007-backtracking-guards`.
 
-- [ ] **T1** — In `docs/workflow.md`, add `## Findings challenge and adjudication`
+- [x] **T1** — In `docs/workflow.md`, add `## Findings challenge and adjudication`
       immediately after `## Phase reversal (backtracking)` and before
       `## Derived state`, stating once as the single authority: what is
       challengeable (`review.md` findings and `verify.md` defects, including a
@@ -35,7 +35,7 @@ file. Committed fixtures and mutation coverage are `0007-backtracking-guards`.
       [AC1, AC2, AC3, AC4, AC5, AC6, AC9, AC11, AC12, AC13]
       Verify: read the new section; `grep -n 'challenged\|challenges.md' docs/workflow.md` returns the condition and record; `grep -c '^### [0-9]' docs/workflow.md` is unchanged; `bash tests/run.sh` exits 0.
 
-- [ ] **T2** — In `docs/artifact-conventions.md`, add a
+- [x] **T2** — In `docs/artifact-conventions.md`, add a
       `### \`challenges.md\` (challenges) — per-item challenge record` template
       after the `backtracks.md` template (`:471-520`): the minimal frontmatter
       (`feature`, `record: challenges`, `created`, `updated`) with no `phase`;
@@ -48,7 +48,7 @@ file. Committed fixtures and mutation coverage are `0007-backtracking-guards`.
       vocabulary; introduce no state file. [AC1, AC2, AC10, AC13]
       Verify: read the template; `grep -n 'challenges.md' docs/artifact-conventions.md` returns it; confirm the record frontmatter has no `phase:`; `bash tests/run.sh` exits 0.
 
-- [ ] **T3** — In `.opencode/agent/builder.md` (operating principles, process,
+- [x] **T3** — In `.opencode/agent/builder.md` (operating principles, process,
       rules, handoff) and `.opencode/command/build.md`, add the challenger
       surface: when the author disputes a `review.md` finding or a `verify.md`
       defect, append a `Challenge <n>` entry to `challenges.md` (type, evidence,
@@ -59,7 +59,7 @@ file. Committed fixtures and mutation coverage are `0007-backtracking-guards`.
       edge and the plan-gate text intact. [AC1, AC2, AC3, AC9] [depends: T1, T2]
       Verify: `grep -n 'challeng\|challenges.md' .opencode/agent/builder.md .opencode/command/build.md` finds the route; `grep -n 'Usage: /build \[item-ref or task-id\]' .opencode/command/build.md` still matches; `bash tests/run.sh` exits 0.
 
-- [ ] **T4** — In `.opencode/agent/reviewer.md` (process, quality bar, rules,
+- [x] **T4** — In `.opencode/agent/reviewer.md` (process, quality bar, rules,
       handoff) and `.opencode/command/review.md`, add adjudication: before
       ordinary forward work, read `challenges.md` for an open challenge against a
       `review.md` finding and re-evaluate it against the spec and diff; append a
@@ -73,7 +73,7 @@ file. Committed fixtures and mutation coverage are `0007-backtracking-guards`.
       rule (it still writes only `review.md`). [AC3, AC5, AC6, AC9] [depends: T1, T2]
       Verify: `grep -n 'challeng\|Response' .opencode/agent/reviewer.md .opencode/command/review.md` finds the steps; read the verdict-recomputation clause; `bash tests/run.sh` exits 0.
 
-- [ ] **T5** — In `docs/workflow.md` `## Phase reversal (backtracking)`, wire the
+- [x] **T5** — In `docs/workflow.md` `## Phase reversal (backtracking)`, wire the
       `/test` edges: remove `/test` from the `### Taking an edge` step-1
       "not taken here" exception list; add `/test`→`/build`, `/test`→`/plan`, and
       `/test`→`/spec` to the concrete per-edge marker table with their affected
@@ -84,7 +84,7 @@ file. Committed fixtures and mutation coverage are `0007-backtracking-guards`.
       Leave the seven pinned route literals unchanged. [AC7, AC8] [depends: T1]
       Verify: `grep -n '/test' docs/workflow.md` shows the three edges in the table; read the marker sets; `bash tests/run.sh` exits 0.
 
-- [ ] **T6** — In `.opencode/agent/tester.md` (operating principles, process,
+- [x] **T6** — In `.opencode/agent/tester.md` (operating principles, process,
       handoff) and `.opencode/command/test.md`, add the `/test` classification and
       the verify-defect adjudication: classify each defect as an implementation
       fault (route to `/build` as today) or a spec/design fault (take the
@@ -98,14 +98,14 @@ file. Committed fixtures and mutation coverage are `0007-backtracking-guards`.
       code" rule. [AC2, AC3, AC7, AC8, AC9] [depends: T1, T2, T5]
       Verify: `grep -nE 'challeng|spec or design|Next: .\/plan' .opencode/agent/tester.md .opencode/command/test.md` finds the classification and edges; `grep -nF 'Usage: /test [item-ref]' .opencode/command/test.md` still matches; `bash tests/run.sh` exits 0.
 
-- [ ] **T7** — In `.opencode/skill/code-review/SKILL.md`, reference the
+- [x] **T7** — In `.opencode/skill/code-review/SKILL.md`, reference the
       challenge/adjudication authority and the verdict-recomputation rule as the
       recorded route for a disputed finding, reusing the existing severity scale
       and `approve`/`request-changes` verdict; state no second severity or verdict.
       [AC11, AC12] [depends: T1]
       Verify: `grep -n 'challeng\|adjudicat' .opencode/skill/code-review/SKILL.md` finds the reference; confirm no new severity/verdict token; `bash tests/run.sh` exits 0.
 
-- [ ] **T8** — In `.opencode/skill/workflow-lifecycle/SKILL.md`
+- [x] **T8** — In `.opencode/skill/workflow-lifecycle/SKILL.md`
       `## Which command now?`, add route lines for an open challenge (adjudicate via
       the producing phase's command, e.g. `/review <item-ref>` or
       `/test [item-ref]`) and for a `/test` spec/design fault (`/plan <item-ref>`
@@ -114,7 +114,7 @@ file. Committed fixtures and mutation coverage are `0007-backtracking-guards`.
       [AC1, AC4, AC7, AC12] [depends: T1, T2, T5]
       Verify: read the block; `bash tests/run.sh` exits 0 (96-signature-sweep green).
 
-- [ ] **T9** — Final acceptance gate (no code change): confirm no command, agent,
+- [x] **T9** — Final acceptance gate (no code change): confirm no command, agent,
       or skill was added or removed and the six phase command→agent pairings and
       the seven routing literals are unchanged; confirm no surface states a
       conflicting challenge rule and `.opencode/agent/status.md` is untouched

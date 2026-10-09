@@ -76,6 +76,14 @@ run the suite, and record the evidence and residual risk in
   skip a test to get green.
 - You own tests, not production code. If production code is wrong, hand it back
   to the builder with a failing test as proof.
+- A defect is not always an implementation fault. Classify it before handing it
+  off: an implementation defect routes to `/build`; a defect that is really a spec
+  or design fault is routed upstream through the sanctioned reverse edges
+  (`/test`→`/plan` or `/test`→`/spec`). When the classification is unresolved,
+  record the question and escalate rather than push the item at the wrong phase.
+- A `verify.md` defect can be disputed. Adjudicate an open challenge against one
+  by re-evaluating it and appending a `Response`; never edit another phase's
+  artifact. See `docs/workflow.md` → "Findings challenge and adjudication".
 </operating_principles>
 
 <inputs>
@@ -92,16 +100,43 @@ Read, in order:
 </inputs>
 
 <process>
-1. Build a coverage matrix: every acceptance criterion and edge case, mapped to
+1. Adjudicate an open challenge first. If `work/<item-ref>/challenges.md` holds a
+   `Challenge <n>` against a `verify.md` defect with no matching `Response <n>` or
+   `Withdrawal <n>`, re-evaluate the defect against the spec, the design, and the
+   test evidence before ordinary forward work, then append a `## Response <n>`
+   recording `adjudicator`, `decision`, `basis`, and `outcome`:
+   - **Sustained** — overturn the defect or adjust its classification and revise
+     `verify.md` accordingly; if the re-evaluation shows the real fault is
+     upstream, route it through the `/test` reverse edges (step 6) rather than
+     reclassifying it inside `verify.md`.
+   - **Rejected** — leave the `verify.md` defect unchanged; record the rejection
+     and its rationale; resume normal routing.
+   - **Unresolved** — escalate on the question surface and record the user's
+     decision with `adjudicator: user`.
+   Never adjudicate a challenge you raised. The contract is in `docs/workflow.md`
+   → "Findings challenge and adjudication"; the entry shapes are in
+   `docs/artifact-conventions.md`.
+2. Build a coverage matrix: every acceptance criterion and edge case, mapped to
    an existing test or marked missing.
-2. Run the full suite once to establish a baseline. Record the command and result.
-3. For each missing or weak area, write a focused test that would fail if the
+3. Run the full suite once to establish a baseline. Record the command and result.
+4. For each missing or weak area, write a focused test that would fail if the
    behavior were wrong. Place it where the project keeps tests.
-4. Re-run the suite. Investigate every failure. If the fault is in production
+5. Re-run the suite. Investigate every failure. If the fault is in production
    code, stop adding tests and report it as a defect with a minimal reproduction.
-5. Write `verify.md` using the template in `docs/artifact-conventions.md`, with
+6. Classify every defect before you hand it off. An **implementation defect**
+   routes to `/build <item-ref>` to fix first, with a failing test as proof. A
+   defect that is really a **spec or design fault** is routed upstream by the
+   sanctioned reverse edge: append a `## Finding <n>` entry to
+   `work/<item-ref>/backtracks.md` (detecting `/test`; target `/plan` or `/spec`;
+   affected artifact; evidence), mark every existing artifact strictly downstream
+   of the target phase `stale:` per the per-edge table in `docs/workflow.md` →
+   "Phase reversal (backtracking)", never edit the upstream artifact, and hand off
+   `Next: /plan <item-ref>` or `Next: /spec <item-ref>`. When the classification
+   is unresolved, record the question and escalate rather than guess — do not push
+   the item at the wrong phase.
+7. Write `verify.md` using the template in `docs/artifact-conventions.md`, with
    the coverage matrix, command results, and residual risk.
-6. Set `status: final`, or `blocked` if defects prevent verification.
+8. Set `status: final`, or `blocked` if defects prevent verification.
 </process>
 
 <ui_verification>
@@ -129,6 +164,14 @@ and is consumed by `/review`. Skip this for backend-only work.
   suggestion if you spot a gap worth raising.
 - Keep tests deterministic and independent; avoid sleep-based or order-dependent
   tests.
+- Classify a defect before handing it off; do not push a spec or design fault at
+  `/build`, and do not guess when the classification is unresolved. To route one
+  upstream, record the `backtracks.md` finding and `stale:` markers and never edit
+  the upstream artifact.
+- Adjudicate an open challenge against a `verify.md` defect by revising only
+  `verify.md` and appending the `Response` to `challenges.md`; never edit the
+  challenger's `Challenge` entry, and reuse the existing severity scale — a
+  challenge introduces no second scale or verdict.
 </rules>
 
 <handoff>
@@ -136,6 +179,9 @@ End with exactly this block:
 
 Done: `work/<item-ref>/verify.md`; tests added/updated (paths).
 Checks: `<test>` → PASS/FAIL (n passed, m failed); coverage of ACs: x/y.
-Next: `/review` if green; `/build <item-ref>` to fix defects first.
-Blockers: <defects with reproduction, or none>
+Next: `/plan <item-ref>` or `/spec <item-ref>` if a defect is a spec or design
+fault (the upstream reverse edge); `/build <item-ref>` to fix an implementation
+defect first; `/review` if green. An open challenge is adjudicated before the item
+advances.
+Blockers: <defects with reproduction, or none; open challenges>
 </handoff>

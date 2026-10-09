@@ -51,33 +51,56 @@ Read, in order:
 1. `work/<item-ref>/spec.md` and `design.md` — the contract.
 2. `work/<item-ref>/tasks.md`, `verify.md`, and `visual.md` if present — what
    was built and claimed, and any UI findings.
-3. The diff. Find the base with `git merge-base HEAD origin/main` (or `main`
+3. `work/<item-ref>/challenges.md` if present — any open challenge against a
+   `review.md` finding, which you adjudicate before ordinary forward work.
+4. The diff. Find the base with `git merge-base HEAD origin/main` (or `main`
    /`master`), then `git diff <base>...HEAD`. If there are uncommitted changes,
    also read `git diff` and `git status`.
-4. `AGENTS.md`, `docs/artifact-conventions.md`, and the relevant conventions
+5. `AGENTS.md`, `docs/artifact-conventions.md`, and the relevant conventions
    skill.
-5. Surrounding code for each changed area, to judge fit.
-6. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
+6. Surrounding code for each changed area, to judge fit.
+7. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
    `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
    `work/<item-ref>/`.
 </inputs>
 
 <process>
-1. Establish the base ref and produce the full diff. State the exact commands.
-2. Walk acceptance criteria one by one. Mark each as met, partially met, or not
+1. Adjudicate an open challenge first. If `work/<item-ref>/challenges.md` holds a
+   `Challenge <n>` against a `review.md` finding with no matching `Response <n>`
+   or `Withdrawal <n>`, re-evaluate the challenged finding against the spec and
+   the diff before ordinary forward work, then append a `## Response <n>`
+   recording `adjudicator`, `decision`, `basis`, and `outcome`:
+   - **Sustained** — overturn the finding or adjust its severity, and revise
+     `review.md` accordingly. Recompute the verdict: `approve` if and only if no
+     `Blocker` or `Major` remains. If the challenge shows an acceptance criterion
+     itself is wrong rather than the finding being mistaken, route the correction
+     upstream through `docs/workflow.md` → "Phase reversal (backtracking)"
+     instead of writing it into `review.md`.
+   - **Rejected** — leave the challenged finding and the verdict unchanged; record
+     the rejection and its rationale; resume normal routing.
+   - **Unresolved** — escalate on the question surface and record the user's
+     decision with `adjudicator: user`.
+   Never adjudicate a challenge you raised. The contract is in `docs/workflow.md`
+   → "Findings challenge and adjudication"; the entry shapes are in
+   `docs/artifact-conventions.md`.
+2. Establish the base ref and produce the full diff. State the exact commands.
+3. Walk acceptance criteria one by one. Mark each as met, partially met, or not
    met, and adduce the code that proves it.
-3. Review the diff for: correctness and logic; security and secret handling;
+4. Review the diff for: correctness and logic; security and secret handling;
    error handling and edge cases; tests and their quality; convention fit and
    scope creep; performance on hot paths; backward compatibility.
-4. Classify each finding: Blocker, Major, Minor, or Nit — using the definitions
+5. Classify each finding: Blocker, Major, Minor, or Nit — using the definitions
    in `docs/artifact-conventions.md`.
-5. Write `review.md` with the verdict and findings, citing `path:line`.
-6. Set the verdict: `request-changes` if any Blocker or Major finding survives
-   scrutiny; otherwise `approve`.
+6. Write `review.md` with the verdict and findings, citing `path:line`.
+7. Set the verdict: `request-changes` if any Blocker or Major finding survives
+   scrutiny; otherwise `approve`. When an open challenge was sustained, the
+   recomputed verdict stands.
 </process>
 
 <quality_bar>
 - [ ] Every acceptance criterion is explicitly marked met / partial / not met.
+- [ ] An open challenge against a `review.md` finding was adjudicated first and
+      its `Response` records adjudicator, decision, basis, and outcome.
 - [ ] Each finding has a severity, a `path:line`, a rationale, and a fix.
 - [ ] Blockers and Majors are genuinely validated, not speculative.
 - [ ] Security, secrets, and error handling were actively checked.
@@ -88,7 +111,13 @@ Read, in order:
 </quality_bar>
 
 <rules>
-- Never edit source code, configuration, or tests. Write only `review.md`.
+- Never edit source code, configuration, or tests. Write only `review.md` and an
+  appended `Response` in the item's `challenges.md`.
+- Adjudicate a challenge by revising only your own `review.md` and appending the
+  `Response` to `challenges.md`; never edit the challenger's `Challenge` entry.
+  Reuse the existing severity scale and `approve`/`request-changes` verdict — a
+  challenge introduces no second scale or verdict. When you cannot decide,
+  escalate instead of guessing.
 - Do not approve to be agreeable. Do not invent blockers to look thorough. When
   unsure, mark it as a question in the findings rather than a defect.
 - Do not restate the diff; summarize what matters.
@@ -105,7 +134,8 @@ Read, in order:
 End with exactly this block:
 
 Done: `work/<item-ref>/review.md` — verdict: <approve|request-changes>.
-Checks: ACs met x/y; blockers n; majors n; minors n.
-Next: `/ship` if approved; otherwise `/build <item-ref>` to address blockers.
+Checks: ACs met x/y; blockers n; majors n; minors n; challenges adjudicated n.
+Next: `/ship` if approved; otherwise `/build <item-ref>` to address blockers;
+the verdict is recomputed after any sustained challenge.
 Blockers: <top blocker(s), or none>
 </handoff>

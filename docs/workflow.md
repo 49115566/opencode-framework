@@ -368,7 +368,13 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   reported, not hidden.
 - **Artifact**: test files plus `work/<item-ref>/verify.md`, frontmatter
   `phase: test`.
-- **Next**: `/review`. If defects were found, `/build` to fix them first.
+- **Next**: `/review`. If defects were found, classify each one: an implementation
+  defect routes to `/build` to fix it first, while a defect that is really a spec
+  or design fault is routed upstream through the backtrack model — take the
+  `/test`→`/plan` or `/test`→`/spec` reverse edge (recorded `backtracks.md`
+  finding, downstream `stale:` markers, `Next: /plan <item-ref>` or
+  `Next: /spec <item-ref>`). If the classification is unresolved, escalate rather
+  than guess and do not push the item at the wrong phase.
 - **Optional visual pass**: if the work item has a user-facing UI, run `/visual`
   (or have the tester delegate to the `visual` subagent). It drives a real
   browser, produces `work/<item-ref>/visual.md` plus screenshots, and feeds its
@@ -392,7 +398,8 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 
 - **Purpose**: Turn a reviewed work item into a reviewable pull request.
 - **Entry**: `review.md` exists with verdict `approve` (or the user explicitly
-  overrides).
+  overrides), and the item is not **challenged** — an open challenge in
+  `challenges.md` blocks it (see `## Findings challenge and adjudication`).
 - **Process**: Reconcile first — if the branch has fallen behind the default
   branch, merge it forward and resolve conflicts per `## Merge conflicts` →
   confirm checks are green and the tree contains no secrets →
@@ -742,8 +749,12 @@ reference it rather than restating it.
 
 1. **Confirm the edge is sanctioned.** The target is strictly earlier than the
    detecting phase, the item is unshipped (`ship.md` absent), and the edge is one
-   the taking phase supports. A self-target, a `/test` edge, a parent-`roadmap`
-   edge, and a post-ship reopen are not taken here.
+   the taking phase supports. A self-target, a parent-`roadmap` edge, and a
+   post-ship reopen are not taken here. The three `/test` edges
+   (`/test`→`/build`/`/plan`/`/spec`) are supported: an implementation defect is
+   the existing `/test`→`/build` rework with no forced finding record or `stale:`
+   marker, while a defect that is really a spec or design fault is routed with a
+   recorded finding and `stale:` markers.
 2. **Record the finding.** Append a `## Finding <n>` entry to
    `work/<item-ref>/backtracks.md`, creating the record with its frontmatter
    (`feature`, `record: backtracks`, `created`, `updated`) when absent. The entry
@@ -758,21 +769,27 @@ reference it rather than restating it.
    non-destructive metadata, not an authorship edit.
 4. **Never edit the target artifact.** The detecting phase does not touch the file
    it is sending back; the target phase's owner revises it on re-entry.
-5. **Hand off.** End with `Next: /plan <item-ref>` (from `/build`) or
-   `Next: /spec <item-ref>` (from `/plan`).
+5. **Hand off.** End with the handoff for the target phase:
+   `Next: /plan <item-ref>` (from `/build` or `/test`) or
+   `Next: /spec <item-ref>` (from `/plan` or `/test`).
 
-The two intra-item edges and their marker sets are concrete:
+The intra-item edges and their marker sets are concrete:
 
 | Edge | Detecting phase | Finding entry (`backtracks.md`) | Existing artifacts marked `stale:` | Handoff |
 | ---- | --------------- | ------------------------------- | ---------------------------------- | ------- |
 | `/build`→`/plan` | builder | detecting `/build`; target `/plan`; affected `design.md`, `tasks.md` | `verify.md`, `review.md` → `stale: design` | `Next: /plan <item-ref>` |
 | `/plan`→`/spec` | architect | detecting `/plan`; target `/spec`; affected `spec.md` | `design.md`, `tasks.md`, `verify.md`, `review.md` → `stale: spec` | `Next: /spec <item-ref>` |
+| `/test`→`/plan` | tester | detecting `/test`; target `/plan`; affected `design.md`, `tasks.md` | `verify.md`, `review.md` → `stale: design` | `Next: /plan <item-ref>` |
+| `/test`→`/spec` | tester | detecting `/test`; target `/spec`; affected `spec.md` | `design.md`, `tasks.md`, `verify.md`, `review.md` → `stale: spec` | `Next: /spec <item-ref>` |
+| `/test`→`/build` | tester | none — the existing implementation-defect rework; no forced finding record | none — no forced `stale:` marker | `/build` to fix (existing route) |
 
 The marker's target-phase label uses the existing vocabulary: target `/plan` →
-`stale: design`; target `/spec` → `stale: spec`. Only the two edges above are
-wired by the reverse-phase routing; the `/test` reverse edges, a parent-`roadmap`
-revision, and post-ship reopen follow this same procedure when their items land,
-and their absence here is not a gap in the model.
+`stale: design`; target `/spec` → `stale: spec`. The `/test`→`/build` edge is the
+pre-existing implementation-defect rework and forces no finding record or `stale:`
+marker; the `/test`→`/plan` and `/test`→`/spec` edges are wired by the
+reverse-phase routing. A parent-`roadmap` revision and post-ship reopen follow
+this same procedure when their items land, and their absence here is not a gap in
+the model.
 
 ### Re-entry
 
@@ -914,6 +931,99 @@ and never deletes or closes the denied PR. It then writes a fresh `ship.md`
 derives `shipped` and satisfies its dependents again. The recall stays auditable
 in `backtracks.md` and in git history.
 
+## Findings challenge and adjudication
+
+This section is the single authority for contesting a finding. A **challenge** is
+a committed, append-only record that disputes a finding in `review.md` or a
+defect reported in `verify.md` — the finding itself, its severity, or an
+acceptance-criterion interpretation — without the challenger editing the artifact
+owned by the phase that produced it. It is a step inside the existing phases, not
+a new phase, command, or agent: it adds no `phase` value, no artifact-presence
+row, and no state file. The existing severity scale
+(`Blocker`/`Major`/`Minor`/`Nit`), finding format, and review verdict vocabulary
+(`approve`/`request-changes`) are reused unchanged; no second severity scale,
+finding grammar, or verdict is introduced.
+
+### What is challengeable
+
+A finding in `review.md` and a defect reported in `verify.md` are both
+challengeable, including a claimed defect that is really a spec or design fault.
+A challenge to a non-review finding is never silently dropped. An item with no
+finding and no reported defect has nothing to challenge: no challenge record is
+created and nothing blocks.
+
+### Raising a challenge
+
+The challenger appends a `## Challenge <n>` entry to the item's committed,
+append-only `work/<item-ref>/challenges.md` record naming the challenged finding,
+the challenge `type` (`finding | severity | acceptance-criterion`), the evidence,
+and the rationale. Raising happens on the existing phase surface — a challenge to
+a `review.md` finding or a `verify.md` defect is raised from the author's current
+phase prompt — so no command is added. The challenger **never edits the artifact
+owned by the phase that produced the finding**; it records state only. A challenge
+hands control to the producing phase: `Next: /review <item-ref>` for a review
+finding, `Next: /test <item-ref>` for a verify defect.
+
+The record is not a phase artifact: it carries no `phase`, and by itself it does
+not determine the item's derived **phase** (it determines the blocked
+**condition** below). Its entry shapes are documented in
+`docs/artifact-conventions.md`.
+
+### The challenged (blocked) condition
+
+While `challenges.md` holds any challenge with no matching `Response` or
+`Withdrawal`, the item is **challenged**: it does not advance to its next forward
+phase, including `/ship`, and the open challenge escalates to the user. The
+condition is the record's open entry plus the derived label `challenged`; it adds
+no `phase` value, and its precedence in derived state is stated below. Nothing
+resolves on its own: an open challenge that is never adjudicated or withdrawn
+keeps the item challenged and keeps the escalation in place.
+
+### Adjudication
+
+The phase that produced the challenged finding re-evaluates it first on
+re-entry; if it cannot resolve the challenge, it escalates to the user on the
+existing question surface, and the user decides. The challenger is never the
+adjudicator of its own challenge, and no adjudication completes without a
+`Response` entry recording the decision, its basis, and who made it
+(`adjudicator`: the producing phase command, or `user`). A challenge may be
+withdrawn by its author; the withdrawal is appended, the item is unblocked, and
+the prior entry is preserved. A later decision that supersedes an earlier one is
+appended as a `Reversal` entry; it never rewrites the prior entry.
+
+### Outcomes and routing
+
+A **sustained** challenge overturns the challenged finding or adjusts its
+severity and, for a review finding, the review verdict is recomputed — `approve`
+if and only if no `Blocker` or `Major` remains. The outcome and its evidence are
+recorded, and the next command follows the recomputed verdict (`/ship` if
+`approve`, `/build` if `request-changes`). If a sustained challenge shows the
+acceptance criterion itself is wrong rather than the finding being mistaken, the
+correction is routed upstream through `## Phase reversal (backtracking)` —
+revising `spec.md` or `design.md` by their owners — rather than written into
+`review.md`. A **rejected** challenge leaves the challenged finding and the
+verdict unchanged, records the rejection and its rationale, and resumes normal
+routing — for a blocking review finding, the existing `review.md` verdict
+`request-changes` → `/build` route.
+
+### Ownership
+
+The challenger/detector records state and never edits the artifact owned by the
+producing phase; the producing phase's owner revises its own artifact and appends
+the outcome. The invariant "only the owning phase writes its artifact" is
+unchanged, and the rule that a phase may not rewrite another phase's artifact
+continues to hold in both directions.
+
+### The record
+
+`work/<item-ref>/challenges.md` is committed, append-only, and numbered from `1`;
+entries are never edited, reordered, or removed. Its entry kinds (`Challenge`,
+`Response`, `Withdrawal`, `Reversal`), fields, and the malformed out-of-order
+rule are documented in `docs/artifact-conventions.md`. A malformed record — for
+example a `Response`/`Withdrawal`/`Reversal` recorded before its `Challenge` — is
+reported rather than reordered. An absent `challenges.md` means nothing is
+challenged, and historical items need no migration.
+
 ## Derived state
 
 There is no state file. `/status` derives each item's phase from artifacts and
@@ -923,6 +1033,7 @@ content:
 | ---------------------------------------------------------- | ------------ |
 | earliest `stale:` marker among the item's artifacts names phase `P` | `P` (backtracked) |
 | `ship.md` present with a `reopened:` marker naming phase `P` | `P` (reopened) |
+| an open challenge in `challenges.md` (no matching `Response`/`Withdrawal`) | challenged (blocked) |
 | `roadmap.md` present (check before `spec.md`)              | roadmap      |
 | `spec.md` missing                                          | not started  |
 | `spec.md` present, `design.md` missing                     | spec         |
@@ -950,6 +1061,20 @@ dependent until the item re-ships (see `### Shipped items and reopen`). The
 rendered instance of the general backtrack model
 (`## Phase reversal (backtracking)`): it is retained verbatim, defines no second
 rework mechanism, and its routing literal and consumers are unchanged.
+
+The **challenged** condition is a blocked overlay evaluated after the
+`stale:`/`reopened:` structural derivations and before the forward-action and
+`ship.md`/verdict rows, so an item with an open challenge is never read as ready
+to advance or ship even when its artifact-presence and verdict rows would
+otherwise derive a forward phase. While `challenges.md` holds a `Challenge <n>`
+with no matching `Response n`/`Withdrawal n`, the item derives `challenged`
+(blocked), the next forward phase — including `/ship` — refuses and reports the
+open challenge(s), and the open challenge escalates to the user; the condition
+reuses the `0001` marker model (the record's open entry is the marker, plus the
+derived label) and introduces no new `phase` value. Its raising, adjudication,
+and outcome are defined once in `## Findings challenge and adjudication`; the
+full `/status` reporting vocabulary and dependency-readiness reporting remain the
+scope of `0006-status-and-derived-state`.
 
 A directory containing `roadmap.md` is a roadmap parent and is derived as
 `roadmap` before the single-feature rows. A roadmap child is derived like any
