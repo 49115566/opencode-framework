@@ -78,7 +78,7 @@ with a stable `ACn` token.
 | `80-cycle-fixture.sh` | roadmap cycle rule and committed fixture |
 | `85-conflict-guards.sh` | declared-conflict declaration model and check guards (suite token `AC23`) |
 | `90-packaging.sh` | packaging agreement: manifest ↔ changelog, copy-set, `Layout` (suite tokens `AC18`–`AC20`) |
-| `95-split-guard.sh` | adoption split guard: quickstart sources, `docs/customization.md` contract, `template/AGENTS.md` placeholder profile, copy-set surfaces, `bootstrap` deny rules (suite token `AC21`) |
+| `95-split-guard.sh` | adoption split guard: quickstart sources, `docs/customization.md` contract, `template/AGENTS.md` placeholder profile and shared-body parity, copy-set surfaces, `bootstrap` deny rules (suite token `AC21`) |
 | `96-signature-sweep.sh` | command signature agreement across the in-scope surfaces plus the `ask` agent description (suite token `AC22`) |
 
 `90-packaging.sh` uses suite tokens `AC18`–`AC20`, which map to the
@@ -91,7 +91,9 @@ changelog agreement), spec AC13 → `AC19` (copy-set agreement), and spec AC14 �
 spec AC2 → `AC21` quickstart source/destination (the `README.md` quickstart
 sources `template/AGENTS.md`, `template/opencode.json`, and
 `template/.gitignore` to their destination names and never from a root copy),
-spec AC3 → `template/AGENTS.md` unfilled placeholder Project profile, spec AC4
+spec AC3 → `template/AGENTS.md` unfilled placeholder Project profile (and, as a
+companion assertion, the template's body is byte-identical to root `AGENTS.md`
+outside that profile, so a shared edit cannot reach only one copy), spec AC4
 → the copy-set surfaces name all three pristine sources and never claim an
 adopter receives a root copy, spec AC5 → the quickstart source agrees with the
 `docs/customization.md` split contract, and spec AC6 → the `bootstrap` agent

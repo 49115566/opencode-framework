@@ -15,7 +15,9 @@
 #         framework root copy, and never by copying the whole `template/`
 #         directory (spec AC2).
 #   AC3 — pristine placeholder profile: `template/AGENTS.md`'s Project profile is
-#         the unfilled placeholder (spec AC3).
+#         the unfilled placeholder (spec AC3), and — outside that profile — the
+#         template's body stays a byte-identical copy of root `AGENTS.md`, so a
+#         shared Working-agreements edit cannot reach only one of the two.
 #   AC4 — copy-set surfaces: README.md, docs/customization.md, tests/README.md,
 #         and CONTRIBUTING.md name the pristine sources and never claim an
 #         adopter receives a root copy (spec AC4).
@@ -280,6 +282,35 @@ EOF
     ok "AC21 $TEMPLATE_AGENTS Project profile fields are unfilled placeholders"
   else
     bad "AC21 $TEMPLATE_AGENTS Project profile field(s) carry a concrete value, not a placeholder:$fields_concrete"
+  fi
+fi
+
+# --- AC3 companion shared-body parity ---------------------------------------
+
+# Root `AGENTS.md` is the framework's bootstrapped contract; `template/AGENTS.md`
+# is the adopter's copy of the same contract. The Project profile is the one
+# legitimate divergence (real values vs. placeholders), so outside that section
+# the two bodies must be byte-identical. A shared-body edit that reaches only
+# one copy — the backtracking Working-agreements bullet that landed in the root
+# but not the template is that regression — fails and names both surfaces.
+agents_body_without_profile() {
+  awk '
+    /^## Project profile[[:space:]]*$/ { print; print "<PROFILE>"; skip = 1; next }
+    skip && /^## / { skip = 0 }
+    skip { next }
+    { print }
+  ' "$1"
+}
+
+if [ ! -f "$AGENTS" ] || [ ! -f "$TEMPLATE_AGENTS" ]; then
+  bad "AC21 root $AGENTS or $TEMPLATE_AGENTS is missing; cannot verify shared-body parity"
+else
+  root_body="$(agents_body_without_profile "$AGENTS")"
+  template_body="$(agents_body_without_profile "$TEMPLATE_AGENTS")"
+  if [ "$root_body" = "$template_body" ]; then
+    ok "AC21 $AGENTS and $TEMPLATE_AGENTS agree outside the Project profile"
+  else
+    bad "AC21 $AGENTS and $TEMPLATE_AGENTS diverge outside the Project profile"
   fi
 fi
 
