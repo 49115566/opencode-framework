@@ -131,7 +131,13 @@ in `docs/workflow.md` → "Phase reversal (backtracking)", then hand off
   artifacts `stale:`, never edit the target artifact, and hand off
   `Next: /plan <item-ref>` or `Next: /spec <item-ref>`. The target phase's owner
   revises its own artifact, appends a resolution, and resumes forward on
-  re-entry; no open finding means ordinary forward progression.
+  re-entry; no open finding means ordinary forward progression. A shipped item
+  whose PR is denied, closed, or sent back for changes — or whose PR was never
+  opened or whose branch was abandoned — is recalled with
+  `/ship recall <item-ref> <phase>`, which appends the finding, adds the
+  `reopened:` marker to `ship.md` (revoking the shipped signal without deleting
+  it), marks the downstream artifacts `stale:`, blocks the item's dependents
+  until it re-ships, and re-enters that phase.
 - **Scratch space.** Write temporary files and background process logs to the
   in-repo, gitignored `scratch/` directory, created on demand. Never write a
   temporary file outside the workspace.

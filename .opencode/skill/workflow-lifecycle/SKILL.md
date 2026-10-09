@@ -42,6 +42,7 @@ plan finds the spec wrong?       → /spec <feature or problem description | ite
 open finding targets /plan?      → /plan <item-ref>   (re-entry; revise and resolve)
 open finding targets /spec?      → /spec <feature or problem description | item-ref>   (re-entry; revise and resolve)
 plan/<ref> PR denied/changes-requested?→ /plan <item-ref>   (re-run; republish with /ship plan <item-ref>)
+ship.md present but PR denied/closed/changes-requested?→ /ship recall <item-ref> <phase>   (recall; revoke and re-enter)
 Verified /fix complete?          → /ship fix   (explicit request; shipper lands it)
 Declared plan conflicts?         → /conflicts [item-ref]   (read-only, advisory)
 Blocked child (dependency unmet)?→ wait, or override explicitly; /status [item-ref]
@@ -71,6 +72,12 @@ Blockers: <or none>
 - Only the `shipper` commits, and only on `/ship` or explicit request: an
   approved work item on `/ship <item-ref>`, or a verified fix on `/ship fix`.
   Every other agent never writes git.
+- A shipped item whose PR is denied, closed, or sent back for changes (or whose
+  PR was never opened, or whose branch was abandoned) is not a dead end: the
+  maintainer invokes `/ship recall <item-ref> <phase>` (`spec | design | build`),
+  which records the finding, revokes the shipped signal with the `reopened:`
+  marker without deleting the historical `ship.md`, marks the downstream
+  artifacts `stale:`, and re-enters that phase until the item re-ships.
 - Trivial fixes use `/fix`; new behavior uses the full lifecycle. A verified fix
   lands through `/ship fix` (no review artifact and no `ship.md`); when unsure,
   ask.
