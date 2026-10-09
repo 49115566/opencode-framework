@@ -13,6 +13,13 @@ Follow your Builder agent instructions exactly. In particular:
   resolves to that item's directory.
 - Resolve the project's test, lint, and typecheck commands via the
   `project-discovery` skill if `AGENTS.md` does not already state them.
+- Re-entry: read `work/<item-ref>/backtracks.md` for an entry whose target phase
+  is `/build` with no matching `## Resolution` (see `docs/workflow.md` → "Phase
+  reversal (backtracking)" → "Re-entry"). If one is open, this is a recall
+  re-entry: revise the implementation and `tasks.md` for the finding, append a
+  `## Resolution <n>` entry, clear the `stale:` marker on any artifact you own
+  that you re-ran, and resume forward; with no open finding, build as ordinary
+  progression.
 - Before selecting a task, run the `/build` plan gate in `docs/workflow.md` →
   "Plan publication": refresh refs best-effort first — `git fetch origin
   <default>`, and, when the remote advertises one, the `plan/<ref>` branch too

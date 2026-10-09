@@ -126,11 +126,16 @@ report only — no files.
 The authoritative readiness definition lives in `docs/workflow.md` →
 "Dependencies and readiness". Read it and apply it; never restate its branch
 sequence here. Shipped state is the presence of the child's `ship.md` artifact —
-presence alone is the sole shipped signal — and a `review.md` verdict of
-`approve` also satisfies a dependency even when unshipped, and `ship.md` presence
-takes precedence over a `request-changes` verdict. A `request-changes` verdict
-(with no `ship.md`) or a missing `review.md` is not satisfied. A child with no
-dependencies is `ready`. A child in a cycle is never `ready`.
+presence is the sole shipped signal, revoked by a `reopened:` marker — and a
+`review.md` verdict of `approve` also satisfies a dependency even when
+unshipped, and `ship.md` presence takes precedence over a `request-changes`
+verdict. A `request-changes` verdict
+(with no `ship.md`) or a missing `review.md` is not satisfied. A **recalled**
+item — its `ship.md` carrying a `reopened:` marker — does not satisfy a
+dependency, and its dependents are reported blocked until it re-ships; the
+revocation is defined by `docs/workflow.md` → "Shipped items and reopen", and a
+non-recalled `ship.md` presence and an `approve` verdict still satisfy exactly as
+before. A child with no dependencies is `ready`. A child in a cycle is never `ready`.
 </readiness>
 
 <findings>

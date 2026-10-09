@@ -290,6 +290,15 @@ else
   bad "AC22 $SHIP_CMD usage string does not document 'Usage: /ship [item-ref] | /ship fix [short description]'"
 fi
 
+# `/ship` additionally documents its recall/reopen mode on the usage line.
+if [ ! -f "$SHIP_CMD" ]; then
+  bad "AC22 $SHIP_CMD is missing; cannot verify its recall usage"
+elif grep -qF -- 'Usage: /ship [item-ref] | /ship fix [short description] | /ship plan <item-ref> | /ship recall <item-ref> <phase>' "$SHIP_CMD"; then
+  ok "AC22 $SHIP_CMD usage string documents the /ship recall reopen form"
+else
+  bad "AC22 $SHIP_CMD usage string does not document 'Usage: /ship [item-ref] | /ship fix [short description] | /ship plan <item-ref> | /ship recall <item-ref> <phase>'"
+fi
+
 # --- AC7 ask agent description ----------------------------------------------
 
 # The `ask` agent must carry the `<Role> agent. <capability>. Read-only.`

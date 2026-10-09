@@ -50,10 +50,17 @@ Rules:
   clears the marker when it re-runs; until then the artifact is neither the item's
   current phase artifact nor a satisfied downstream prerequisite. See
   `docs/workflow.md` → "Phase reversal (backtracking)".
-- `reopened` is optional and appears only on `ship.md`; it names the phase a
-  recalled item re-enters. Producing it and revoking the shipped signal are owned
-  by a separate post-ship path; readiness still keys on `ship.md` **presence
-  only**.
+- `reopened` is optional and appears only on `ship.md`. It is set by
+  `/ship recall <item-ref> <phase>` when a shipped item's PR is denied, closed, or
+  sent back for changes (or was never opened, or its branch was abandoned), and it
+  names the re-entry phase label (`spec | design | build`), which must be strictly
+  earlier than ship. Its presence revokes the shipped signal **without deleting or
+  rewriting the historical `ship.md`**: `ship.md` presence remains the sole shipped
+  signal, but a `reopened:` marker makes that signal revoked, so the item derives
+  the named phase (reopened) and no longer satisfies its dependents. The shipper
+  clears the marker only when it writes a fresh `ship.md` on re-ship. See
+  `docs/workflow.md` → "Phase reversal (backtracking)" → "Shipped items and
+  reopen".
 - `stale` and `reopened` are distinct from the frontmatter `status`
   (`draft`/`final`/`blocked`) and never overload it.
 - Never remove frontmatter. Never edit a file owned by another phase.
@@ -464,9 +471,10 @@ updated: YYYY-MM-DD
 - Re-verification: <the repository's own configured test command — the Project profile `Test:` value> → <result>; <item checks> → <result>
 ```
 
-Its **presence** is the one shipped signal consumed by readiness — defined in
-`docs/workflow.md` → "Dependencies and readiness" — and is keyed on the file
-existing, never on its contents.
+Its **presence** is the shipped signal consumed by readiness (defined in
+`docs/workflow.md` → "Dependencies and readiness"); a `reopened:` marker on the
+file revokes that signal (see `docs/workflow.md` → "Phase reversal
+(backtracking)" → "Shipped items and reopen").
 
 ### `backtracks.md` (backtracks) — per-item backtrack record
 
@@ -502,6 +510,11 @@ status of `open`:
 - evidence: <observable observation>
 - status: open
 ```
+
+The detecting phase may be `/ship` for a post-ship recall; that finding records
+the re-entry target phase and names the revoked `ship.md` as the affected output
+(see `docs/workflow.md` → "Phase reversal (backtracking)" → "Shipped items and
+reopen").
 
 When the target phase's revision completes, a **resolution entry** for that
 finding is appended:

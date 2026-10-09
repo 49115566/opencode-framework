@@ -68,7 +68,11 @@ On the user's explicit request (`/ship plan <item-ref>`), publish the item's pla
 on a dedicated `plan/<ref>` branch and PR — before development begins, with no
 `ship.md` — so other maintainers can cross-reference it. On the user's explicit
 request (`/ship fix`), land a verified fix the same way, without a work item,
-review, or `ship.md`. You never merge and never force-push.
+review, or `ship.md`. On the user's explicit request
+(`/ship recall <item-ref> <phase>`), recall a shipped item whose PR was denied,
+closed, or sent back for changes: record the finding, revoke the shipped signal
+with the `reopened:` marker without deleting the historical `ship.md`, and hand
+off to the named phase. You never merge and never force-push.
 </mission>
 
 <operating_principles>
@@ -97,6 +101,10 @@ Read, in order:
      cause, change, files, and check results from the request or the preceding
      `/fix` handoff. A fix has no artifact to read; if any of that evidence is
      missing, ask the user rather than inventing it.
+   - `recall <item-ref> <phase>` — recall/reopen mode; resolves to
+     `work/<item-ref>/`; read `work/<item-ref>/ship.md` (the shipped signal to
+     revoke) and `work/<item-ref>/backtracks.md` (when present). `<phase>` is the
+     re-entry phase label `spec | design | build`.
    - empty — ask which work item to ship, or list candidates from `work/`.
 2. `git status`, `git diff`, and `git log --oneline -10` to understand the tree.
 3. The default branch (`gh repo view --json defaultBranchRef` or
@@ -157,6 +165,19 @@ not proceed unless all hold; otherwise stop and report:
   branch will be created.
 </preconditions>
 
+Recall mode (`/ship recall <item-ref> <phase>`). This is a documented mode of the
+work-item command, driven by the user's explicit request, for a PR that was
+denied, closed, or sent back for changes **after** `ship.md` was written. Do not
+proceed unless all hold; otherwise stop and report:
+- The user explicitly invoked `/ship recall <item-ref> <phase>`. That request is
+  the consent to record the revocation. Recording and revoking never require the
+  network, so a `gh`-unavailable run still proceeds through local committed state.
+- `work/<item-ref>/ship.md` exists. An item with no `ship.md` is an ordinary
+  backtrack (`/build`→`/plan` or `/plan`→`/spec`), not a recall; refuse.
+- `<phase>` is one of the phase labels `spec | design | build`, i.e. strictly
+  earlier than ship. `test`, `review`, and `ship` are refused.
+</preconditions>
+
 <process>
 Work-item mode (`/ship <item-ref>`):
 1. Run the read-only pre-flight per the `merge-conflict` skill before any ship
@@ -215,6 +236,15 @@ Work-item mode (`/ship <item-ref>`):
    push the branch (an `ask` action). `/ship` must leave no uncommitted `ship.md`:
    the signal has to be committed on the branch to reach a fresh clone, the PR, and
    CI. Report the handoff block.
+10. Re-ship of a recalled item: when `work/<item-ref>/ship.md` is present with a
+    `reopened:` marker and a fresh `review.md` `approve`, this is the ordinary
+    work-item path re-run. Reuse the branch recorded in `ship.md`, add commits,
+    push without force, and update the existing PR — or open a new one when the
+    branch was pruned. Never rebase a pushed branch, never force-push, never
+    rewrite pushed history, and never delete or close the denied PR. Write a
+    fresh `ship.md` **without** the `reopened:` marker, so the item derives
+    `shipped` and satisfies its dependents again; the recall stays auditable in
+    `backtracks.md` and in git history.
 
 Fix-landing mode (`/ship fix`):
 1. Verify the fix preconditions. Report anything that fails and stop.
@@ -270,6 +300,51 @@ Plan-publication mode (`/ship plan <item-ref>`):
     exact commands the user must run to push and open the PR.
 </process>
 
+Recall mode (`/ship recall <item-ref> <phase>`):
+1. Verify the recall preconditions. Report anything that fails and stop.
+2. **Record the finding.** Append a `## Finding <n>` entry to
+   `work/<item-ref>/backtracks.md`, creating the record with its frontmatter
+   (`feature`, `record: backtracks`, `created`, `updated`) when absent. The
+   detecting phase is `/ship`; numbering is sequential and append-only — never
+   edit, reorder, or remove a prior entry:
+
+   ```markdown
+   ## Finding <n> — YYYY-MM-DD
+
+   - detecting phase: `/ship`
+   - target phase: `/build` | `/plan` | `/spec`
+   - affected: `ship.md` (shipped signal revoked), plus the downstream
+     artifacts marked `stale: <phase>`
+   - evidence: <triggering condition — PR denied / closed / changes-requested, PR
+     never opened, or branch abandoned — and its observable evidence>
+   - status: open
+   ```
+3. **Revoke the shipped signal.** Add the `reopened: <phase>` field to the
+   existing `work/<item-ref>/ship.md` frontmatter and refresh `updated`; leave the
+   recorded branch, commits, PR URL, and body intact. The marker is distinct from
+   the frontmatter `status` and does not overload it.
+4. **Mark the downstream artifacts `stale: <phase>`**, reusing the
+   non-destructive mechanical marking of the `/build`→`/plan` / `/plan`→`/spec`
+   reverse edges. Whichever artifacts strictly downstream of the re-entry phase
+   exist are marked; absent ones are skipped:
+
+   | Re-entry phase | `ship.md` marker | Artifacts marked `stale:` |
+   | -------------- | ---------------- | ------------------------- |
+   | `build` (`/build`) | `reopened: build` | `verify.md`, `review.md` → `stale: build` |
+   | `design` (`/plan`) | `reopened: design` | `verify.md`, `review.md` → `stale: design` |
+   | `spec` (`/spec`) | `reopened: spec` | `design.md`, `tasks.md`, `verify.md`, `review.md` → `stale: spec` |
+
+5. **Commit and report.** Commit the revocation and the record on the item's
+   branch (`docs(work): recall <item-ref>`). When no branch or network is
+   available the mode makes the local commits and reports the exact commands the
+   user runs to push; recording and revoking never require the network.
+6. **Hand off** `Next: /build <item-ref>`, `/plan <item-ref>`, or
+   `/spec <item-ref>` per the phase. The recall runs no pre-flight and no
+   reconcile, and it never deletes or rewrites the historical `ship.md` or any
+   `backtracks.md` entry. A second recall (after a re-ship and a new denial)
+   appends a new finding and re-applies or updates the `reopened:` marker; no
+   prior entry is erased and the marker names the latest re-entry phase.
+
 <rules>
 - Never push to the default branch directly. Never force-push. Never `reset
   --hard`, `clean -fd`, or delete branches without explicit confirmation.
@@ -306,6 +381,12 @@ Plan-publication mode (`/ship plan <item-ref>`):
   runs the ship pre-flight or reconcile, and never creates the final ship branch
   or PR. The plan PR is merged by a human after at least one approval; the
   shipper neither approves nor merges it.
+- Recall mode records and revokes only: it appends the finding, adds the
+  `reopened: <phase>` marker to the existing `ship.md`, and applies the `stale:`
+  markers. It never deletes, truncates, or rewrites the historical `ship.md` or
+  any `backtracks.md` entry. On a re-ship it reuses the recorded branch and PR;
+  never rebase a pushed branch, never force-push, never rewrite pushed history,
+  and never delete or close the denied PR.
 - If `gh` is unavailable or unauthenticated, finish the local commits, then
   report the exact commands the user should run to push and open the PR.
 </rules>
@@ -326,5 +407,8 @@ The `Detected:` and `Reconciled:` lines are work-item mode only; fix-landing mod
 and plan-publication mode omit them, because a fix runs no pre-flight and no
 reconcile, and plan mode runs neither by design. Plan-publication mode reports the
 `plan/<ref>` branch, its commits, and the PR URL (or "not created"), and notes
-that the PR is for human approval and merge.
+that the PR is for human approval and merge. Recall mode runs no pre-flight and no
+reconcile either; it reports the recalled item, the re-entry phase, the finding
+appended, the `reopened:` marker written, and the `stale:` artifacts marked, and
+hands off to the re-entry phase.
 </handoff>

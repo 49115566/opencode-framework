@@ -1,5 +1,5 @@
 ---
-description: "Ship an approved work item as a branch, conventional commits, and a PR. Usage: /ship [item-ref] | /ship fix [short description] | /ship plan <item-ref>"
+description: "Ship an approved work item as a branch, conventional commits, and a PR. Usage: /ship [item-ref] | /ship fix [short description] | /ship plan <item-ref> | /ship recall <item-ref> <phase>"
 agent: shipper
 ---
 
@@ -8,10 +8,11 @@ Run the **Ship** phase for: $ARGUMENTS
 Follow your Ship agent instructions exactly. The argument grammar is:
 
 ```
-/ship [item-ref | plan <item-ref> | fix [short description]]
+/ship [item-ref | plan <item-ref> | fix [short description] | recall <item-ref> <phase>]
   item-ref  -> work-item mode (unchanged)
   plan      -> plan-publication mode (new); publishes the plan before development
   fix       -> fix-landing mode (new); the optional description disambiguates
+  recall    -> recall/reopen mode (new); post-ship denial; <phase> ∈ {spec, design, build}
   (empty)   -> ask which work item to ship (unchanged)
 ```
 
@@ -117,6 +118,67 @@ Follow your Ship agent instructions exactly. The argument grammar is:
   unchanged is a no-op: report that and create nothing.
 - When `gh` is unavailable, make the local commits on `plan/<ref>` and report the
   exact commands to push and open the PR.
+
+**Recall/reopen mode** (`/ship recall <item-ref> <phase>`):
+
+- Handle a PR that was denied, closed, or sent back for changes **after**
+  `ship.md` was written. This is a documented mode of the work-item command; no
+  new command, agent, or skill is added. The user's explicit invocation is the
+  consent to record the revocation, and recording/revoking never requires the
+  network.
+- Verify the preconditions: `work/<item-ref>/ship.md` exists (an item with no
+  `ship.md` is an ordinary backtrack, not a recall — refuse), and `<phase>` is one
+  of the phase labels `spec | design | build`, i.e. strictly earlier than ship
+  (`test`, `review`, and `ship` are refused).
+- **Record the finding.** Append a `## Finding <n>` entry to
+  `work/<item-ref>/backtracks.md`, creating the record with its frontmatter
+  (`feature`, `record: backtracks`, `created`, `updated`) when absent. The
+  detecting phase is `/ship`; numbering is sequential and append-only — never
+  edit, reorder, or remove a prior entry:
+
+  ```markdown
+  ## Finding <n> — YYYY-MM-DD
+
+  - detecting phase: `/ship`
+  - target phase: `/build` | `/plan` | `/spec`
+  - affected: `ship.md` (shipped signal revoked), plus the downstream
+    artifacts marked `stale: <phase>`
+  - evidence: <triggering condition — PR denied / closed / changes-requested, PR
+    never opened, or branch abandoned — and its observable evidence>
+  - status: open
+  ```
+
+- **Revoke the shipped signal.** Add the `reopened: <phase>` field to the
+  existing `work/<item-ref>/ship.md` frontmatter and refresh `updated`; leave the
+  recorded branch, commits, PR URL, and body intact. The marker is distinct from
+  the frontmatter `status` and does not overload it.
+- **Mark the downstream artifacts `stale: <phase>`**, reusing the
+  non-destructive mechanical marking of the reverse edges. Whichever artifacts
+  strictly downstream of the re-entry phase exist are marked; absent ones are
+  skipped:
+
+  | Re-entry phase | `ship.md` marker | Artifacts marked `stale:` |
+  | -------------- | ---------------- | ------------------------- |
+  | `build` (`/build`) | `reopened: build` | `verify.md`, `review.md` → `stale: build` |
+  | `design` (`/plan`) | `reopened: design` | `verify.md`, `review.md` → `stale: design` |
+  | `spec` (`/spec`) | `reopened: spec` | `design.md`, `tasks.md`, `verify.md`, `review.md` → `stale: spec` |
+
+- **Commit and report.** Commit the revocation and the record on the item's
+  branch (`docs(work): recall <item-ref>`). When no branch or network is
+  available the mode makes the local commits and reports the exact commands the
+  user runs to push. It runs no pre-flight and no reconcile, and never deletes,
+  truncates, or rewrites the historical `ship.md` or any `backtracks.md` entry.
+- **Hand off** `Next: /build <item-ref>`, `/plan <item-ref>`, or
+  `/spec <item-ref>` per the phase. A second recall (after a re-ship and a new
+  denial) appends a new finding and re-applies or updates the `reopened:` marker;
+  no prior entry is erased and the marker names the latest re-entry phase.
+- **Re-ship.** When `work/<item-ref>/ship.md` is present with a `reopened:` marker
+  and a fresh `review.md` `approve`, the ordinary work-item path re-runs: reuse
+  the branch recorded in `ship.md`, add commits, push without force, and update
+  the existing PR — or open a new one when the branch was pruned. Never rebase a
+  pushed branch, never force-push, never rewrite pushed history, and never delete
+  or close the denied PR. Write a fresh `ship.md` **without** the `reopened:`
+  marker, so the item derives `shipped` and satisfies its dependents again.
 
 If `$ARGUMENTS` is empty, ask which work item to ship, or list candidates from
 `work/`.
