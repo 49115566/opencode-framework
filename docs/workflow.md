@@ -554,6 +554,82 @@ The check runs at three prompt-only enforcement points:
 An empty compared set — no unshipped plans, no declarations, or all plans already
 shipped — reports no findings and does not error.
 
+## Phase reversal (backtracking)
+
+This section is the single authority for reversing the lifecycle. A **backtrack**
+is a sanctioned reverse transition on the same **unshipped** work item, triggered
+by a detected defect in an earlier phase's artifact or output. It is a step
+inside the existing phases, not a new phase, command, or agent: it adds no
+`phase` value and no artifact-presence row. It is explicitly not two things: not
+normal forward progression, and not the plan-publication **revision** flow
+(`## Plan publication`), which re-issues an item's own plan forward and never
+moves a phase backward.
+
+### The reverse-edge rule
+
+On an unshipped work item, a later phase may target an earlier phase, or — for a
+nested roadmap child — its parent `roadmap.md`. The sanctioned edges and what
+each revises:
+
+| Detecting phase | Target              | Revises                        |
+| --------------- | ------------------- | ------------------------------ |
+| `/build`        | `/plan`             | `design.md`, `tasks.md`        |
+| `/plan`         | `/spec`             | `spec.md`                      |
+| `/test`         | `/build`            | `tasks.md` + code (rework)     |
+| `/test`         | `/plan`             | `design.md`, `tasks.md`        |
+| `/test`         | `/spec`             | `spec.md`                      |
+| `/review`       | `/build`            | `tasks.md` + code (rework)     |
+| any child phase | parent `roadmap.md` | `roadmap.md` (owned by `0004`) |
+
+The general later→earlier rule and the table are the model; these exceptions
+restrict it:
+
+- **No self-target.** A phase targeting itself is not a reversal and is refused.
+- **Shipped items are excluded.** An item whose `ship.md` is present is out of
+  scope for a backtrack; its reversal is the post-ship reopen case (below).
+- **The target must be strictly earlier** than the detecting phase.
+- **`roadmap` is reachable only from a nested child**, and only against that
+  child's own parent; the route that revises `roadmap.md` is owned by
+  `0004-roadmap-revision`.
+- **A recorded finding precedes the edge.** Every backtrack carries a committed
+  finding before the reverse edge is taken; there is no unrecorded reversal.
+- **The detecting phase never edits the target artifact.** It records the finding
+  and hands control to the owner.
+
+### Ownership
+
+Control returns to the target phase, whose **owning agent** revises its own
+artifact or output. The detecting phase records its finding but never edits the
+target phase's artifact. The invariant "only the owning phase writes its
+artifact" is unchanged, and the rule that a phase may not rewrite another
+phase's artifact continues to hold in both directions.
+
+### Finding record and non-destructive invalidation
+
+Every backtrack is recorded in the item's committed, append-only
+`work/<item-ref>/backtracks.md` record: a finding entry (detecting phase, target
+phase, affected artifact or output, observable evidence, status `open`) and, when
+the revision completes, a resolution entry. The record is not a phase artifact:
+it carries no `phase`, is not an artifact-presence row, and does not by itself
+determine the item's derived phase. Its template, and the frontmatter markers
+below, are documented in `docs/artifact-conventions.md`.
+
+When the owner revises the artifact, each artifact downstream of the target phase
+is marked `stale: <phase>` in its frontmatter; nothing is deleted or silently
+rewritten, and the pre-revision content stays recoverable from committed git
+history. The item resumes at the target phase and re-runs forward through the
+downstream phases. A stale artifact never satisfies a downstream prerequisite and
+is never read as the item's current phase artifact.
+
+### Shipped items and reopen
+
+A backtrack applies only to unshipped items. An item whose `ship.md` is present
+is excluded: a reversal on it is the post-ship reopen case, a separate path owned
+by `0005-post-ship-pr-denial`. The model changes neither the shipped signal
+(`ship.md` presence) nor the `Depends on`/readiness contract. The optional
+`reopened: <phase>` marker on `ship.md` names the phase a recalled item re-enters
+and is documented in `docs/artifact-conventions.md`.
+
 ## Derived state
 
 There is no state file. `/status` derives each item's phase from artifacts and
@@ -561,6 +637,8 @@ content:
 
 | Observed state                                             | Phase        |
 | ---------------------------------------------------------- | ------------ |
+| earliest `stale:` marker among the item's artifacts names phase `P` | `P` (backtracked) |
+| `ship.md` present with a `reopened:` marker naming phase `P` | `P` (reopened) |
 | `roadmap.md` present (check before `spec.md`)              | roadmap      |
 | `spec.md` missing                                          | not started  |
 | `spec.md` present, `design.md` missing                     | spec         |
@@ -572,6 +650,20 @@ content:
 | `review.md` verdict `request-changes`                      | build (rework)|
 | `review.md` verdict `approve`, no `ship.md`                | ship         |
 | `visual.md` present (optional; does not change the phase) | review       |
+
+The first two rows are evaluated **before** the artifact-presence rows below
+them. An `earliest stale:` marker names the backtrack target phase `P`; the item
+derives `P` (backtracked), and the marked artifact is never read as the item's
+current phase artifact nor counted as a satisfied downstream prerequisite. The
+`stale` token `roadmap` — used only for a phase→parent-`roadmap.md` backtrack —
+maps to `spec` when the item's phase is derived. A `reopened:` marker on
+`ship.md` derives the named phase `P` (reopened); it is the one condition that
+invalidates the `ship.md` presence row, while the shipped signal consumed by
+readiness remains `ship.md` presence alone. The `review.md` verdict
+`request-changes` → `build (rework)` row below is the pre-existing, already
+rendered instance of the general backtrack model
+(`## Phase reversal (backtracking)`): it is retained verbatim, defines no second
+rework mechanism, and its routing literal and consumers are unchanged.
 
 A directory containing `roadmap.md` is a roadmap parent and is derived as
 `roadmap` before the single-feature rows. A roadmap child is derived like any
@@ -769,6 +861,8 @@ what changed.
 
 - A failed `/build` or `/test` leaves artifacts and code in place. Report the
   failure; do not paper over it.
-- Never rewrite another phase's artifact to hide a failure. If the spec is
-  wrong, say so and route back to `/spec`.
+- Never rewrite another phase's artifact to hide a failure. If an upstream
+  artifact is wrong, say so and take the sanctioned reverse transition in
+  `## Phase reversal (backtracking)`: record the finding and hand control to the
+  phase that owns the wrong artifact.
 - Destructive git recovery (reset, revert, restore) requires user confirmation.
