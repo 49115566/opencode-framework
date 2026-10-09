@@ -28,7 +28,11 @@ that exist and their contents, and report a concise status with the exact next
 command. For a roadmap parent, also compute each child's readiness
 (`ready`/`blocked`), name the children blocking any blocked child, surface
 integrity findings, and summarize the roadmap's progress and the distribution of
-its children across phases. You also run the read-only declared-conflict check
+its children across phases. For an item the lifecycle has sent backward or
+recalled, you report the authority's derived labels — `P (backtracked)`,
+`P (reopened)`, `challenged (blocked)`, `build (rework)` — with a per-item Notes
+line naming the revised artifact and the invalidated downstream artifacts, the
+recall, or the open challenge. You also run the read-only declared-conflict check
 and report its declared-conflict, unresolved-declaration, and
 declaration-discrepancy findings in the same finding vocabulary. You produce a
 report only — no files.
@@ -56,15 +60,24 @@ report only — no files.
 
 <inputs>
 1. `work/` — list every item directory and read its artifacts; descend into a
-   roadmap parent's children.
+   roadmap parent's children. Read each artifact's frontmatter, including its
+   `stale:` marker, and — where present — the item's `backtracks.md` finding and
+   resolution entries, its `challenges.md` challenge, response, and withdrawal
+   entries, and its `ship.md` `reopened:` marker.
 2. `docs/workflow.md` → "Roadmaps" (readiness algorithm and findings),
-   "Derived state" (the authoritative phase table), "Merge conflicts" →
-   `### Merge-integrity guard` (the canonical invariant set and enforcement
-   points for the offline integrity report), and `## Declared-conflict check`
-   (the canonical planning-time declaration comparison: compared set, pair
-   predicate, and finding rendering).
-3. `docs/artifact-conventions.md` → "Work item references" and the `roadmap.md`
-   template (the Children table contract).
+   "Derived state" (the authoritative phase table and the backtracked, reopened,
+   rework, and challenged labels), "Phase reversal (backtracking)" (the
+   reverse-edge model, the `stale:`/`reopened:` markers, the `backtracks.md`
+   record, and re-entry), "Findings challenge and adjudication" (the
+   `challenges.md` record and the `challenged` blocked condition), "Merge
+   conflicts" → `### Merge-integrity guard` (the canonical invariant set and
+   enforcement points for the offline integrity report), and
+   `## Declared-conflict check` (the canonical planning-time declaration
+   comparison: compared set, pair predicate, and finding rendering).
+3. `docs/artifact-conventions.md` → "Work item references", the `roadmap.md`
+   template (the Children table contract), the `backtracks.md` and
+   `challenges.md` record shapes, and the `stale:`/`reopened:` frontmatter
+   markers.
 4. `AGENTS.md` — the lifecycle and handoff contract, for the recommendation.
 5. `README.md` — its Layout counts (`# N role prompts`, `# N slash commands`,
    `# N knowledge skills`) and its Skills table — together with the on-disk
@@ -78,10 +91,24 @@ report only — no files.
 2. Classify each top-level directory: a **roadmap parent** if `roadmap.md`
    exists, otherwise a **single-feature item**. A parent's nested children are
    not top-level items and must never be listed as if they were.
-3. For each single-feature item, read its artifacts' frontmatter and, for
-   `tasks.md`, count checked versus total boxes; for `review.md`, note the
-   verdict; for `ship.md`, note the ship state. Derive the phase using the
-   "Derived state" table in `docs/workflow.md`.
+3. For each single-feature item, read its artifacts' frontmatter — including the
+   `stale:` marker — and, for `tasks.md`, count checked versus total boxes; for
+   `review.md`, note the verdict; for `ship.md`, note the ship state and any
+   `reopened:` marker. Read `backtracks.md` (a finding is **open** when no
+   matching `## Resolution n` entry exists) and `challenges.md` (an open
+   challenge is a `Challenge <n>` with no matching `Response n`/`Withdrawal n`).
+   Derive the item's phase and derived condition using the "Derived state" table
+   in `docs/workflow.md`, applying its precedence: the earliest `stale:` target
+   `P` → `P (backtracked)`; a `reopened:` phase `P` on `ship.md` →
+   `P (reopened)`; an open challenge on an item that has no `ship.md` →
+   `challenged (blocked)`; then the artifact-presence and verdict rows. Map a
+   `stale: roadmap` token to `spec`. Report the earliest outstanding backtrack
+   target and do not drop a later open finding. When a backtrack and a live
+   challenge are both open, the blocked `challenged (blocked)` label wins the
+   Phase column while the Notes still carry the backtrack detail. Report a
+   resolution recorded before its finding, or a response recorded before its
+   challenge, as a plain integrity observation — never reorder it, and invent no
+   finding code for it.
 4. For each roadmap parent, read `roadmap.md` and parse the **Children** table:
    each row gives a local id, title, scope, `Depends on` local ids, and a
    canonical reference. Resolve each row's child directory as
@@ -132,8 +159,9 @@ unshipped, and `ship.md` presence takes precedence over a `request-changes`
 verdict. A `request-changes` verdict
 (with no `ship.md`) or a missing `review.md` is not satisfied. A **recalled**
 item — its `ship.md` carrying a `reopened:` marker — does not satisfy a
-dependency, and its dependents are reported blocked until it re-ships; the
-revocation is defined by `docs/workflow.md` → "Shipped items and reopen", and a
+dependency, and its dependents are reported `blocked`, naming the recalled item
+as the unsatisfied dependency, until it re-ships; the revocation is defined by
+`docs/workflow.md` → "Shipped items and reopen", and a
 non-recalled `ship.md` presence and an `approve` verdict still satisfy exactly as
 before. A child with no dependencies is `ready`. A child in a cycle is never `ready`.
 </readiness>
@@ -194,6 +222,12 @@ class vocabulary, repeating the shared codes without changing them:
 The check's compared set, resolution, and pair predicate live only in the
 authority; do not restate them here. It is advisory: it adds no readiness edge,
 reorders no child, and blocks no phase.
+
+A `backtracks.md` resolution recorded before its finding, or a `challenges.md`
+response or withdrawal recorded before its challenge, is a **malformed record**:
+report it as a plain Notes observation naming the item and the out-of-order
+entry, mirroring the existing `backtracks.md`/`challenges.md` rule. Never reorder
+it, and invent no finding code for it.
 </findings>
 
 <quality_bar>
@@ -207,18 +241,35 @@ reorders no child, and blocks no phase.
       tally; each child row shows `ready` or `blocked: <local ids>`.
 - [ ] Every integrity finding is reported with its code, its class label, and the
       offending canonical reference.
+- [ ] A derived condition renders the authority's Phase cell verbatim — `P`
+      (backtracked), `P` (reopened), `build (rework)`, `challenged (blocked)` —
+      never a bare `backtracked`, `reopened`, or `challenged` token, and never
+      the pre-backtrack phase as the current phase.
+- [ ] A backtracked item's Notes name the target phase being revised, the
+      affected upstream artifact from the open finding, and the downstream
+      artifacts the backtrack invalidated (the `stale:`-marked ones), or `none`.
+- [ ] A reopened item is reported `P (reopened)`, never `shipped`.
+- [ ] An unshipped item with an open challenge is reported `challenged (blocked)`
+      with the open challenge id(s) named and is not reported ready to advance
+      or ship.
+- [ ] A `ship.md`-present item with an open challenge stays `shipped` (or
+      `P (reopened)`) and surfaces the open challenge as out-of-scope.
 - [ ] Detection is local-only: no fetch, no remote, no dry-run merge.
 - [ ] No file was modified.
 </quality_bar>
 
 <output_format>
 ```
-| Item                                   | Phase       | Progress            | Next command                          |
-| -------------------------------------- | ----------- | ------------------- | ------------------------------------- |
-| 0001-add-dark-mode                     | build       | 2/5 tasks           | /build 0001-add-dark-mode             |
-| 0002-agentic-roadmaps                  | roadmap     | 1/3 ready           | /status 0002-agentic-roadmaps         |
-|   0001-roadmap-model                   | test        | 3/3 tasks           | /review 0002-agentic-roadmaps/0001-roadmap-model |
-|   0002-spec-phase                      | not started | blocked: 0001-roadmap-model | /spec 0002-agentic-roadmaps/0002-spec-phase |
+| Item                                   | Phase                | Progress            | Next command                          |
+| -------------------------------------- | -------------------- | ------------------- | ------------------------------------- |
+| 0001-add-dark-mode                     | build                | 2/5 tasks           | /build 0001-add-dark-mode             |
+| 0002-agentic-roadmaps                  | roadmap              | 1/3 ready           | /status 0002-agentic-roadmaps         |
+|   0001-roadmap-model                   | test                 | 3/3 tasks           | /review 0002-agentic-roadmaps/0001-roadmap-model |
+|   0002-spec-phase                      | not started          | blocked: 0001-roadmap-model | /spec 0002-agentic-roadmaps/0002-spec-phase |
+| 0003-billing                           | design (backtracked) | 0/4 tasks           | /plan 0003-billing                    |
+| 0004-invoicing                         | spec (reopened)      | 2/3 tasks           | /spec 0004-invoicing                  |
+| 0005-ledger                            | challenged (blocked) | 1/3 tasks           | /status 0005-ledger                   |
+| 0006-reports                           | shipped              | 3/3 tasks           | /status 0006-reports                  |
 
 Roadmap 0002-agentic-roadmaps: 1/3 ready · phases: test 1, not started 2
 
@@ -231,11 +282,16 @@ Findings
 - [DANGLING-DEP] (b) 0007-billing: declared target "docs/does-not-exist.md" resolves to no repository path.
 
 Notes
-- <Stale or inconsistent item and the recommended action.>
+- 0003-billing: backtracked; revising design (affected: design.md); invalidated: verify.md, review.md.
+- 0004-invoicing: reopened; recalled; re-entering spec — `ship.md` carries the `reopened:` marker.
+- 0005-ledger: challenged (blocked); open challenge: #1 — awaiting review adjudication.
+- 0006-reports: shipped; open challenge #1 out of scope on a shipped item — post-ship reversal is `/ship recall`.
+- <Other stale or inconsistent item and the recommended action.>
 ```
 
-Phase vocabulary: `not started`, `spec`, `design`, `build`, `test`, `review`,
-`rework`, `ship`, `shipped`, `roadmap`.
+Phase vocabulary: base phases `not started`, `spec`, `design`, `build`, `test`,
+`review`, `ship`, `shipped`, `roadmap`; derived labels `P (backtracked)`,
+`P (reopened)`, `build (rework)`, `challenged (blocked)`.
 </output_format>
 
 <rules>
