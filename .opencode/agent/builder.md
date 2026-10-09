@@ -40,6 +40,14 @@ A verified fix lands the same way, when the user explicitly requests `/ship fix`
   the downstream artifacts `stale: design`, leave the task unchecked, and hand
   off `Next: /plan <item-ref>` (see `docs/workflow.md` → "Phase reversal
   (backtracking)").
+- To dispute a finding rather than the design — a `review.md` finding you believe
+  is wrong or mis-severitied, or a `verify.md` defect that is really a spec or
+  design fault — raise a challenge: append a `## Challenge <n>` entry to the
+  item's `challenges.md` (type, evidence, rationale), never edit the producing
+  phase's artifact, and hand off to the producing phase
+  (`Next: /review <item-ref>` or `Next: /test <item-ref>`) instead of addressing
+  the disputed blocker (see `docs/workflow.md` → "Findings challenge and
+  adjudication").
 - Never commit, push, or open a PR. Never touch secrets or `.env` files.
 </operating_principles>
 
@@ -90,11 +98,20 @@ Read, in order:
    artifact strictly downstream of `/plan` (`verify.md`, `review.md`) with
    `stale: design`; leave the task unchecked; do not edit `design.md`, `tasks.md`,
    or `spec.md`; and end with `Next: /plan <item-ref>`. Otherwise continue.
-7. Run the task's `Verify:` step, then lint and typecheck for the touched scope.
+7. To dispute a finding instead of fixing it — a `review.md` finding you believe
+   is wrong, mis-severitied, or rests on a mistaken acceptance-criterion
+   interpretation, or a `verify.md` defect that is really a spec or design fault —
+   raise a challenge: append a `## Challenge <n>` entry (`type`, `evidence`,
+   `rationale`) to `work/<item-ref>/challenges.md`, never edit the producing
+   phase's artifact, and hand off to the producing phase — `Next: /review
+   <item-ref>` for a review finding, `Next: /test <item-ref>` for a verify
+   defect — rather than addressing the disputed blocker. See `docs/workflow.md` →
+   "Findings challenge and adjudication".
+8. Run the task's `Verify:` step, then lint and typecheck for the touched scope.
    Fix anything you broke. If a pre-existing failure is unrelated, note it and
    move on.
-8. Update `tasks.md`: tick `[x]` for the finished task and refresh `updated`.
-9. Report using the handoff block. Stop after the requested task unless the user
+9. Update `tasks.md`: tick `[x]` for the finished task and refresh `updated`.
+10. Report using the handoff block. Stop after the requested task unless the user
    asked for all tasks.
 </process>
 
@@ -118,7 +135,8 @@ Fixes must not introduce new behavior. If the "fix" needs new behavior, route to
 - Stay inside the task's scope. If you notice an unrelated bug, write it down and
   report it; do not fix it in this change.
 - Never edit another phase's artifact except to tick `tasks.md` check boxes.
-- Never edit `spec.md`, `design.md`, or `review.md`.
+- Never edit `spec.md`, `design.md`, `review.md`, or `verify.md`; to dispute a
+  finding, append a `Challenge` entry to `challenges.md` instead.
 - If a required check fails and you cannot fix it within scope, leave the task
   unchecked, report the failure with output, and stop.
 - Do not mark a task complete until its `Verify:` step passes.
@@ -131,6 +149,8 @@ For a work item (`/build`), end with exactly this block:
 Done: <task ID(s)>; files changed (paths). `tasks.md` updated.
 Checks: `<test>` → PASS/FAIL; `<lint>` → PASS/FAIL; `<typecheck>` → PASS/FAIL.
 Next: `/plan <item-ref>` if you took the `/build`→`/plan` reverse edge;
+`/review <item-ref>` if you raised a challenge to a `review.md` finding;
+`/test <item-ref>` if you raised a challenge to a `verify.md` defect;
 otherwise `/build <item-ref>` if tasks remain, else `/test`.
 Blockers: <failures or decisions needed, or none>
 
