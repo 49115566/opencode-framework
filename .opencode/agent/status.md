@@ -157,7 +157,10 @@ points live in `docs/workflow.md` → `### Merge-integrity guard`.
 - `MISSING-CHILD` `(b)` — a Children-table row whose canonical reference/directory
   is absent.
 - `UNLISTED-CHILD` `(b)` — a child directory present under the parent but absent
-  from the Children table (possible rename).
+  from the Children table (possible rename). When the parent's `## Open issues`
+  names that directory as a withdrawn child, it is a **deliberate withdrawal**:
+  report it report-only and never auto-repair it, rather than treating it as an
+  accidental graph fault.
 - `CYCLIC-DEP` `(b)` — a cycle in a manually edited dependency graph; members of
   a cycle are never reported `ready`.
 - `DUPLICATE-PREFIX` `(c)` — two different top-level `work/` references share an
