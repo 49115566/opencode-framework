@@ -12,7 +12,7 @@ parent: 0007-phase-backtracking
 Ordered, dependency-aware. One task ≈ one focused commit. After every task,
 `bash tests/run.sh` must stay green. Design authority: `design.md`.
 
-- [ ] **T1** — Add the `tests/fixtures/backtracking/items/` fixture-local item
+- [x] **T1** — Add the `tests/fixtures/backtracking/items/` fixture-local item
       tree exactly as designed (design §3): the record/edge items
       `9101-build-design` … `9108-malformed`, the challenge items
       `9109-challenge-open` … `9112-shipped-challenge`, the derived-state items
@@ -28,7 +28,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       and `test -f tests/fixtures/backtracking/items/9121-readiness/0001-recalled/ship.md`;
       `grep -rn 'work/' tests/fixtures/backtracking` prints nothing.
 
-- [ ] **T2** — Add `tests/checks/87-backtrack-guards.sh` (stable token `AC24`,
+- [x] **T2** — Add `tests/checks/87-backtrack-guards.sh` (stable token `AC24`,
       pure bash/awk, Bash 3.2 compatible, sourced by `run.sh`, never `exit`):
       write the file header (fixture-scoped test code; references
       `10-readiness.sh`/`20-lifecycle.sh`/`80-cycle-fixture.sh`/
@@ -46,7 +46,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       `AC24 record-status`, and `AC24 stale-downstream` `ok` lines present; each
       analyzer's output block matches its expected block.
 
-- [ ] **T3** — Append to `tests/checks/87-backtrack-guards.sh` the sub-areas
+- [x] **T3** — Append to `tests/checks/87-backtrack-guards.sh` the sub-areas
       `challenge-loop` (`fixture_challenge_entries`/`fixture_challenge_status`/
       `fixture_challenge_malformed`), `roadmap-revision` (`fixture_revision` plus
       its positive revision-note/withdrawal assertions), `readiness-revocation`
@@ -60,7 +60,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       `AC24 derived-state` `ok` lines present; each analyzer's output block
       matches its expected block.
 
-- [ ] **T4** — Append to `tests/checks/87-backtrack-guards.sh` the
+- [x] **T4** — Append to `tests/checks/87-backtrack-guards.sh` the
       `contract-pins` sub-area (design §4): the documented record/field/marker/
       token/derived-label strings on `docs/artifact-conventions.md` and
       `docs/workflow.md`, referencing the authorities by name and restating
