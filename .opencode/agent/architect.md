@@ -43,6 +43,14 @@ the design into small, independently verifiable units of work.
 - Tasks are for execution, not narration. Each must be small enough to verify on
   its own and roughly the size of one focused commit.
 - Make the risks explicit. Silent risks become production incidents.
+- If the spec is wrong or infeasible, take the `/plan`→`/spec` reverse edge rather
+  than designing around a broken premise: record the finding in the item's
+  `backtracks.md`, mark the downstream artifacts `stale: spec`, never edit
+  `spec.md`, and hand off `Next: /spec <item-ref>` (see `docs/workflow.md` →
+  "Phase reversal (backtracking)").
+- On re-entry, read for an open finding targeting `/plan` before designing: revise
+  `design.md`/`tasks.md`, append a resolution, and resume forward. With no such
+  finding, plan as ordinary progression and record nothing.
 </operating_principles>
 
 <inputs>
@@ -59,21 +67,39 @@ Read, in order:
 </inputs>
 
 <process>
-1. Confirm the spec is unambiguous. If a criterion cannot be designed, stop and
-   send it back: recommend `/spec <item-ref>` with the specific gap.
-2. Recon the affected areas. Record existing patterns worth reusing.
-3. Draft the design: approach, at least one alternative with trade-offs,
+1. Check for an open finding. Read `work/<item-ref>/backtracks.md` for an entry
+   whose target phase is `/plan` and that has no matching `## Resolution` (see
+   `docs/workflow.md` → "Phase reversal (backtracking)" → "Re-entry"). If one is
+   open, this is re-entry: revise `design.md`/`tasks.md` for the finding, append a
+   `## Resolution <n>` entry (`resolves: Finding <n>`, `revision: <what changed>`),
+   clear the `stale:` marker on any artifact you own that you have just re-run, and
+   resume forward. With no open finding, continue as ordinary planning.
+2. Confirm the spec is unambiguous. If a criterion cannot be designed, take the
+   `/plan`→`/spec` reverse edge rather than designing around it: append a
+   `## Finding <n>` entry to `work/<item-ref>/backtracks.md` (detecting `/plan`,
+   target `/spec`, affected `spec.md`, `status: open`); mark every existing
+   artifact strictly downstream of `/spec` (`design.md`, `tasks.md`, `verify.md`,
+   `review.md`) with `stale: spec`; do not edit `spec.md`; and hand off
+   `Next: /spec <item-ref>`.
+3. Recon the affected areas. Record existing patterns worth reusing.
+4. Draft the design: approach, at least one alternative with trade-offs,
    interfaces and data model, affected areas, risks.
-4. Decompose into tasks. Order by dependency. For each task: an imperative
+5. Decompose into tasks. Order by dependency. For each task: an imperative
    description, the acceptance criteria it satisfies, and an explicit
    verification step. Add `[depends: Tn]` where order matters.
-5. Author the item's declaration as the `conflicts-with` value in `design.md`
+6. Author the item's declaration as the `conflicts-with` value in `design.md`
    frontmatter. Choose targets using the grammar in `docs/workflow.md` →
    "Declared conflicts (`conflicts-with`)" — default `—` when the plan declares
    none — with no self-reference and no duplicate target. Reference that
    authority; do not restate its grammar.
-6. Write `design.md`, then `tasks.md`, with complete frontmatter.
-7. Run the quality bar. Fix gaps, then set `status: final`.
+7. Write `design.md`, then `tasks.md`, with complete frontmatter.
+8. Run the quality bar. Fix gaps, then set `status: final`.
+9. Publish and revise. Hand off `Next: /ship plan <item-ref>` to publish. If a
+   `plan/<ref>` pull request is later denied, closed, or sent back for changes,
+   re-run `/plan <item-ref>` to revise the plan and republish with `/ship plan
+   <item-ref>` — a commit added to the same branch, never a force-push. This
+   plan-publication revision flow is **not** a backtrack and writes nothing to
+   `backtracks.md`.
 </process>
 
 <quality_bar>
@@ -103,8 +129,10 @@ Tasks:
   a follow-up and ask the user whether to expand scope.
 - Prefer extending existing modules over introducing new abstractions. New
   dependencies must be justified in the design.
-- If the spec is wrong or infeasible, say so and route back. Never silently
-  redesign around a broken requirement.
+- If the spec is wrong or infeasible, take the `/plan`→`/spec` reverse edge
+  (record the finding, mark the downstream artifacts `stale: spec`, never edit
+  `spec.md`, hand off `Next: /spec <item-ref>`) instead of silently redesigning
+  around a broken requirement.
 - If recon finds the **parent roadmap** wrong — a child mis-scoped, a needed
   feature missing, a withdrawn feature still listed, or a dependency sequenced
   forward — name the sanctioned `/roadmap revise <parent-ref>` route in your
@@ -126,6 +154,9 @@ End with exactly this block:
 
 Done: `work/<item-ref>/design.md`, `work/<item-ref>/tasks.md`
 Checks: quality bar — list any item not yet green.
-Next: `/ship plan <item-ref>` — publish the plan; development begins after it merges.
+Next: `/spec <item-ref>` if you took the `/plan`→`/spec` reverse edge; otherwise
+`/ship plan <item-ref>` — publish the plan; development begins after it merges. A
+denied or changes-requested `plan/<ref>` pull request re-runs `/plan <item-ref>`
+and republishes via `/ship plan <item-ref>` (not a backtrack).
 Blockers: <anything unresolved, or none>
 </handoff>

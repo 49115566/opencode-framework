@@ -97,8 +97,10 @@ Every phase ends by telling the user, in one short block:
 3. **Next** — the exact next command, e.g. `Next: /plan 0001-add-dark-mode`.
 4. **Blockers** — anything that must be resolved first, or `none`.
 
-Never start a downstream phase's work. If something is wrong upstream, stop
-and report it rather than working around it.
+Never start a downstream phase's work. If something is wrong upstream, do not
+work around it: record the finding and take the sanctioned reverse transition
+in `docs/workflow.md` → "Phase reversal (backtracking)", then hand off
+`Next: /plan <item-ref>` or `Next: /spec <item-ref>`.
 
 ## Guardrails
 
@@ -125,9 +127,13 @@ and report it rather than working around it.
 - **Evidence over assertion.** Cite `file:line`, paste command output, link
   artifact paths.
 - **Backtracking.** When a later phase finds an earlier phase's artifact wrong,
-  record the finding and take the sanctioned reverse transition in
-  `docs/workflow.md` → "Phase reversal (backtracking)". Never edit another
-  phase's artifact.
+  record the finding in the item's `backtracks.md` and take the sanctioned
+  reverse transition in `docs/workflow.md` → "Phase reversal (backtracking)":
+  the `/build`→`/plan` and `/plan`→`/spec` edges mark the target's downstream
+  artifacts `stale:`, never edit the target artifact, and hand off
+  `Next: /plan <item-ref>` or `Next: /spec <item-ref>`. The target phase's owner
+  revises its own artifact, appends a resolution, and resumes forward on
+  re-entry; no open finding means ordinary forward progression.
 - **Scratch space.** Write temporary files and background process logs to the
   in-repo, gitignored `scratch/` directory, created on demand. Never write a
   temporary file outside the workspace.
