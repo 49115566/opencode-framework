@@ -90,6 +90,8 @@ Readiness is derived live from files at status time; it is never stored:
 satisfied(dep_local_id):
   child_dir = work/<parent>/<dep_local_id>/
   if child_dir does not exist        -> dangling; not satisfied
+  if child_dir/ship.md exists
+       and it carries a `reopened:` marker -> not satisfied  # recalled; shipped signal revoked
   if child_dir/ship.md exists        -> satisfied        # shipped; presence is the sole shipped signal
   if child_dir/review.md exists
        and its verdict == "approve"  -> satisfied        # approved, even if unshipped
@@ -105,6 +107,10 @@ presence rather than contents — or when its `review.md` verdict is `approve`, 
 satisfies the dependency **even if unshipped**. `ship.md` presence takes precedence
 over a `request-changes` verdict; a `request-changes` verdict or a missing
 `review.md` (with no `ship.md`) is not satisfied.
+A non-recalled `ship.md` presence and an `approve` verdict satisfy exactly as
+before. A **recalled** item — its `ship.md` carrying a `reopened:` marker — does
+not satisfy the dependency, and its dependents are reported blocked until it
+re-ships; the revocation is defined by `### Shipped items and reopen`.
 A child in a cycle is never `ready`.
 
 ### Declared conflicts (`conflicts-with`)
@@ -395,6 +401,9 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   write `ship.md` recording the branch, commits, and PR (or "not created"), commit
   it (`docs(work): record ship state for <item-ref>`), and push so the shipped
   signal travels with the branch.
+- **Recall mode**: `/ship recall <item-ref> <phase>` handles a post-ship denial by
+  revoking the shipped signal and re-entering the named phase; see
+  `### Shipped items and reopen`.
 - **Exit**: PR URL reported to the user, or — when `gh` is unavailable — the
   local-commit path recorded in `ship.md`; the branch carries a committed
   `ship.md` and the run leaves no uncommitted `ship.md`. Nothing is merged by the
@@ -783,16 +792,127 @@ entry whose target phase is the running phase and that has no matching
   when one already exists for another phase.
 
 Re-entry is invoked by re-running the target phase's existing command
-(`/plan <item-ref>` or `/spec <item-ref>`); there is no separate command.
+(`/build <item-ref>`, `/plan <item-ref>`, or `/spec <item-ref>`); there is no
+separate command.
 
 ### Shipped items and reopen
 
 A backtrack applies only to unshipped items. An item whose `ship.md` is present
-is excluded: a reversal on it is the post-ship reopen case, a separate path owned
-by `0005-post-ship-pr-denial`. The model changes neither the shipped signal
-(`ship.md` presence) nor the `Depends on`/readiness contract. The optional
-`reopened: <phase>` marker on `ship.md` names the phase a recalled item re-enters
-and is documented in `docs/artifact-conventions.md`.
+is excluded: a reversal on it is the **post-ship recall** case, defined here and
+owned by `0005-post-ship-pr-denial`. The model changes neither the shipped signal
+(`ship.md` presence) nor the `Depends on`/readiness contract except through the
+one revocation below. The optional `reopened: <phase>` marker on `ship.md` names
+the phase a recalled item re-enters and is documented in
+`docs/artifact-conventions.md`.
+
+#### Post-ship states
+
+`/ship` writes `ship.md` when it produces a reviewable PR, whether or not `gh`
+was available. After that point an item is in one of:
+
+- **Pre-ship** — no `ship.md`. The item is anywhere from `spec` through `review`;
+  a defect is handled by the reverse edges above, never a recall.
+- **Shipped** — `ship.md` present with **no** `reopened:` marker. The PR is open
+  and awaiting human review or merged, **or was never opened** (for example `gh`
+  was unavailable and only local commits exist), **or its branch was abandoned**.
+  All four are the same state under the single shipped signal and stay shipped
+  until an explicit recall; no automatic detection and no automatic revocation
+  occurs.
+- **Recalled / reopened** — `ship.md` present **with** a `reopened: <phase>`
+  marker. The shipped signal is revoked: the item derives the named phase
+  (reopened) and no longer satisfies its dependents (see "Dependencies and
+  readiness"). It stays recalled until it re-ships.
+
+A **denied, closed, or changes-requested** PR is **not a state by itself**: it is
+the triggering condition a maintainer reports when invoking a recall. The
+framework never reads a PR's state and never revokes a signal on its own.
+
+#### Recall (`/ship recall <item-ref> <phase>`)
+
+The recall is a documented **mode of the existing `/ship` command**; it adds no
+command, agent, skill, `phase` value, or state file:
+
+```
+/ship recall <item-ref> <phase>
+  <phase> ∈ { spec | design | build }     # phase labels, strictly earlier than ship
+  spec   -> re-enter /spec   (record target phase `/spec`)
+  design -> re-enter /plan   (record target phase `/plan`)
+  build  -> re-enter /build  (record target phase `/build`)
+```
+
+The argument is the **phase label** used by the `reopened:` and `stale:` markers
+and by the derived-state table (`spec | design | build`); the recorded target
+phase and the handoff use the corresponding command. The mode is refused when
+`work/<item-ref>/ship.md` is absent (an unshipped item is an ordinary backtrack,
+not a recall) and when `<phase>` is not strictly earlier than ship — `test`,
+`review`, and `ship` are refused. It requires the user's explicit invocation,
+which is the consent to record and commit the revocation.
+
+The shipper performs the recall:
+
+1. **Record the finding.** Append a `## Finding <n>` entry to
+   `work/<item-ref>/backtracks.md`, creating the record with its frontmatter
+   (`feature`, `record: backtracks`, `created`, `updated`) when absent. The
+   detecting phase is `/ship`; numbering is sequential and append-only:
+
+   ```markdown
+   ## Finding <n> — YYYY-MM-DD
+
+   - detecting phase: `/ship`
+   - target phase: `/build` | `/plan` | `/spec`
+   - affected: `ship.md` (shipped signal revoked), plus the downstream
+     artifacts marked `stale: <phase>` in step 3
+   - evidence: <triggering condition — PR denied / closed / changes-requested, PR
+     never opened, or branch abandoned — and its observable evidence>
+   - status: open
+   ```
+
+2. **Revoke the shipped signal.** Add the `reopened: <phase>` field to the
+   existing `ship.md` frontmatter and refresh `updated`; leave the recorded
+   branch, commits, PR URL, and body intact. The marker is distinct from the
+   frontmatter `status` and does not overload it.
+3. **Mark the downstream artifacts `stale: <phase>`.** Reuse the non-destructive
+   mechanical marking above (the detecting phase applies it; the target phase's
+   own artifacts are revised, not marked). Whichever artifacts exist are marked;
+   absent ones are skipped:
+
+   | Re-entry phase | `ship.md` marker | Artifacts marked `stale:` |
+   | -------------- | ---------------- | ------------------------- |
+   | `build` (`/build`) | `reopened: build` | `verify.md`, `review.md` → `stale: build` |
+   | `design` (`/plan`) | `reopened: design` | `verify.md`, `review.md` → `stale: design` |
+   | `spec` (`/spec`) | `reopened: spec` | `design.md`, `tasks.md`, `verify.md`, `review.md` → `stale: spec` |
+
+4. **Commit and report.** Commit the revocation and the record on the item's
+   branch (`docs(work): recall <item-ref>`). When no branch or network is
+   available the mode makes the local commits and reports the exact commands the
+   user runs to push; recording and revoking never require the network.
+5. **Hand off** `Next: /build <item-ref>`, `/plan <item-ref>`, or
+   `/spec <item-ref>` per the phase.
+
+A second recall (for example after a re-ship and a new denial) appends a new
+finding and re-applies or updates the `reopened:` marker; no prior entry is
+erased and the marker names the latest re-entry phase.
+
+#### Re-entry and re-ship
+
+After the recall the item is no longer treated as shipped, so re-entry is the
+`### Re-entry` procedure above, unchanged: the target phase's owner reads the
+open finding targeting its phase, revises its own artifact(s), appends a
+`## Resolution <n>` entry, clears the `stale:` markers on the artifacts it owns,
+and resumes the forward lifecycle from its phase. The `/plan` and `/spec` targets
+behave as `0002` wires them; the `/build` target reads the same open finding. The
+target owner clears its own `stale:` markers but **not** the `reopened:` marker:
+the item stays recalled, and its dependents stay blocked, until it re-ships.
+
+Re-ship is the ordinary `/ship <item-ref>` work-item path. For a recalled item
+(`ship.md` present with `reopened:` and a fresh `review.md` `approve`), the
+shipper reuses the branch recorded in `ship.md`, adds commits, pushes without
+force, updates the existing PR — or opens a new one when the branch was pruned —
+never rebases a pushed branch, never force-pushes, never rewrites pushed history,
+and never deletes or closes the denied PR. It then writes a fresh `ship.md`
+**without** the `reopened:` marker (the shipper's own artifact), so the item
+derives `shipped` and satisfies its dependents again. The recall stays auditable
+in `backtracks.md` and in git history.
 
 ## Derived state
 
@@ -822,8 +942,10 @@ current phase artifact nor counted as a satisfied downstream prerequisite. The
 `stale` token `roadmap` — used only for a phase→parent-`roadmap.md` backtrack —
 maps to `spec` when the item's phase is derived. A `reopened:` marker on
 `ship.md` derives the named phase `P` (reopened); it is the one condition that
-invalidates the `ship.md` presence row, while the shipped signal consumed by
-readiness remains `ship.md` presence alone. The `review.md` verdict
+invalidates the `ship.md` presence row, and readiness consumes the same
+revocation: a `ship.md` carrying a `reopened:` marker does not satisfy a
+dependent until the item re-ships (see `### Shipped items and reopen`). The
+`review.md` verdict
 `request-changes` → `build (rework)` row below is the pre-existing, already
 rendered instance of the general backtrack model
 (`## Phase reversal (backtracking)`): it is retained verbatim, defines no second
@@ -869,6 +991,11 @@ both are in flight.
   (see "The fix track"). Fixes never introduce new behavior.
 - **Full lifecycle** — new features, behavior changes, cross-cutting work,
   anything touching public interfaces, data, or security.
+- **`/ship recall <item-ref> <phase>`** — recall a shipped item whose PR was
+  denied, closed, or sent back for changes (or whose PR was never opened, or
+  whose branch was abandoned): record the finding, revoke the shipped signal
+  without deleting the historical `ship.md`, and re-enter `spec`/`design`/`build`.
+  Explicit and maintainer-invoked; see `### Shipped items and reopen`.
 - **`/roadmap <initiative> | /roadmap revise <item-ref>`** — decompose a broad,
   multi-feature initiative into a parent roadmap item and nested child work items,
   or revise an existing parent in place, sequencing them and recording
