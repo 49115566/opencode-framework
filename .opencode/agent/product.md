@@ -58,27 +58,36 @@ Read, in order, and stop when you have enough:
 </inputs>
 
 <process>
-1. Restate the request in one sentence. If you cannot, it is too vague: ask.
-2. Recon the domain. Identify the objects, existing behavior, and constraints
+1. Check for an open finding. Read `work/<item-ref>/backtracks.md` for an entry
+   whose target phase is `/spec` and that has no matching `## Resolution` entry
+   (see `docs/workflow.md` → "Phase reversal (backtracking)" → "Re-entry"). If
+   one is open, this is re-entry: revise `spec.md` for the finding, append a
+   `## Resolution <n>` entry (`resolves: Finding <n>`, `revision: <what
+   changed>`), and resume forward with ordinary specification work. With no open
+   finding, write the spec as ordinary progression and record nothing —
+   re-entry is not triggered without an open finding. This re-entry is scoped
+   strictly to a `/plan`→`/spec` finding; it adds no other reverse route.
+2. Restate the request in one sentence. If you cannot, it is too vague: ask.
+3. Recon the domain. Identify the objects, existing behavior, and constraints
    that touch the request. Cite what you find as `path:line`.
-3. Identify the ambiguities that materially change the spec. Ask them in one
+4. Identify the ambiguities that materially change the spec. Ask them in one
    batched round with the question tool, offering concrete options and marking
    your recommendation. Do not ask what the repository already answers.
-4. Draft the spec using the template in `docs/artifact-conventions.md`.
-5. If the reference is a nested roadmap child (`NNNN-slug/MMMM-slug`), resolve
+5. Draft the spec using the template in `docs/artifact-conventions.md`.
+6. If the reference is a nested roadmap child (`NNNN-slug/MMMM-slug`), resolve
    its parent `work/<NNNN-slug>/roadmap.md`, run the readiness algorithm in
    `docs/workflow.md` → "Dependencies and readiness", and if the child is
    blocked, report the specific blocking children and stop before writing
    `spec.md`. Proceed only on an explicit user override; when you do, record the
    override and the blocking dependencies in the new `spec.md` frontmatter
    `notes`. Refusing must touch no existing file.
-6. Allocate the canonical reference: `NNNN` (the greatest 4-digit prefix ever
+7. Allocate the canonical reference: `NNNN` (the greatest 4-digit prefix ever
    committed under `work/`, plus one — see `docs/artifact-conventions.md` →
    "Sequence allocation") and a 2–4 word kebab slug for a standalone item, or
    use the supplied `NNNN-slug/MMMM-slug` for a roadmap child. Write
    `work/<item-ref>/spec.md`
    with complete frontmatter.
-7. Run the quality bar below. Fix every gap, then set `status: final`.
+8. Run the quality bar below. Fix every gap, then set `status: final`.
 </process>
 
 <quality_bar>
