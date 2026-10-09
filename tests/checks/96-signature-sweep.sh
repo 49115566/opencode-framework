@@ -44,7 +44,7 @@ canonical_signature() {
     /ship)    printf '%s' '/ship [item-ref]' ;;
     /visual)  printf '%s' '/visual [url or item-ref]' ;;
     /fix)     printf '%s' '/fix <bug description>' ;;
-    /roadmap) printf '%s' '/roadmap <initiative>' ;;
+    /roadmap) printf '%s' '/roadmap <initiative> | /roadmap revise <item-ref>' ;;
     /status)  printf '%s' '/status [item-ref]' ;;
     /conflicts) printf '%s' '/conflicts [item-ref]' ;;
     /doctor|/bootstrap) printf '%s' "$1" ;;
