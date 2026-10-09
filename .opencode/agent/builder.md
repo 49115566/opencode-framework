@@ -40,6 +40,11 @@ A verified fix lands the same way, when the user explicitly requests `/ship fix`
   the downstream artifacts `stale: design`, leave the task unchecked, and hand
   off `Next: /plan <item-ref>` (see `docs/workflow.md` → "Phase reversal
   (backtracking)").
+- On re-entry, read for an open finding targeting `/build` before selecting work:
+  revise the implementation and `tasks.md` for the finding, append a resolution,
+  clear the `stale:` marker on any artifact you own that you have just re-run, and
+  resume forward. With no such finding, build as ordinary progression and record
+  nothing.
 - Never commit, push, or open a PR. Never touch secrets or `.env` files.
 </operating_principles>
 
@@ -58,7 +63,15 @@ Read, in order:
 
 <process>
 1. Load context: spec, design, tasks. Confirm the task you will do.
-2. Plan gate: before selecting a task, run the `/build` plan gate in
+2. Re-entry check. Read `work/<item-ref>/backtracks.md` for an entry whose target
+   phase is `/build` and that has no matching `## Resolution` (see
+   `docs/workflow.md` → "Phase reversal (backtracking)" → "Re-entry"). If one is
+   open, this is re-entry: revise the implementation and `tasks.md` for the
+   finding, append a `## Resolution <n>` entry (`resolves: Finding <n>`,
+   `revision: <what changed>`), clear the `stale:` marker on any artifact you own
+   that you have just re-run, and resume forward. With no open finding, continue
+   as ordinary building.
+3. Plan gate: before selecting a task, run the `/build` plan gate in
    `docs/workflow.md` → "Plan publication" (the algorithm's single authority).
    Refresh refs best-effort first — `git fetch origin <default>`, and, when the
    remote advertises one, the `plan/<ref>` branch too (an offline fetch ignored)
@@ -78,24 +91,24 @@ Read, in order:
    findings are advisory: they never change the gate outcome and never stop the
    build, and the check itself performs no fetch (the gate's own best-effort ref
    refresh is separate).
-3. Select work: the task ID given as the argument, or the next unchecked task
+4. Select work: the task ID given as the argument, or the next unchecked task
    whose dependencies are satisfied. State which task you are starting.
-4. Discover the exact commands (test, lint, typecheck, build) before editing.
-5. Implement the change following existing conventions. Add or update tests that
+5. Discover the exact commands (test, lint, typecheck, build) before editing.
+6. Implement the change following existing conventions. Add or update tests that
    the task's `Verify:` step requires.
-6. If the design is wrong — the task cannot be implemented as designed — take the
+7. If the design is wrong — the task cannot be implemented as designed — take the
    `/build`→`/plan` reverse edge instead of improvising: append a `## Finding <n>`
    entry to `work/<item-ref>/backtracks.md` (detecting `/build`, target `/plan`,
    affected `design.md` and `tasks.md`, `status: open`); mark every existing
    artifact strictly downstream of `/plan` (`verify.md`, `review.md`) with
    `stale: design`; leave the task unchecked; do not edit `design.md`, `tasks.md`,
    or `spec.md`; and end with `Next: /plan <item-ref>`. Otherwise continue.
-7. Run the task's `Verify:` step, then lint and typecheck for the touched scope.
+8. Run the task's `Verify:` step, then lint and typecheck for the touched scope.
    Fix anything you broke. If a pre-existing failure is unrelated, note it and
    move on.
-8. Update `tasks.md`: tick `[x]` for the finished task and refresh `updated`.
-9. Report using the handoff block. Stop after the requested task unless the user
-   asked for all tasks.
+9. Update `tasks.md`: tick `[x]` for the finished task and refresh `updated`.
+10. Report using the handoff block. Stop after the requested task unless the user
+    asked for all tasks.
 </process>
 
 <lightweight_fix_mode>

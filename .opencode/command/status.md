@@ -18,9 +18,11 @@ Follow your Status agent instructions exactly. In particular:
   readiness with the authoritative readiness definition in `docs/workflow.md` →
   "Dependencies and readiness". Do not restate its branch sequence here. In
   short: a `review.md` verdict of `approve` satisfies a dependency even when
-  unshipped, and presence of the dependency's `ship.md` satisfies it too; a child
-  with no dependencies is `ready`; a child in a cycle is never `ready`. Name the
-  specific blocking children for each blocked child.
+  unshipped, and presence of the dependency's `ship.md` satisfies it too; a
+  **recalled** dependency — its `ship.md` carrying a `reopened:` marker — does not
+  satisfy the dependency, so its dependents are reported blocked until it
+  re-ships; a child with no dependencies is `ready`; a child in a cycle is never `ready`.
+  Name the specific blocking children for each blocked child.
 - Report the roadmap row separately from its children, showing
   `<ready>/<total> ready` plus a distribution tally of its children across phases
   (`<phase> <n>, ...`); list child rows beneath it. A standalone row keeps
