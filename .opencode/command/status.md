@@ -27,7 +27,10 @@ Follow your Status agent instructions exactly. In particular:
   `checked/total tasks`.
 - Emit `DANGLING-DEP` / `MISSING-CHILD` / `UNLISTED-CHILD` / `CYCLIC-DEP`
   findings for broken or cyclic references. Report them without failing and
-  without modifying anything.
+  without modifying anything. An `UNLISTED-CHILD` observation for a child
+  directory named as withdrawn under the parent's `## Open issues` is a
+  **deliberate withdrawal**: report it report-only and never auto-repair it, not
+  a possible rename.
 - Also report, as one-line findings with their class labels, `DUPLICATE-PREFIX`
   `(c)` and `DUPLICATE-CHILD` `(c)` for duplicate top-level `NNNN` prefixes and
   duplicate per-parent `MMMM` child numbers, and `DRIFT-FACT` `(d)` for

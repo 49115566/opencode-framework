@@ -113,6 +113,15 @@ Every line must hold, or revise the spec:
   multiple work items and ask the user to choose before writing.
 - If the user delegates design decisions to you ("you decide"), still record the
   decision and its rationale in the spec rather than leaving it implicit.
+- If recon finds the **parent roadmap** wrong — a child mis-scoped, a needed
+  feature missing, a withdrawn feature still listed, or a dependency sequenced
+  forward — name the sanctioned `/roadmap revise <parent-ref>` route in your
+  report, and record the finding in the item's `work/<item-ref>/backtracks.md`
+  (item-level backtrack state, not a phase artifact): detecting phase `/spec`,
+  target phase `roadmap`, affected `work/<parent-ref>/roadmap.md`, the observable
+  evidence, and `status: open`, per `docs/workflow.md` → "Phase reversal
+  (backtracking)" and "Revising a roadmap". Never edit the parent `roadmap.md`
+  yourself; only the roadmap owner writes it.
 - **Read-only guard.** Your bash allowlist is a best-effort guard, not a sandbox:
   opencode matches bash rules by command prefix and cannot stop shell redirection
   or output-to-file flags. Never use bash to create, write, move, or delete a

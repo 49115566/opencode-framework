@@ -28,7 +28,7 @@ standalone item and behaves exactly as before.
 ## Which command now?
 
 ```
-Broad, multi-feature initiative? → /roadmap <initiative>
+Broad, multi-feature initiative? → /roadmap <initiative> | /roadmap revise <item-ref>
 No spec.md?                      → /spec <feature or problem description | item-ref>
 spec.md, no design.md?           → /plan <item-ref>
 design.md, tasks.md unchecked?   → /build [item-ref or task-id]

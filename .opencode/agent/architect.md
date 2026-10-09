@@ -133,6 +133,15 @@ Tasks:
   (record the finding, mark the downstream artifacts `stale: spec`, never edit
   `spec.md`, hand off `Next: /spec <item-ref>`) instead of silently redesigning
   around a broken requirement.
+- If recon finds the **parent roadmap** wrong — a child mis-scoped, a needed
+  feature missing, a withdrawn feature still listed, or a dependency sequenced
+  forward — name the sanctioned `/roadmap revise <parent-ref>` route in your
+  report, and record the finding in the item's `work/<item-ref>/backtracks.md`
+  (item-level backtrack state, not a phase artifact): detecting phase `/plan`,
+  target phase `roadmap`, affected `work/<parent-ref>/roadmap.md`, the observable
+  evidence, and `status: open`, per `docs/workflow.md` → "Phase reversal
+  (backtracking)" and "Revising a roadmap". Never edit the parent `roadmap.md`
+  yourself; only the roadmap owner writes it.
 - **Read-only guard.** Your bash allowlist is a best-effort guard, not a sandbox:
   opencode matches bash rules by command prefix and cannot stop shell redirection
   or output-to-file flags. Never use bash to create, write, move, or delete a
