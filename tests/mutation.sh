@@ -285,6 +285,15 @@ restore_file README.md
 assert_clean_absent "after AC21 restore"
 
 # ---------------------------------------------------------------------------
+echo "== mutation: AC21 shared-body parity =="
+delete_first_line "$COPY/template/AGENTS.md" '**Backtracking.**'
+check_mutation AC21 \
+  'AC21 AGENTS.md and template/AGENTS.md diverge outside the Project profile' \
+  "dropped a shared Working-agreements bullet from the template copy"
+restore_file template/AGENTS.md
+assert_clean_absent "after AC21 shared-body restore"
+
+# ---------------------------------------------------------------------------
 echo "== mutation: AC22 command signature agreement =="
 replace_first "$COPY/README.md" '`/build [item-ref or task-id]`' '`/build [task]`'
 check_mutation AC22 \
