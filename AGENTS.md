@@ -122,6 +122,10 @@ and report it rather than working around it.
   behavior changes use the full lifecycle. When unsure, ask.
 - **Evidence over assertion.** Cite `file:line`, paste command output, link
   artifact paths.
+- **Backtracking.** When a later phase finds an earlier phase's artifact wrong,
+  record the finding and take the sanctioned reverse transition in
+  `docs/workflow.md` → "Phase reversal (backtracking)". Never edit another
+  phase's artifact.
 - **Scratch space.** Write temporary files and background process logs to the
   in-repo, gitignored `scratch/` directory, created on demand. Never write a
   temporary file outside the workspace.
