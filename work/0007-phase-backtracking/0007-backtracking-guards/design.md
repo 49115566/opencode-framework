@@ -5,7 +5,7 @@ status: final
 created: 2026-10-09
 updated: 2026-10-09
 parent: 0007-phase-backtracking
-notes: "Resolves the spec's deferred design choices: stable suite token AC24; check file tests/checks/87-backtrack-guards.sh; fixture tree tests/fixtures/backtracking/ with a fixture-local items/ root; eight declared sub-areas (reverse-edge, record-status, stale-downstream, challenge-loop, roadmap-revision, readiness-revocation, derived-state, contract-pins). Treats the spec's two design-blocking assumptions as confirmed by its own non-goals: the 0001-0006 contracts are final and only the committed test suite and its documentation are touched, offline with no provider. No backtrack finding is open for this item."
+notes: "Resolves the spec's deferred design choices: stable suite token AC24; check file tests/checks/87-backtrack-guards.sh; fixture tree tests/fixtures/backtracking/ with a fixture-local items/ root; eight declared sub-areas (reverse-edge, record-status, stale-downstream, challenge-loop, roadmap-revision, readiness-revocation, derived-state, contract-pins). Treats the spec's two design-blocking assumptions as confirmed by its own non-goals: the 0001-0006 contracts are final and only the committed test suite and its documentation are touched, offline with no provider. Re-entry revision: Finding 1 (recorded by /build) corrected the §5 mutation anchor for `challenge-loop` — it referenced a nonexistent `## Response 2`; the anchor is now the fixture's sole `## Reversal 3` header, which drops the Reversal entry and trips only `challenge-loop`. Resolution 1 appended to backtracks.md."
 conflicts-with: "tests/checks, tests/fixtures, tests/README.md, tests/mutation.sh"
 ---
 
@@ -210,7 +210,7 @@ dependent), targeting the copy only:
 | 1 | delete the `- target phase:` line from `items/9101-build-design/backtracks.md` | `AC24 reverse-edge` |
 | 2 | change `items/9107-resolved/backtracks.md` `- resolves: Finding 1` → `- resolves: Finding 9` | `AC24 record-status` |
 | 3 | change `items/9101-build-design/verify.md` `stale: design` → `stale: spec` | `AC24 stale-downstream` |
-| 4 | change `items/9110-challenge-mixed/challenges.md` a Response header `## Response 2` → `## Ack 2` | `AC24 challenge-loop` |
+| 4 | change `items/9110-challenge-mixed/challenges.md` the Reversal header `## Reversal 3` → `## Ack 3` (the fixture's sole `Reversal`, so the entry drops and Challenge 3 stays `resolved`) | `AC24 challenge-loop` |
 | 5 | reorder `items/9120-revised-roadmap/roadmap.md` Children header so `Depends on` is not pipe-field 5 | `AC24 roadmap-revision` |
 | 6 | remove `reopened: build` from `items/9121-readiness/0001-recalled/ship.md` | `AC24 readiness-revocation` |
 | 7 | change `items/9113-reopened/ship.md` `reopened: design` → `reopened: build` | `AC24 derived-state` |
