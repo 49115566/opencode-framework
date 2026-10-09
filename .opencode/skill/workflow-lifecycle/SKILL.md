@@ -37,6 +37,11 @@ UI work, before /review?         → /visual [url or item-ref]   (optional)
 verify.md, no review.md?         → /review [item-ref]
 review.md verdict request-changes→ /build [item-ref or task-id]   (rework blockers)
 review.md verdict approve, no ship.md?→ /ship [item-ref]
+build finds the design wrong?    → /plan <item-ref>   (reverse edge; record the finding)
+plan finds the spec wrong?       → /spec <feature or problem description | item-ref>   (reverse edge; record the finding)
+open finding targets /plan?      → /plan <item-ref>   (re-entry; revise and resolve)
+open finding targets /spec?      → /spec <feature or problem description | item-ref>   (re-entry; revise and resolve)
+plan/<ref> PR denied/changes-requested?→ /plan <item-ref>   (re-run; republish with /ship plan <item-ref>)
 Verified /fix complete?          → /ship fix   (explicit request; shipper lands it)
 Declared plan conflicts?         → /conflicts [item-ref]   (read-only, advisory)
 Blocked child (dependency unmet)?→ wait, or override explicitly; /status [item-ref]
@@ -59,7 +64,10 @@ Blockers: <or none>
 - Only the owning phase writes its artifact. Never rewrite another phase's file.
 - Never skip a phase silently. If the user asks to skip, note it in the next
   artifact's frontmatter `notes`.
-- Never start downstream work to "help". If upstream is broken, stop and report.
+- Never start downstream work to "help". If upstream is broken, record the
+  finding and take the sanctioned reverse transition (`docs/workflow.md` →
+  "Phase reversal (backtracking)"), then hand off `Next: /plan <item-ref>` or
+  `Next: /spec <item-ref>`.
 - Only the `shipper` commits, and only on `/ship` or explicit request: an
   approved work item on `/ship <item-ref>`, or a verified fix on `/ship fix`.
   Every other agent never writes git.

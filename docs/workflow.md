@@ -217,7 +217,10 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   user story, and numbered acceptance criteria in Given/When/Then form. Open
   questions are either resolved or explicitly marked as deferred.
 - **Artifact**: `work/<item-ref>/spec.md`, frontmatter `phase: spec`.
-- **Next**: `/plan <item-ref>`.
+- **Next**: `/plan <item-ref>`. If `/plan` finds this spec ambiguous or wrong, it
+  takes the `/plan`→`/spec` reverse edge (see "Phase reversal (backtracking)");
+  the finding's handoff routes the item back here to re-run `/spec <item-ref>`
+  and revise `spec.md`.
 
 ### 2. Design — `/plan <item-ref>`
 
@@ -235,7 +238,11 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 - **Artifact**: `design.md` and `tasks.md`, frontmatter `phase: design` and
   `phase: tasks` respectively.
 - **Next**: `/ship plan <item-ref>` to publish the plan (see
-  "Plan publication"); then `/build` once the plan is merged.
+  "Plan publication"); then `/build` once the plan is merged. A denied or
+  changes-requested `plan/<ref>` pull request routes back here to re-run
+  `/plan <item-ref>` and republish — never a force-push, and not a backtrack.
+  If the spec is ambiguous or wrong, take the `/plan`→`/spec` reverse edge and
+  hand off `Next: /spec <item-ref>` (see "Phase reversal (backtracking)").
 
 ### 3. Build — `/build [item-ref or task-id]`
 
@@ -252,7 +259,9 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   scope. Do **not** commit.
 - **Artifact**: source changes plus `tasks.md` with updated check boxes.
 - **Next**: `/build` again for more tasks, then `/test` when all boxes are
-  checked.
+  checked. If the design is wrong, take the `/build`→`/plan` reverse edge and
+  hand off `Next: /plan <item-ref>` (see "Phase reversal (backtracking)"); the
+  task stays unchecked and the design is revised by its owner.
 
 ### 4. Test — `/test [item-ref]`
 
@@ -345,6 +354,14 @@ shipper, the only agent that writes git (see `AGENTS.md` → guardrails). Plan m
   declared targets, it is republished through the same flow: a commit is added to
   the existing `plan/<ref>` branch and its pull request updated (or a new one
   opened if the branch was pruned). A pushed branch is never force-pushed.
+- **Denied or changes-requested pull request.** When a `plan/<ref>` pull request
+  is denied, closed, or sent back for changes, the documented route is to re-run
+  `/plan <item-ref>` to revise the plan and republish with
+  `/ship plan <item-ref>`. Publication adds a commit to the existing `plan/<ref>`
+  branch and updates its pull request (or opens a new one when the branch was
+  pruned) — never a force-push. This round trip is the plan-publication
+  **revision** flow, explicitly **not** a backtrack: it writes nothing to
+  `backtracks.md` and moves no phase backward.
 - **Idempotence.** Re-invoking publication when the plan is already on the default
   branch and unchanged is a no-op: it reports that and creates nothing.
 
@@ -614,12 +631,73 @@ it carries no `phase`, is not an artifact-presence row, and does not by itself
 determine the item's derived phase. Its template, and the frontmatter markers
 below, are documented in `docs/artifact-conventions.md`.
 
-When the owner revises the artifact, each artifact downstream of the target phase
-is marked `stale: <phase>` in its frontmatter; nothing is deleted or silently
+When the reverse edge is taken, each artifact downstream of the target phase is
+marked `stale: <phase>` in its frontmatter; nothing is deleted or silently
 rewritten, and the pre-revision content stays recoverable from committed git
 history. The item resumes at the target phase and re-runs forward through the
 downstream phases. A stale artifact never satisfies a downstream prerequisite and
 is never read as the item's current phase artifact.
+
+### Taking an edge
+
+When a detecting phase finds an earlier artifact wrong, it takes the reverse edge
+by performing five steps in order and then handing off. This procedure is the
+single operational statement of the edge; the agent prompts and commands
+reference it rather than restating it.
+
+1. **Confirm the edge is sanctioned.** The target is strictly earlier than the
+   detecting phase, the item is unshipped (`ship.md` absent), and the edge is one
+   the taking phase supports. A self-target, a `/test` edge, a parent-`roadmap`
+   edge, and a post-ship reopen are not taken here.
+2. **Record the finding.** Append a `## Finding <n>` entry to
+   `work/<item-ref>/backtracks.md`, creating the record with its frontmatter
+   (`feature`, `record: backtracks`, `created`, `updated`) when absent. The entry
+   names the detecting phase, the target phase, the affected artifact(s), the
+   observable evidence, and `status: open`; numbering is sequential and
+   append-only.
+3. **Apply the `stale:` markers.** Mark every existing artifact strictly
+   downstream of the target phase and not owned by the target phase with
+   `stale: <target-phase-label>`. Downstream follows the artifact-presence order
+   (`spec.md` < `design.md` < `tasks.md` < `verify.md` < `review.md`); the
+   target's own artifact is revised by its owner, not marked. This is
+   non-destructive metadata, not an authorship edit.
+4. **Never edit the target artifact.** The detecting phase does not touch the file
+   it is sending back; the target phase's owner revises it on re-entry.
+5. **Hand off.** End with `Next: /plan <item-ref>` (from `/build`) or
+   `Next: /spec <item-ref>` (from `/plan`).
+
+The two intra-item edges and their marker sets are concrete:
+
+| Edge | Detecting phase | Finding entry (`backtracks.md`) | Existing artifacts marked `stale:` | Handoff |
+| ---- | --------------- | ------------------------------- | ---------------------------------- | ------- |
+| `/build`→`/plan` | builder | detecting `/build`; target `/plan`; affected `design.md`, `tasks.md` | `verify.md`, `review.md` → `stale: design` | `Next: /plan <item-ref>` |
+| `/plan`→`/spec` | architect | detecting `/plan`; target `/spec`; affected `spec.md` | `design.md`, `tasks.md`, `verify.md`, `review.md` → `stale: spec` | `Next: /spec <item-ref>` |
+
+The marker's target-phase label uses the existing vocabulary: target `/plan` →
+`stale: design`; target `/spec` → `stale: spec`. Only the two edges above are
+wired by the reverse-phase routing; the `/test` reverse edges, a parent-`roadmap`
+revision, and post-ship reopen follow this same procedure when their items land,
+and their absence here is not a gap in the model.
+
+### Re-entry
+
+Every phase that owns a target reads for an open finding targeting its own phase
+before doing forward work. A finding is **open** when `backtracks.md` contains an
+entry whose target phase is the running phase and that has no matching
+`## Resolution` entry.
+
+- **Open finding present.** The owning agent reads the finding, revises the
+  affected artifact(s), appends a `## Resolution <n>` entry
+  (`resolves: Finding <n>`, `revision: <what changed>`), clears the `stale:`
+  marker on any artifact it owns and has just re-run, and resumes the forward
+  lifecycle from its phase as if the later phases had not run. The resolver is
+  the target phase's owner; the detector never resolves its own finding.
+- **No open finding.** The phase behaves as ordinary forward
+  progression/revision: it records no finding and touches `backtracks.md` only
+  when one already exists for another phase.
+
+Re-entry is invoked by re-running the target phase's existing command
+(`/plan <item-ref>` or `/spec <item-ref>`); there is no separate command.
 
 ### Shipped items and reopen
 

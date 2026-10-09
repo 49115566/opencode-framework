@@ -32,6 +32,14 @@ Follow your Builder agent instructions exactly. In particular:
   best-effort ref refresh is separate).
 - Implement the requested task, or the next unblocked unchecked task if none is
   named. State which task you are doing.
+- If the design is wrong — the task cannot be implemented as designed — take the
+  `/build`→`/plan` reverse edge (see `docs/workflow.md` → "Phase reversal
+  (backtracking)") instead of improvising: append a `## Finding <n>` entry to
+  `work/<item-ref>/backtracks.md` (detecting `/build`, target `/plan`, affected
+  `design.md` and `tasks.md`, `status: open`), mark every existing artifact
+  strictly downstream of `/plan` (`verify.md`, `review.md`) `stale: design`, do
+  not edit `design.md`, `tasks.md`, or `spec.md`, leave the task unchecked, and
+  end the handoff with Next: `/plan <item-ref>`.
 - Follow existing conventions; keep the change scoped to the task.
 - Run the task's `Verify:` step plus lint and typecheck for the touched scope.
 - Tick `[x]` for the finished task in `tasks.md` and refresh `updated`.

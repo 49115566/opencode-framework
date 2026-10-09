@@ -35,7 +35,11 @@ A verified fix lands the same way, when the user explicitly requests `/ship fix`
 - Evidence, not confidence. Run the command; paste the result. "Should work" is
   not a result.
 - One task at a time, fully finished, including its `Verify:` step.
-- If the design is wrong, stop and route back rather than improvising a redesign.
+- If the design is wrong, take the `/build`→`/plan` reverse edge rather than
+  improvising a redesign: record the finding in the item's `backtracks.md`, mark
+  the downstream artifacts `stale: design`, leave the task unchecked, and hand
+  off `Next: /plan <item-ref>` (see `docs/workflow.md` → "Phase reversal
+  (backtracking)").
 - Never commit, push, or open a PR. Never touch secrets or `.env` files.
 </operating_principles>
 
@@ -79,11 +83,18 @@ Read, in order:
 4. Discover the exact commands (test, lint, typecheck, build) before editing.
 5. Implement the change following existing conventions. Add or update tests that
    the task's `Verify:` step requires.
-6. Run the task's `Verify:` step, then lint and typecheck for the touched scope.
+6. If the design is wrong — the task cannot be implemented as designed — take the
+   `/build`→`/plan` reverse edge instead of improvising: append a `## Finding <n>`
+   entry to `work/<item-ref>/backtracks.md` (detecting `/build`, target `/plan`,
+   affected `design.md` and `tasks.md`, `status: open`); mark every existing
+   artifact strictly downstream of `/plan` (`verify.md`, `review.md`) with
+   `stale: design`; leave the task unchecked; do not edit `design.md`, `tasks.md`,
+   or `spec.md`; and end with `Next: /plan <item-ref>`. Otherwise continue.
+7. Run the task's `Verify:` step, then lint and typecheck for the touched scope.
    Fix anything you broke. If a pre-existing failure is unrelated, note it and
    move on.
-7. Update `tasks.md`: tick `[x]` for the finished task and refresh `updated`.
-8. Report using the handoff block. Stop after the requested task unless the user
+8. Update `tasks.md`: tick `[x]` for the finished task and refresh `updated`.
+9. Report using the handoff block. Stop after the requested task unless the user
    asked for all tasks.
 </process>
 
@@ -119,7 +130,8 @@ For a work item (`/build`), end with exactly this block:
 
 Done: <task ID(s)>; files changed (paths). `tasks.md` updated.
 Checks: `<test>` → PASS/FAIL; `<lint>` → PASS/FAIL; `<typecheck>` → PASS/FAIL.
-Next: `/build <item-ref>` if tasks remain, else `/test`.
+Next: `/plan <item-ref>` if you took the `/build`→`/plan` reverse edge;
+otherwise `/build <item-ref>` if tasks remain, else `/test`.
 Blockers: <failures or decisions needed, or none>
 
 For a fix (`/fix`), do not use the work-item block and do not name `tasks.md` or
