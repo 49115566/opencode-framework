@@ -1,11 +1,11 @@
 ---
-feature: 0008-minor-nit-resolution
+feature: 0009-minor-nit-resolution
 phase: design
 status: final
 created: 2026-10-09
-updated: 2026-10-09
+updated: 2026-10-12
 conflicts-with: "tests/checks, tests/README.md, tests/mutation.sh, 0007-phase-backtracking/0007-backtracking-guards"
-notes: "Ordinary forward progression: work/0008-minor-nit-resolution/backtracks.md does not exist, so no open /plan finding and no resolution entry. Resolves the spec's one deferred design question (exact surfaces and wording) by naming the six in-scope surfaces and fixing the literal replacement text below. Adopts the spec's two design-blocking assumptions because both are entailed by the spec's own non-goals: (1) a question records genuine uncertainty and never a declined Minor/Nit — pinned explicitly in the reviewer prompt; (2) the challenge/response record is reused unchanged. New committed guard is a live-surface agreement check tests/checks/25-review-severity-bar.sh with suite token AC25, not AC24 — AC24 is already claimed by the unshipped sibling plan 0007-phase-backtracking/0007-backtracking-guards, which is the declared conflict target. The guard never reads live work/**."
+notes: "Ordinary forward progression: work/0009-minor-nit-resolution/backtracks.md does not exist, so no open /plan finding and no resolution entry. Resolves the spec's one deferred design question (exact surfaces and wording) by naming the six in-scope surfaces and fixing the literal replacement text below. Adopts the spec's two design-blocking assumptions because both are entailed by the spec's own non-goals: (1) a question records genuine uncertainty and never a declined Minor/Nit — pinned explicitly in the reviewer prompt; (2) the challenge/response record is reused unchanged. New committed guard is a live-surface agreement check tests/checks/25-review-severity-bar.sh with suite token AC25, not AC24 — AC24 is already claimed by the unshipped sibling plan 0007-phase-backtracking/0007-backtracking-guards, which is the declared conflict target. The guard never reads live work/**."
 ---
 
 # Design — Minor and nit resolution routing
@@ -367,5 +367,5 @@ read-only and fresh-clone-clean.
 | AC8 | `AC25 all-severity-bar` asserts the bar on all six surfaces; `AC25 contract-preserved` asserts none carries the old language. |
 | AC9 | `20-lifecycle.sh` pins the unchanged `` `review.md` verdict `request-changes` `` literal and route; T7 confirms no derived-state row changed. |
 | AC10 | `AC25 contract-preserved` pins the four labels and two verdicts and negates new disposition tokens; `40-inventory.sh` and `96-signature-sweep.sh` stay green (no command/agent/skill/inventory change). |
-| AC11 | T7: `git status --porcelain -- work/` shows only `work/0008-minor-nit-resolution/`; no already-approved/shipped `work/` artifact is edited or re-derived. Forward-only, no migration. |
+| AC11 | T7: `git status --porcelain -- work/` shows only `work/0009-minor-nit-resolution/`; no already-approved/shipped `work/` artifact is edited or re-derived. Forward-only, no migration. |
 | AC12 | `bash tests/run.sh` exit 0 in every task; `bash tests/mutation.sh` exit 0 (two new `AC25` mutations caught and named); the six core commands, their command→agent pairs, and the README inventory counts are untouched. |

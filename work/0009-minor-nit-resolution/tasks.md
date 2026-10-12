@@ -1,9 +1,10 @@
 ---
-feature: 0008-minor-nit-resolution
+feature: 0009-minor-nit-resolution
 phase: tasks
 status: final
 created: 2026-10-09
-updated: 2026-10-09
+updated: 2026-10-12
+notes: "Renumbered from 0008-minor-nit-resolution to 0009-minor-nit-resolution at merge time: a parallel-merge top-level sequence collision with 0008-mutation-test-friction, resolved during /ship of 0007-phase-backtracking/0007-backtracking-guards (the later-added unshipped item is renumbered by the 'Renumbering after a parallel merge' rule; 0008 is never reused)."
 ---
 
 # Tasks — Minor and nit resolution routing
@@ -94,7 +95,7 @@ wording replacements are §2; guard sub-areas are §3; mutations are §4).
       the derived-state `request-changes` → `build (rework)` literal and route
       are unchanged. [AC9, AC10, AC11, AC12] [depends: T1, T2, T3, T4, T5, T6]
       Verify: `bash tests/run.sh` → exit 0; `bash tests/mutation.sh` → exit 0;
-      `git status --porcelain -- work/` lists only `work/0008-minor-nit-resolution/`;
+      `git status --porcelain -- work/` lists only `work/0009-minor-nit-resolution/`;
       `git diff --name-only` lists only `.opencode/agent/reviewer.md`,
       `.opencode/command/review.md`,
       `.opencode/skill/code-review/SKILL.md`,

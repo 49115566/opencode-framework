@@ -1,10 +1,9 @@
 ---
-feature: 0008-minor-nit-resolution
+feature: 0009-minor-nit-resolution
 phase: spec
 status: final
 created: 2026-10-09
-updated: 2026-10-09
-notes: "Standalone item. No open /plan→/spec or /test→/spec finding: work/0008-minor-nit-resolution/backtracks.md does not exist, so this is ordinary forward progression. User resolved the two policy forks: (1) full parity — any surviving Minor or Nit forces request-changes and must be fixed or formally contested through the existing challenge loop, with no silent or author-only decline; (2) all review-derived gates use the all-severity bar, including the sustained-challenge verdict recompute."
+updated: 2026-10-12
 ---
 
 # Minor and nit resolution routing
@@ -256,7 +255,7 @@ simply not applied to the other two severities.
   there is no migration and no rewrite of historical `review.md` verdicts
   (AC11). A shipped item whose PR is later denied is handled by the existing
   recall path, not by this change.
-- **No open backtrack.** `work/0008-minor-nit-resolution/backtracks.md` does not
+- **No open backtrack.** `work/0009-minor-nit-resolution/backtracks.md` does not
   exist, so this spec is ordinary forward progression and records no finding and
   no resolution.
 - **Possible surface overlap with the remaining unshipped sibling.**
