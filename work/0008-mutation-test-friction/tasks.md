@@ -3,7 +3,7 @@ feature: 0008-mutation-test-friction
 phase: tasks
 status: final
 created: 2026-10-09
-updated: 2026-10-09
+updated: 2026-10-12
 ---
 
 # Tasks — Reduce mutation-test harness friction
@@ -23,7 +23,7 @@ once and record its wall time and its whole-suite run count; T8 compares against
 it. On the post-0007 inventory (27 mutations) this is the recorded 7–11 minute
 baseline.
 
-- [ ] **T1** — Add opt-in subset selection to the canonical command: implement
+- [x] **T1** — Add opt-in subset selection to the canonical command: implement
       `area_name_of` and `resolve_area_selector` in `tests/lib.sh` (exact area-name
       match first, else unique name-prefix; return `3` unknown, `4` ambiguous
       printing candidates), and in `tests/run.sh` parse `FRAMEWORK_TEST_AREAS`
@@ -41,7 +41,7 @@ baseline.
       `FRAMEWORK_TEST_AREAS=8 bash tests/run.sh` → exit 2 naming `8` and the
       ambiguous candidates; `FRAMEWORK_TEST_AREAS= bash tests/run.sh` → exit 2.
 
-- [ ] **T2** — Prove and repair per-area isolation: run every area alone and
+- [x] **T2** — Prove and repair per-area isolation: run every area alone and
       confirm each sources the shared `lib.sh` state it needs and keeps its
       skip/execute behavior; if a hidden cross-area dependency is found (a helper
       or variable defined by another check), fix it minimally without changing any
@@ -50,7 +50,7 @@ baseline.
       bash tests/run.sh` → exit 0 with that area's `ok`/`skip` lines and no
       `FAIL`; `bash tests/run.sh` (full) → exit 0.
 
-- [ ] **T3** — Make the optional-tool probes lazy: in `tests/lib.sh` replace the
+- [x] **T3** — Make the optional-tool probes lazy: in `tests/lib.sh` replace the
       eager `have_*` setup with idempotent `probe_py`/`probe_opencode`/
       `probe_npm`/`probe_net` functions that honor `FRAMEWORK_TEST_NO_PY`/
       `_OPENCODE`/`_NPM` and cache into `have_py`/`have_opencode`/`have_npm`/
@@ -66,7 +66,7 @@ baseline.
       FRAMEWORK_TEST_NO_OPENCODE=1 FRAMEWORK_TEST_NO_NPM=1 bash tests/run.sh` →
       exit 0 with visible `skip` lines.
 
-- [ ] **T4** — Restructure `tests/mutation.sh` into the area-scoped job runner:
+- [x] **T4** — Restructure `tests/mutation.sh` into the area-scoped job runner:
       after recording the baseline, replace the linear per-mutation
       `run → restore → clean-suite` blocks with jobs that each run only their
       catching area (via `FRAMEWORK_TEST_AREAS`), assert the mutation is caught
@@ -85,7 +85,7 @@ baseline.
       contains exactly two whole-suite `TOTAL:` lines; temporarily making one
       expected substring wrong → exit 1.
 
-- [ ] **T5** — Add the runner self-test: `bash tests/mutation.sh --selftest`
+- [x] **T5** — Add the runner self-test: `bash tests/mutation.sh --selftest`
       exercises a deliberately corrupted restore (asserting the report names the
       unrestored surface) and the selector error cases against `run.sh`
       (unknown, ambiguous, explicitly empty, plus one successful subset), exiting
@@ -94,7 +94,7 @@ baseline.
       corrupted-restore assertion plus the three selection-error assertions;
       breaking the self-test expectation → exit 1.
 
-- [ ] **T6** — Parallelize the job runner: resolve the worker count from
+- [x] **T6** — Parallelize the job runner: resolve the worker count from
       `FRAMEWORK_MUTATION_JOBS` (positive integer) else best-effort `getconf
       _NPROCESSORS_ONLN`/`nproc` else `1`, capped at the job count; deal jobs
       round-robin to background worker subshells each with an isolated staged copy
@@ -107,7 +107,7 @@ baseline.
       all → exit 0 with an identical set of named mutations; after each,
       `test -e scratch/framework-mutation` is false.
 
-- [ ] **T7** — Document the harness changes in `tests/README.md`: add the
+- [x] **T7** — Document the harness changes in `tests/README.md`: add the
       `FRAMEWORK_TEST_AREAS` subset surface, matching rule, and error behavior;
       note that optional-tool probes are now probed on use and update the probe
       table text accordingly; describe the mutation runner's area-scoped,
@@ -123,7 +123,7 @@ baseline.
       shows the selection, policy, and probe statements; the pre-existing Checks
       table and exit-contract sections are still present.
 
-- [ ] **T8** — Final verification and measurement: confirm the full mutation pass
+- [x] **T8** — Final verification and measurement: confirm the full mutation pass
       exits `0` with zero failed mutations, whole-suite runs are the constant two
       (AC10), the canonical full suite exits `0` and reads no `work/**`
       (AC12), and only `tests/**` changed (AC13); record in the subsequent
