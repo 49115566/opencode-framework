@@ -70,6 +70,7 @@ with a stable `ACn` token.
 | ---- | ---- |
 | `10-readiness.sh` | readiness / dependency-satisfaction agreement |
 | `20-lifecycle.sh` | lifecycle and derived-state agreement |
+| `25-review-severity-bar.sh` | review severity-bar agreement (suite token `AC25`) |
 | `30-permissions.sh` | documented-vs-declared permission agreement |
 | `40-inventory.sh` | documented inventory counts vs disk |
 | `50-instructions.sh` | always-loaded instruction set agreement |
@@ -178,6 +179,31 @@ only the committed `tests/fixtures/backtracking/` fixture root and never live
 A live `/status` render, a real backtrack, or a `/ship recall` is not executable
 in CI; like the cycle diagnostic's LLM-run residual, it remains a documented
 manual check.
+
+`25-review-severity-bar.sh` uses the stable suite token `AC25`, which maps to the
+`0009-minor-nit-resolution` acceptance criteria: spec AC1/AC2/AC8 → `AC25
+all-severity-bar` (a surviving finding of any severity — `Blocker`, `Major`,
+`Minor`, or `Nit` — yields `request-changes`, and `approve` if and only if no
+finding of any severity survives, pinned identically on the reviewer agent, the
+`/review` command, the `code-review` skill, `docs/workflow.md`, and the
+`workflow-lifecycle` skill), spec AC5/AC6 → the sustained-challenge recompute
+phrases (`approve` if and only if no finding of any severity remains; a finding
+adjusted to `Minor` or `Nit` still blocks and only an overturn removes it), spec
+AC7's question-escape edge case → `AC25 all-severity-bar` (the reviewer's question
+records genuine uncertainty and is never a classified `Minor`/`Nit` being
+declined, so a classifiable finding must be recorded), spec
+AC7/AC10 → `AC25 contract-preserved` (the four severity labels and both verdicts
+stay on the two definition surfaces, the `Minor`/`Nit` definitions say the finding
+blocks the item and is not declinable, and no surface carries `Blocker or Major`,
+`not merge-blocking`, `the author may decline`, or a new disposition token such
+as `waived`/`declined`), and spec AC12 → the unchanged inventory and signature
+areas (`40-inventory.sh`, `96-signature-sweep.sh`) staying green. It is a
+live-surface agreement check (the analogue of `50-instructions.sh` and
+`96-signature-sweep.sh`): it reads only committed surfaces and never live
+`work/**`, matching the read-only suite contract above. A live re-review or an
+actual challenge adjudication is prompt behavior and is not executable in CI;
+like the cycle diagnostic's LLM-run residual, it remains a documented manual
+check.
 
 ## Mutation self-check
 
