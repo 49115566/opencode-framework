@@ -77,6 +77,7 @@ with a stable `ACn` token.
 | `70-pin.sh` | external pin agreement |
 | `80-cycle-fixture.sh` | roadmap cycle rule and committed fixture |
 | `85-conflict-guards.sh` | declared-conflict declaration model and check guards (suite token `AC23`) |
+| `87-backtrack-guards.sh` | backtracking and reopen guards (suite token `AC24`) |
 | `90-packaging.sh` | packaging agreement: manifest ↔ changelog, copy-set, `Layout` (suite tokens `AC18`–`AC20`) |
 | `95-split-guard.sh` | adoption split guard: quickstart sources, `docs/customization.md` contract, `template/AGENTS.md` placeholder profile and shared-body parity, copy-set surfaces, `bootstrap` deny rules (suite token `AC21`) |
 | `96-signature-sweep.sh` | command signature agreement across the in-scope surfaces plus the `ask` agent description (suite token `AC22`) |
@@ -134,6 +135,49 @@ checker), and spec AC10/AC11/AC12 → the existing agreements staying green, the
 `tests/mutation.sh` cases, and this README. A live `/conflicts`, `/status`, or
 `/build`-gate model run is not executable in CI; like the cycle diagnostic's
 LLM-run residual, it remains a documented manual check.
+
+`87-backtrack-guards.sh` uses the stable suite token `AC24`, which maps to the
+`0007-phase-backtracking/0007-backtracking-guards` acceptance criteria: spec AC1
+→ `AC24 reverse-edge` (the append-only `backtracks.md` finding names the detecting
+phase, the target phase, the affected artifact, and `status: open`, and the live
+reverse-edge table's five sanctioned intra-item edges are asserted), spec AC2 →
+`AC24 record-status` (a finding is `open` without a matching `Resolution <n>` and
+`resolved` with one, keyed on the resolution header number; a resolution recorded
+before its finding is reported malformed and never reordered), spec AC3 → `AC24
+stale-downstream` (the design-target edges mark the downstream artifacts `stale:
+design`, the spec-target edges `stale: spec`, the rework edge forces no marker,
+and the target phase's own artifact is not marked by the detecting phase), spec
+AC4 → `AC24 challenge-loop` (the `Challenge`/`Response`/`Withdrawal`/`Reversal`
+entry kinds, the `type` and `decision` token sets, the adjudicator values, the
+open-until-`Response`/`Withdrawal` status rule, and a `Reversal` superseding
+without reopening), spec AC5 → `AC24 roadmap-revision` (the revised `Children`
+table's positional columns, no-self and acyclic dependency graph, resolving
+canonical references, active-child listing, sequencing order, the
+preserved-but-unlisted withdrawn child, and the revision-note fields), spec AC6 →
+`AC24 readiness-revocation` (a recalled `ship.md` computes unsatisfied and names
+the dependent's blocking dependency, while a non-recalled ship record and an
+`approve` verdict still compute satisfied, with no stored readiness value), spec
+AC7/AC8 → `AC24 derived-state` (the earliest `stale:` marker, the `reopened:`
+marker, the unshipped open-challenge blocked condition, the shipped item never
+challenged, and the absent-record item's ordinary forward derivation that invents
+no backtracked/challenged/reopened state), spec AC9 → `AC24 contract-pins` (the
+documented record/field/marker/token/derived-label strings on
+`docs/artifact-conventions.md` and `docs/workflow.md`, referencing the authorities
+by name and restating neither the readiness algorithm nor the command
+signatures), spec AC10 → the `fixture-existence` and `read-only-contract`
+structural assertions (the fixture tree references no live `work/` path, the check
+adds no committed production checker, and a missing fixture fails rather than
+skips), spec AC11 → the `tests/mutation.sh` cases (one mutation per declared
+sub-area, each caught and named), spec AC12 → the `no-duplication` structural
+assertion and the existing areas staying green (the check re-asserts none of the
+literals owned by `10-readiness.sh`/`20-lifecycle.sh`/`96-signature-sweep.sh` and
+references `80-cycle-fixture.sh`/`85-conflict-guards.sh` by name), spec AC13 →
+this README, and spec AC14 → the untouched production surfaces. The check reads
+only the committed `tests/fixtures/backtracking/` fixture root and never live
+`work/**`, making it the fixture-based analogue of the cycle and conflict guards.
+A live `/status` render, a real backtrack, or a `/ship recall` is not executable
+in CI; like the cycle diagnostic's LLM-run residual, it remains a documented
+manual check.
 
 ## Mutation self-check
 
