@@ -68,7 +68,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       Verify: `bash tests/run.sh` → exit 0 with the `AC24 contract-pins` `ok`
       lines present; each pinned literal is found in its named surface.
 
-- [ ] **T5** — Extend `tests/mutation.sh`: in `stage()` add
+- [x] **T5** — Extend `tests/mutation.sh`: in `stage()` add
       `cp -R "$REPO_ROOT/tests/fixtures/backtracking" "$COPY/tests/fixtures/backtracking"`;
       add the eight mutation blocks from design §5, each followed by
       `restore_file` and `assert_clean_absent`, asserting the expected sub-area
@@ -80,7 +80,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       Verify: `bash tests/mutation.sh` → exit 0, with eight `AC24` mutation lines
       reported "caught and named" and every clean run passing.
 
-- [ ] **T6** — Document the new area in `tests/README.md`: add the Checks-table
+- [x] **T6** — Document the new area in `tests/README.md`: add the Checks-table
       row `| `tests/checks/87-backtrack-guards.sh` | backtracking and reopen
       guards (suite token `AC24`) |`; add the paragraph mapping stable token
       `AC24` to this item's acceptance criteria (`spec AC1 → AC24 reverse-edge`,
@@ -94,7 +94,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
       shows the Checks row and the mapping paragraph, and the existing area
       list/tokens `AC18`–`AC23` are unchanged.
 
-- [ ] **T7** — Final integration pass, no new behavior: add the `no-duplication`
+- [x] **T7** — Final integration pass, no new behavior: add the `no-duplication`
       structural assertion to `tests/checks/87-backtrack-guards.sh` (the file
       negates the exact literals owned by `10-readiness.sh`
       — `satisfied(dep_local_id):`, `presence is the sole shipped signal` —
