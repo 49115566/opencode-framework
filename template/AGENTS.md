@@ -74,6 +74,11 @@ work item is addressed by its **canonical reference** — `NNNN-slug`, or
 form. A one-segment reference behaves exactly as before, so standalone items are
 unchanged.
 
+Every work item is a **node** in a recursive plan: a node may decompose into
+children to unbounded depth, and may carry its own phase artifacts and a child
+set at the same time. `docs/workflow.md` → "The recursive lifecycle model" is
+the single authority; `roadmap` is a deprecated alias for a decomposing node.
+
 - Only the owning phase writes its artifact. Do not edit another phase's file.
 - Every artifact starts with YAML frontmatter (`feature`, `phase`, `status`,
   `created`, `updated`). Preserve it when editing.

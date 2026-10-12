@@ -25,6 +25,89 @@ A work item is *done* when its PR is open (or merged) and `review.md` records an
 approving verdict. The lifecycle stops at "reviewable PR"; merging and
 deployment are human decisions owned by the user and CI.
 
+## The recursive lifecycle model
+
+This section is the single authority for the recursive lifecycle model; other
+surfaces reference it and restate none of it. The model generalizes the
+single-level lifecycle above and the depth-limited roadmap spelling described in
+"Roadmaps": the same six-phase cycle applies **uniformly at every node**, at any
+depth. The cycle itself is defined in "Phases"; the model introduces no second
+phase list, state model, or vocabulary.
+
+### Terms
+
+The model states its vocabulary once, here:
+
+- A **work item** is one unit of change that runs the lifecycle. Every directory
+  under `work/` is a work item and an instance of the model.
+- A **node** is any work item in a recursive plan tree: a standalone item, a
+  nested child, or an item that itself contains children. A node is addressed by
+  its **canonical reference** (see "The work item directory").
+- A **leaf** is a node with no children. A leaf is a valid terminal: a standalone
+  item and a nested feature are both leaves until a planner decomposes them.
+- A **decomposition** is a node's enumerated child set — the children a planning
+  step records for the node.
+- A **plan** is a work item's committed plan state: its requirements, design, and
+  task artifacts together with its decomposition when it has one.
+
+`roadmap` is a **deprecated alias** for a decomposing node. The term is retained
+for backward compatibility only; the vocabulary above supersedes it, and
+"Roadmaps" describes its shipped, depth-limited concrete spelling.
+
+### The cycle applies at every node
+
+The standard six-phase cycle (see "Phases") applies uniformly at every node. The
+model imposes **no maximum recursion depth**: any node may decompose into
+children, and a decomposition may nest without limit. A one-segment standalone
+item (`NNNN-slug`) and a nested child (`NNNN-slug/MMMM-slug`) are valid instances
+of the same model; they differ in position, not in rule. Depth changes no node's
+phase semantics — a node at any depth runs the same cycle.
+
+### Where decomposition is authored and recorded
+
+A node's child set is authored and recorded in the planning (design) step — the
+`/plan` (`architect`) step. The `/roadmap` command is retained only as a
+**deprecated alias** for that step. A decomposing node's child set is **committed
+plan state**: it is versioned with the node's other plan artifacts, so a fresh
+clone derives the same decomposition. The concrete writer's command/agent wiring
+and handoff are owned by `0003-recursive-writer`; the model fixes only where
+decomposition is authored and recorded.
+
+### Granularity and hybrid nodes
+
+A plan may decompose into a **hybrid** of tasks, features, initiatives, and
+larger items. Fine-grained `tasks.md` entries remain a leaf's internal work list
+and are **not** nodes: a planner creates a child by explicitly decomposing an
+item, never by promoting a task. A node may carry its own phase artifacts and a
+child set at the same time — the standard cycle applies to the node's own
+artifacts independently of its children — and no node is required to be a pure
+container.
+
+### Composition with the shipped model
+
+The recursive model composes with the shipped backtracking and re-entry model
+(`## Phase reversal (backtracking)`) per node, on the same unshipped work item:
+the reverse edges, `stale:` marking, re-entry, recall, and the ownership
+invariant are reused unchanged. A later phase that finds a node's decomposition
+wrong takes the same reverse edge to the planning step, and the model introduces
+no second state model, no new `phase` value, and no new reversal mechanism for a
+decomposition.
+
+Dependencies, readiness, and declared conflicts are likewise reused unchanged:
+the model adds no dependency edge, conflict class, or state vocabulary.
+`Depends on` and readiness keep their shipped definitions
+(`### Dependencies and readiness`), and declared conflicts keep their shipped
+grammar and reporting (`### Declared conflicts (conflicts-with)`) — both are
+referenced, never restated. Ownership of their recursive generalization is
+sibling-scoped: readiness, reporting, and derived state across levels are owned
+by `0004-recursive-readiness`, and the reference grammar, per-level sequence
+allocation, and the `parent` chain are owned by `0002-recursive-schema`.
+
+Backward compatibility is preserved: a one-segment standalone work item
+(`NNNN-slug`) behaves exactly as before with no forced migration, and existing
+committed `work/` content — including today's roadmap parents and their nested
+children — remains valid under the model.
+
 ## The work item directory
 
 ```
@@ -60,6 +143,10 @@ work/
   the next artifact's frontmatter `notes`.
 
 ## Roadmaps
+
+`roadmap` is the deprecated alias for a decomposing node; "The recursive
+lifecycle model" is the authority for the term. This section describes its
+shipped, depth-limited concrete spelling.
 
 A **roadmap** is a parent work item that plans a broad, multi-feature initiative
 before any child is specified. It lives in the same tree as ordinary items: the
