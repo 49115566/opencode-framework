@@ -24,10 +24,41 @@ bash tests/run.sh
 `tests/run.sh [repo-root]` resolves the repository root (an optional first
 argument, otherwise the git top level), sources `tests/lib.sh`, then sources
 every `tests/checks/*.sh` in filename order **in one process**. Adding a check is
-adding a file; `run.sh` needs no edit.
+adding a file; `run.sh` needs no edit. Set `FRAMEWORK_TEST_AREAS` to run only a
+subset of the areas (see "Area selection").
 
 The suite is read-only, provider-neutral, and never reads `work/**`, so it runs
 on a fresh clone with no per-item artifacts present.
+
+## Area selection
+
+`tests/run.sh` can run a subset of the agreement areas. Set
+`FRAMEWORK_TEST_AREAS` to a comma- or whitespace-separated list of selectors:
+
+```sh
+FRAMEWORK_TEST_AREAS=10-readiness bash tests/run.sh
+FRAMEWORK_TEST_AREAS='10-readiness,85-conflict-guards' bash tests/run.sh
+```
+
+A selector is an **area name** — a `tests/checks/*.sh` stem such as
+`10-readiness` or `85-conflict-guards`, the file's basename without `.sh`. Each
+trimmed selector resolves against the present `tests/checks/*.sh` areas:
+
+1. an exact area-name match wins;
+2. otherwise a unique name-prefix match wins (`85` → `85-conflict-guards`);
+3. a prefix matching two or more areas is **ambiguous**, and one matching none
+   is **unknown**.
+
+Only the selected areas are sourced, in the same filename order as a full run,
+and a selector that resolves to an area already selected is not counted twice
+(`10,10-readiness` runs `10-readiness` once). The printed `TOTAL` then counts
+only the executed areas' assertions, and the exit contract below is unchanged.
+
+Selection errors are setup errors: an unknown selector, an ambiguous prefix, or
+an explicitly empty (or whitespace-only) value prints `setup error:` naming the
+offending selector (or the empty selection) and exits `2` before any check is
+sourced. There is no silent fallback to a full run. An **unset**
+`FRAMEWORK_TEST_AREAS` is the unchanged full run.
 
 ## Exit contract
 
@@ -50,7 +81,11 @@ does not increment `fail`, so a minimal environment (bash + git only) still
 exits `0`. A skipped check is always printed; a silently dropped assertion is a
 defect.
 
-Optional-tool probes come from `tests/lib.sh`:
+Optional-tool probes come from `tests/lib.sh`. They are **lazy**: `run.sh` calls
+`probe_needed_by` on the selected checks, which scans each check for the
+`have_*` names it references and calls only the matching probes, so a run never
+probes a tool that no executed area uses. Each probe is idempotent, honors its
+force-absent override, and caches into its `have_*` variable.
 
 | Probe | Detects | Forced absent by |
 | ----- | ------- | ---------------- |
@@ -182,6 +217,65 @@ manual check.
 ## Mutation self-check
 
 `tests/mutation.sh` is opt-in maintainer tooling (not part of `run.sh`, not run
-in CI). It runs the suite against a copy of the live surfaces with no `work/`,
-runs it with every optional tool forced absent, then applies one mutation per
-agreement area and asserts each is caught and named.
+in CI). It stages a copy of the live surfaces with no `work/` under the
+git-ignored `scratch/` (the repository itself is never mutated), then:
+
+1. runs the whole suite against the clean copy and asserts exit `0`
+   (fresh-clone independence);
+2. runs it with every optional tool forced absent
+   (`FRAMEWORK_TEST_NO_PY=1 FRAMEWORK_TEST_NO_OPENCODE=1 FRAMEWORK_TEST_NO_NPM=1`)
+   and asserts exit `0` with visible `skip` lines;
+3. for each mutation job, applies exactly one mutation to a worker's copy, runs
+   **only the single agreement area that must catch it** (via
+   `FRAMEWORK_TEST_AREAS`), asserts the suite exits non-zero and names the
+   expected token, then restores each mutated surface from the repository and
+   verifies it byte-for-byte with `cmp -s` (falling back to
+   `git diff --no-index --quiet` when `cmp` is absent). No full-suite run is
+   needed to prove a restore;
+4. prints `MUTATION TOTAL: <p> checked passed, <f> failed`, and exits non-zero if
+   any mutation was not caught and named, any restore was not byte-for-byte, or
+   any whole-suite run failed. The whole `scratch/` subtree is removed on exit,
+   including on failure.
+
+The whole-suite runs in steps 1–2 (plus the visible-skip assertion, which reuses
+the forced-absent log) are the pass's only whole-suite executions, so their count
+is a small constant independent of the mutation count.
+
+```sh
+bash tests/mutation.sh              # run the pass
+bash tests/mutation.sh --selftest   # self-test only
+```
+
+`--selftest` proves the runner's own assertions without running the mutation
+pass: it exercises the corrupted-restore path (asserting the report names the
+unrestored surface) and the `run.sh` selector error cases (unknown, ambiguous,
+explicitly empty) plus one successful subset.
+
+### Parallelism
+
+Mutation jobs run concurrently across available CPUs. The worker count is
+`FRAMEWORK_MUTATION_JOBS` when it is a positive integer, otherwise a best-effort
+CPU count (`getconf _NPROCESSORS_ONLN`, then `nproc`), otherwise `1`; it is
+capped at the job count. Jobs are dealt round-robin to that many background
+worker subshells, each with its own staged copy under
+`scratch/framework-mutation.<pid>/w<N>/live` and its own result/log file, so no
+worker can observe another's mutation and one worker's failure never aborts
+another's. The scratch root is unique per invocation (pid-suffixed), so two
+concurrent passes never share a copy, log, result, or cleanup target and cannot
+interfere with one another. Results are printed in job order after `wait` and
+aggregated, so the set of named mutations and the aggregate exit equal a serial
+run. A one-CPU machine degrades to a serial run.
+
+### Mutation policy
+
+- The mutation self-check is **opt-in** and is **not run in CI**
+  (`.github/workflows/ci.yml` runs only `bash tests/run.sh`).
+- The **full pass is a scheduled/milestone audit**, not a per-task ritual.
+  **Area-scoped mutations are the development norm**: while developing a change,
+  exercise the mutation check for the area you touched rather than paying for the
+  whole pass.
+- A new agreement area should add only a **bounded number of mutations — one per
+  distinct rule** it enforces. The normative cap is **three mutations per area**;
+  an area that genuinely covers more than three distinct rules may exceed the cap
+  (one mutation per rule), since the cap is a stated norm rather than a hard wall.
+  This keeps the pass's cost bounded as the framework grows.
