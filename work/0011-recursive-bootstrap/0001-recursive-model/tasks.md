@@ -15,7 +15,7 @@ successor roadmap per the spec's non-goals). `Verify:` commands that run the
 suite use the project's configured test command, `bash tests/run.sh`, optionally
 area-scoped via `FRAMEWORK_TEST_AREAS`.
 
-- [ ] **T1** — Add the `## The recursive lifecycle model` section to
+- [x] **T1** — Add the `## The recursive lifecycle model` section to
       `docs/workflow.md`, immediately after `## Mental model` and before
       `## The work item directory`, with the `### Terms` and `### The cycle
       applies at every node` subsections: define **node**, **leaf**, and
@@ -34,7 +34,7 @@ area-scoped via `FRAMEWORK_TEST_AREAS`.
       statement, and the unbounded-depth statement are present;
       `FRAMEWORK_TEST_AREAS='10-readiness,20-lifecycle,96-signature-sweep' bash tests/run.sh`
       exits 0.
-- [ ] **T2** — Append the `### Where decomposition is authored and recorded`
+- [x] **T2** — Append the `### Where decomposition is authored and recorded`
       and `### Granularity and hybrid nodes` subsections to the new section:
       the child set is authored and recorded in the planning (design) step
       (`/plan`, `architect`), `/roadmap` is a deprecated alias for that step, a
@@ -49,7 +49,7 @@ area-scoped via `FRAMEWORK_TEST_AREAS`.
       hybrid-node statement are present;
       `FRAMEWORK_TEST_AREAS='10-readiness,80-cycle-fixture,85-conflict-guards' bash tests/run.sh`
       exits 0.
-- [ ] **T3** — Append the `### Composition with the shipped model` subsection:
+- [x] **T3** — Append the `### Composition with the shipped model` subsection:
       the shipped backtracking/re-entry model applies per node on the same
       unshipped work item (reverse edges, `stale:` marking, re-entry, recall,
       ownership) with no second state model, no new `phase` value, and no new
@@ -66,7 +66,7 @@ area-scoped via `FRAMEWORK_TEST_AREAS`.
       the shipped authorities rather than restating them;
       `FRAMEWORK_TEST_AREAS='10-readiness,80-cycle-fixture,85-conflict-guards,87-backtrack-guards' bash tests/run.sh`
       exits 0.
-- [ ] **T4** — Prepend a deferral note to the existing `## Roadmaps` section in
+- [x] **T4** — Prepend a deferral note to the existing `## Roadmaps` section in
       `docs/workflow.md` stating that `roadmap` is the deprecated alias for a
       decomposing node, that `## The recursive lifecycle model` is the authority
       for the term, and that this section describes the shipped, depth-limited
@@ -77,7 +77,7 @@ area-scoped via `FRAMEWORK_TEST_AREAS`.
       unshipped`, and `presence is the sole shipped signal` still appear exactly
       where they did; `FRAMEWORK_TEST_AREAS='10-readiness,80-cycle-fixture' bash tests/run.sh`
       exits 0.
-- [ ] **T5** — Add the cross-reference sentence to `## The artifact contract` in
+- [x] **T5** — Add the cross-reference sentence to `## The artifact contract` in
       `AGENTS.md` (after the existing roadmap paragraph): a node may decompose
       into children to unbounded depth and may carry its own artifacts and a
       child set at the same time, with `docs/workflow.md` → "The recursive
@@ -90,7 +90,7 @@ area-scoped via `FRAMEWORK_TEST_AREAS`.
       the two files are byte-identical outside `## Project profile`;
       `FRAMEWORK_TEST_AREAS='95-split-guard,96-signature-sweep' bash tests/run.sh`
       exits 0.
-- [ ] **T6** — Confirm the whole repository is green and unchanged where it must
+- [x] **T6** — Confirm the whole repository is green and unchanged where it must
       be: run the full committed suite, confirm no new agent/command/skill file
       exists, and confirm the six core phase commands, the `phase` value set,
       the `Depends on`/readiness contract, and the declared-conflict contract
