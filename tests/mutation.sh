@@ -12,7 +12,7 @@
 #   1. runs `bash tests/run.sh <copy>` and asserts exit 0 (AC2);
 #   2. runs it with FRAMEWORK_TEST_NO_PY/_OPENCODE/_NPM=1 and asserts exit 0 with
 #      visible skips (AC14);
-#   3. for each agreement area AC6-AC13, AC18-AC22, and AC23, applies exactly one
+#   3. for each agreement area AC6-AC13, AC18-AC24, applies exactly one
 #      mutation, asserts the suite exits non-zero and names that area, restores
 #      the file, and asserts the clean copy passes again (AC15);
 #   4. exits non-zero if any mutation is not caught or any clean run fails, and
@@ -70,6 +70,7 @@ stage() {
   cp -R "$REPO_ROOT/.opencode/skill"   "$COPY/.opencode/skill"
   cp -R "$REPO_ROOT/tests/fixtures/cyclic-roadmap" "$COPY/tests/fixtures/cyclic-roadmap"
   cp -R "$REPO_ROOT/tests/fixtures/declared-conflicts" "$COPY/tests/fixtures/declared-conflicts"
+  cp -R "$REPO_ROOT/tests/fixtures/backtracking" "$COPY/tests/fixtures/backtracking"
 }
 
 # ---------------------------------------------------------------------------
@@ -342,6 +343,71 @@ replace_first "$COPY/.opencode/skill/merge-conflict/SKILL.md" \
 check_mutation AC23 'FAIL  AC23 reporting-vocabulary' "dropped the class from the finding grammar"
 restore_file .opencode/skill/merge-conflict/SKILL.md
 assert_clean_absent "after AC23 reporting-vocabulary restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC24 backtrack guards reverse-edge =="
+delete_first_line "$COPY/tests/fixtures/backtracking/items/9101-build-design/backtracks.md" \
+  '- target phase:'
+check_mutation AC24 'AC24 reverse-edge' "dropped a finding's target phase"
+restore_file tests/fixtures/backtracking/items/9101-build-design/backtracks.md
+assert_clean_absent "after AC24 reverse-edge restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC24 backtrack guards record-status =="
+replace_first "$COPY/tests/fixtures/backtracking/items/9107-resolved/backtracks.md" \
+  '## Resolution 1' '## Resolution 9'
+check_mutation AC24 'AC24 record-status' "unmatched a resolution header from its finding"
+restore_file tests/fixtures/backtracking/items/9107-resolved/backtracks.md
+assert_clean_absent "after AC24 record-status restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC24 backtrack guards stale-downstream =="
+replace_first "$COPY/tests/fixtures/backtracking/items/9101-build-design/verify.md" \
+  'stale: design' 'stale: spec'
+check_mutation AC24 'AC24 stale-downstream' "changed an edge's downstream stale token"
+restore_file tests/fixtures/backtracking/items/9101-build-design/verify.md
+assert_clean_absent "after AC24 stale-downstream restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC24 backtrack guards challenge-loop =="
+replace_first "$COPY/tests/fixtures/backtracking/items/9110-challenge-mixed/challenges.md" \
+  '## Reversal 3' '## Ack 3'
+check_mutation AC24 'AC24 challenge-loop' "renamed the fixture's Reversal entry kind"
+restore_file tests/fixtures/backtracking/items/9110-challenge-mixed/challenges.md
+assert_clean_absent "after AC24 challenge-loop restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC24 backtrack guards roadmap-revision =="
+replace_first "$COPY/tests/fixtures/backtracking/items/9120-revised-roadmap/roadmap.md" \
+  '| Local id | Title | Scope | Depends on | conflicts-with | Canonical reference |' \
+  '| Local id | Title | Scope | conflicts-with | Depends on | Canonical reference |'
+check_mutation AC24 'AC24 roadmap-revision' "reordered the fixture Children header"
+restore_file tests/fixtures/backtracking/items/9120-revised-roadmap/roadmap.md
+assert_clean_absent "after AC24 roadmap-revision restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC24 backtrack guards readiness-revocation =="
+delete_first_line "$COPY/tests/fixtures/backtracking/items/9121-readiness/0001-recalled/ship.md" \
+  'reopened: build'
+check_mutation AC24 'AC24 readiness-revocation' "un-revoked a recalled ship record"
+restore_file tests/fixtures/backtracking/items/9121-readiness/0001-recalled/ship.md
+assert_clean_absent "after AC24 readiness-revocation restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC24 backtrack guards derived-state =="
+replace_first "$COPY/tests/fixtures/backtracking/items/9113-reopened/ship.md" \
+  'reopened: design' 'reopened: build'
+check_mutation AC24 'AC24 derived-state' "changed a reopened marker's named phase"
+restore_file tests/fixtures/backtracking/items/9113-reopened/ship.md
+assert_clean_absent "after AC24 derived-state restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC24 backtrack guards contract-pins =="
+replace_first "$COPY/docs/artifact-conventions.md" \
+  '- resolves: Finding <n>' '- resolves: <n>'
+check_mutation AC24 'AC24 contract-pins' "reworded a documented backlog record field"
+restore_file docs/artifact-conventions.md
+assert_clean_absent "after AC24 contract-pins restore"
 
 # ---------------------------------------------------------------------------
 printf '\nMUTATION TOTAL: %s checked passed, %s failed\n' "$mpass" "$mfail"
