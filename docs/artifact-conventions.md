@@ -443,8 +443,10 @@ Severity meanings:
 - **Blocker** — incorrect, insecure, or breaks an acceptance criterion. Must fix.
 - **Major** — a real defect or design problem likely to cause trouble. Fix before
   merge unless the user accepts the risk.
-- **Minor** — worth fixing; not merge-blocking.
-- **Nit** — style or preference; take it or leave it.
+- **Minor** — worth fixing; blocks the item. Must be fixed or overturned through
+  the challenge loop; the author cannot decline it.
+- **Nit** — style or preference; blocks the item. Must be fixed or overturned
+  through the challenge loop; the author cannot decline it.
 
 ### `ship.md` (shipper) — the shipped-state record
 

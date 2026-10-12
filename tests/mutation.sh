@@ -12,9 +12,9 @@
 #   1. runs `bash tests/run.sh <copy>` and asserts exit 0 (AC2);
 #   2. runs it with FRAMEWORK_TEST_NO_PY/_OPENCODE/_NPM=1 and asserts exit 0 with
 #      visible skips (AC14);
-#   3. for each agreement area AC6-AC13, AC18-AC24, applies exactly one
-#      mutation, asserts the suite exits non-zero and names that area, restores
-#      the file, and asserts the clean copy passes again (AC15);
+#   3. for each agreement area AC6-AC13, AC18-AC24, and AC25, applies exactly
+#      one mutation, asserts the suite exits non-zero and names that area,
+#      restores the file, and asserts the clean copy passes again (AC15);
 #   4. exits non-zero if any mutation is not caught or any clean run fails, and
 #      cleans up its scratch/ subtree on exit.
 #
@@ -408,6 +408,22 @@ replace_first "$COPY/docs/artifact-conventions.md" \
 check_mutation AC24 'AC24 contract-pins' "reworded a documented backlog record field"
 restore_file docs/artifact-conventions.md
 assert_clean_absent "after AC24 contract-pins restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC25 review severity bar =="
+replace_first "$COPY/.opencode/agent/reviewer.md" \
+  'if any finding of any severity' 'if any finding of high severity'
+check_mutation AC25 'AC25 all-severity-bar' "weakened the reviewer verdict to a single severity"
+restore_file .opencode/agent/reviewer.md
+assert_clean_absent "after AC25 all-severity-bar restore"
+
+# ---------------------------------------------------------------------------
+echo "== mutation: AC25 severity definition preserved =="
+replace_first "$COPY/.opencode/skill/code-review/SKILL.md" \
+  'blocks the item' 'not merge-blocking'
+check_mutation AC25 'AC25 contract-preserved' "reintroduced the non-blocking Minor/Nit language"
+restore_file .opencode/skill/code-review/SKILL.md
+assert_clean_absent "after AC25 contract-preserved restore"
 
 # ---------------------------------------------------------------------------
 printf '\nMUTATION TOTAL: %s checked passed, %s failed\n' "$mpass" "$mfail"

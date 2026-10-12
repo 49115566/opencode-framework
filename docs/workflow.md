@@ -392,8 +392,11 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   findings with `file:line` references and a verdict.
 - **Exit**: `review.md` states a verdict of `approve` or `request-changes`, and
   every finding has a severity, a location, and an actionable recommendation.
+  A finding of any severity — `Blocker`, `Major`, `Minor`, or `Nit` — that
+  survives scrutiny yields `request-changes`; `approve` requires that no finding
+  of any severity survives.
 - **Artifact**: `work/<item-ref>/review.md`, frontmatter `phase: review`.
-- **Next**: `/ship` if `approve`; otherwise `/build` to address blockers.
+- **Next**: `/ship` if `approve`; otherwise `/build` to address findings.
 
 ### 6. Ship — `/ship [item-ref]`
 
@@ -996,7 +999,9 @@ appended as a `Reversal` entry; it never rewrites the prior entry.
 
 A **sustained** challenge overturns the challenged finding or adjusts its
 severity and, for a review finding, the review verdict is recomputed — `approve`
-if and only if no `Blocker` or `Major` remains. The outcome and its evidence are
+if and only if no finding of any severity (`Blocker`, `Major`, `Minor`, or `Nit`)
+remains. A finding adjusted to `Minor` or `Nit` still blocks; only an overturn
+removes it. The outcome and its evidence are
 recorded, and the next command follows the recomputed verdict (`/ship` if
 `approve`, `/build` if `request-changes`). If a sustained challenge shows the
 acceptance criterion itself is wrong rather than the finding being mistaken, the
