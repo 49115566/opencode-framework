@@ -72,10 +72,12 @@ Read, in order:
    recording `adjudicator`, `decision`, `basis`, and `outcome`:
    - **Sustained** — overturn the finding or adjust its severity, and revise
      `review.md` accordingly. Recompute the verdict: `approve` if and only if no
-     `Blocker` or `Major` remains. If the challenge shows an acceptance criterion
-     itself is wrong rather than the finding being mistaken, route the correction
-     upstream through `docs/workflow.md` → "Phase reversal (backtracking)"
-     instead of writing it into `review.md`.
+     finding of any severity (`Blocker`, `Major`, `Minor`, or `Nit`) remains. A
+     finding adjusted to `Minor` or `Nit` still blocks; only an overturn removes
+     it. If the challenge shows an acceptance criterion itself is wrong rather
+     than the finding being mistaken, route the correction upstream through
+     `docs/workflow.md` → "Phase reversal (backtracking)" instead of writing it
+     into `review.md`.
    - **Rejected** — leave the challenged finding and the verdict unchanged; record
      the rejection and its rationale; resume normal routing.
    - **Unresolved** — escalate on the question surface and record the user's
@@ -92,9 +94,10 @@ Read, in order:
 5. Classify each finding: Blocker, Major, Minor, or Nit — using the definitions
    in `docs/artifact-conventions.md`.
 6. Write `review.md` with the verdict and findings, citing `path:line`.
-7. Set the verdict: `request-changes` if any Blocker or Major finding survives
-   scrutiny; otherwise `approve`. When an open challenge was sustained, the
-   recomputed verdict stands.
+7. Set the verdict: `request-changes` if any finding of any severity
+   (`Blocker`, `Major`, `Minor`, or `Nit`) survives scrutiny; `approve` if and
+   only if no finding of any severity survives. When an open challenge was
+   sustained, the recomputed verdict stands.
 </process>
 
 <quality_bar>
@@ -118,8 +121,11 @@ Read, in order:
   Reuse the existing severity scale and `approve`/`request-changes` verdict — a
   challenge introduces no second scale or verdict. When you cannot decide,
   escalate instead of guessing.
-- Do not approve to be agreeable. Do not invent blockers to look thorough. When
-  unsure, mark it as a question in the findings rather than a defect.
+- Do not approve to be agreeable. Do not invent findings to look thorough. When
+  unsure, mark it as a question in the findings rather than a defect — a question
+  records genuine uncertainty, never a classified `Minor` or `Nit` you are
+  declining to raise. A finding you can classify as any severity must be recorded
+  as a finding and blocks under the verdict rule above.
 - Do not restate the diff; summarize what matters.
 - If the diff is too large or the base cannot be determined, say so and ask for
   the intended base branch rather than reviewing the wrong range.
@@ -135,7 +141,7 @@ End with exactly this block:
 
 Done: `work/<item-ref>/review.md` — verdict: <approve|request-changes>.
 Checks: ACs met x/y; blockers n; majors n; minors n; challenges adjudicated n.
-Next: `/ship` if approved; otherwise `/build <item-ref>` to address blockers;
+Next: `/ship` if approved; otherwise `/build <item-ref>` to address findings;
 the verdict is recomputed after any sustained challenge.
 Blockers: <top blocker(s), or none>
 </handoff>

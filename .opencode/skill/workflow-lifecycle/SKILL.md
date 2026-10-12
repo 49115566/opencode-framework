@@ -35,7 +35,7 @@ design.md, tasks.md unchecked?   → /build [item-ref or task-id]
 all tasks checked, no verify.md? → /test [item-ref]
 UI work, before /review?         → /visual [url or item-ref]   (optional)
 verify.md, no review.md?         → /review [item-ref]
-review.md verdict request-changes→ /build [item-ref or task-id]   (rework blockers)
+review.md verdict request-changes→ /build [item-ref or task-id]   (rework findings)
 review.md verdict approve, no ship.md?→ /ship [item-ref]
 build finds the design wrong?    → /plan <item-ref>   (reverse edge; record the finding)
 plan finds the spec wrong?       → /spec <feature or problem description | item-ref>   (reverse edge; record the finding)
@@ -66,8 +66,9 @@ these derived labels.
 - `P (reopened)` — the item's `ship.md` carries a `reopened:` marker naming phase
   `P`. The shipped signal is revoked: the item derives `P` and does not satisfy
   its dependents until it re-ships.
-- `build (rework)` — the existing `review.md` verdict `request-changes` row. It
-  is distinct from `backtracked` and is not a second rework state.
+- `build (rework)` — the existing `review.md` verdict `request-changes` row,
+  produced by a surviving finding of any severity (`Blocker`, `Major`, `Minor`,
+  or `Nit`). It is distinct from `backtracked` and is not a second rework state.
 - `challenged (blocked)` — an open `challenges.md` challenge (a `Challenge <n>`
   with no matching `Response n`/`Withdrawal n`) on an item **that has no
   `ship.md`**. The item is blocked from advancing or shipping until the challenge

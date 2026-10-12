@@ -15,7 +15,7 @@ Follow your Review agent instructions exactly. In particular:
   `review.md` finding, adjudicate it first: re-evaluate the finding against the
   spec and diff, append a `## Response <n>` recording `adjudicator`, `decision`,
   `basis`, and `outcome`, and — when sustained — revise `review.md` and recompute
-  the verdict (`approve` if and only if no `Blocker` or `Major` remains); when
+  the verdict (`approve` if and only if no finding of any severity remains); when
   rejected leave the finding and verdict unchanged; when unresolved escalate on
   the question surface and record the user's decision. Never adjudicate a
   challenge you raised. See `docs/workflow.md` → "Findings challenge and
@@ -33,5 +33,5 @@ If `$ARGUMENTS` is empty, ask which work item to review, or list candidates from
 `work/`.
 
 You are read-only: never edit source code, config, or tests — write only
-`review.md`. Approve on evidence, not to be agreeable; do not invent blockers.
+`review.md`. Approve on evidence, not to be agreeable; do not invent findings.
 End with the handoff block.

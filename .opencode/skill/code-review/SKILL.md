@@ -24,8 +24,10 @@ goal is a correct, secure, maintainable change that satisfies the spec.
 - **Blocker** — incorrect, insecure, or breaks an acceptance criterion. Must fix.
 - **Major** — a real defect or design problem likely to cause trouble. Fix before
   merge unless the user accepts the risk.
-- **Minor** — worth fixing; not merge-blocking.
-- **Nit** — style or preference; the author may decline.
+- **Minor** — worth fixing; blocks the item. Must be fixed or overturned
+  through the challenge loop; the author cannot decline it.
+- **Nit** — style or preference; blocks the item. Must be fixed or overturned
+  through the challenge loop; the author cannot decline it.
 
 ## Finding format
 
@@ -53,9 +55,12 @@ Recommendation: the specific change to make.
 
 ## Verdict
 
-- `request-changes` if any Blocker or Major survives scrutiny.
-- `approve` otherwise. Approving is not a rubber stamp; state why it is ready.
-- Never invent blockers to seem thorough, and never approve to be agreeable.
+- `request-changes` if any finding of any severity (`Blocker`, `Major`,
+  `Minor`, or `Nit`) survives scrutiny.
+- `approve` if and only if no finding of any severity survives. Approving is
+  not a rubber stamp; state why it is ready.
+- Never invent findings to seem thorough, and never approve to be agreeable —
+  a surviving `Minor` or `Nit` is not a reason to approve.
 
 ## Disputed findings
 
@@ -68,6 +73,7 @@ authority `docs/workflow.md` → "Findings challenge and adjudication", with the
 record shapes in `docs/artifact-conventions.md`.
 
 Adjudicating a sustained challenge recomputes the verdict: `approve` if and only
-if no Blocker or Major remains. Reuse the severity scale above and the
+if no finding of any severity remains. A finding adjusted to `Minor` or `Nit`
+still blocks; only an overturn removes it. Reuse the severity scale above and the
 `approve`/`request-changes` verdict — a challenge introduces no second severity
 scale, finding format, or verdict.

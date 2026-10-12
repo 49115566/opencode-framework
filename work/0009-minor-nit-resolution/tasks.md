@@ -13,7 +13,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After every task,
 `bash tests/run.sh` must stay green. Design authority: `design.md` (surface and
 wording replacements are §2; guard sub-areas are §3; mutations are §4).
 
-- [ ] **T1** — Rewrite the reviewer surfaces to the all-severity bar. In
+- [x] **T1** — Rewrite the reviewer surfaces to the all-severity bar. In
       `.opencode/agent/reviewer.md` apply S1a (sustained-challenge recompute is
       `approve` iff no finding of any severity remains; a `Minor`/`Nit` still
       blocks), S1b (verdict is `request-changes` for any surviving severity), S1c
@@ -25,7 +25,7 @@ wording replacements are §2; guard sub-areas are §3; mutations are §4).
       `grep -n 'any severity' .opencode/agent/reviewer.md .opencode/command/review.md`
       shows the new phrases; `grep -nE 'Blocker or Major|not merge-blocking|the author may decline' .opencode/agent/reviewer.md .opencode/command/review.md` prints nothing.
 
-- [ ] **T2** — Rewrite the two severity-definition authorities. In
+- [x] **T2** — Rewrite the two severity-definition authorities. In
       `.opencode/skill/code-review/SKILL.md` apply S3a (Minor/Nit `blocks the
       item`, fixed or overturned, not declinable), S3b (verdict is any severity),
       and S3c (sustained-challenge recompute is any severity; an adjustment to
@@ -37,7 +37,7 @@ wording replacements are §2; guard sub-areas are §3; mutations are §4).
       prints nothing; `grep -n 'blocks the item' .opencode/skill/code-review/SKILL.md docs/artifact-conventions.md`
       shows both Minor and Nit definitions.
 
-- [ ] **T3** — Rewrite the workflow authority and lifecycle skill. In
+- [x] **T3** — Rewrite the workflow authority and lifecycle skill. In
       `docs/workflow.md` apply S4a (Review `Exit` states the any-severity bar),
       S4b (Review `Next` says "address findings"), and S4c (`### Outcomes and
       routing` recompute is any severity). In
@@ -52,7 +52,7 @@ wording replacements are §2; guard sub-areas are §3; mutations are §4).
       shows the new phrases; `grep -n 'review.md verdict request-changes' .opencode/skill/workflow-lifecycle/SKILL.md`
       still matches.
 
-- [ ] **T4** — Add `tests/checks/25-review-severity-bar.sh` (stable token
+- [x] **T4** — Add `tests/checks/25-review-severity-bar.sh` (stable token
       `AC25`; pure bash/awk; Bash 3.2 compatible; sourced by `run.sh`, never
       `exit`): the file header (live-surface agreement check, never reads live
       `work/**`, the analogue of `50-instructions.sh`/`96-signature-sweep.sh`),
@@ -66,7 +66,7 @@ wording replacements are §2; guard sub-areas are §3; mutations are §4).
       `AC25 contract-preserved` `ok` lines present; temporarily reverting one
       surface phrase makes the corresponding `AC25` line fail.
 
-- [ ] **T5** — Extend `tests/mutation.sh` with the two mutations from design §4
+- [x] **T5** — Extend `tests/mutation.sh` with the two mutations from design §4
       (`reviewer.md` `if any finding of any severity` → `if any finding of high
       severity`, expected `AC25 all-severity-bar`; `code-review/SKILL.md` first
       `blocks the item` → `not merge-blocking`, expected `AC25
@@ -77,7 +77,7 @@ wording replacements are §2; guard sub-areas are §3; mutations are §4).
       Verify: `bash tests/mutation.sh` → exit 0, reporting two `AC25` mutations
       "caught and named" and every clean run passing.
 
-- [ ] **T6** — Document the new area in `tests/README.md`: add the Checks-table
+- [x] **T6** — Document the new area in `tests/README.md`: add the Checks-table
       row for `25-review-severity-bar.sh` (suite token `AC25`); add the paragraph
       mapping `AC25` to this item's acceptance criteria, naming the two
       sub-areas and the never-reads-`work/**` contract, in the style of the
@@ -88,7 +88,7 @@ wording replacements are §2; guard sub-areas are §3; mutations are §4).
       shows the Checks row and the mapping paragraph, and the existing area
       list/tokens `AC18`–`AC23` are unchanged.
 
-- [ ] **T7** — Final integration pass, no new behavior: confirm the change is
+- [x] **T7** — Final integration pass, no new behavior: confirm the change is
       forward-only and scoped. No already-approved or already-shipped `work/`
       artifact is edited or re-derived; no command, agent, skill, `phase` value,
       state file, frontmatter field, record type, or inventory count is added;

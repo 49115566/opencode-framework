@@ -71,7 +71,7 @@ RESULT_DIR="$SCRATCH/results"
 
 # The job inventory (job_1..job_<JOB_COUNT>). Kept as a count so worker
 # assignment and result aggregation iterate the same range.
-JOB_COUNT=27
+JOB_COUNT=29
 
 # Mutation counters (the MUTATION TOTAL line) and a separate setup-failure tally:
 # the two whole-suite setup runs are not mutations, so they do not inflate the
@@ -595,6 +595,28 @@ job_27() {
   replace_first "$copy/docs/artifact-conventions.md" \
     '- resolves: Finding <n>' '- resolves: <n>'
   job_finish "$copy" docs/artifact-conventions.md
+}
+
+# AC25 review severity bar -> 25-review-severity-bar
+job_28() {
+  local copy="$1"
+  J_AREA=25-review-severity-bar
+  J_EXPECTED='AC25 all-severity-bar'
+  J_DESC="weakened the reviewer verdict to a single severity"
+  replace_first "$copy/.opencode/agent/reviewer.md" \
+    'if any finding of any severity' 'if any finding of high severity'
+  job_finish "$copy" .opencode/agent/reviewer.md
+}
+
+# AC25 severity definition preserved -> 25-review-severity-bar
+job_29() {
+  local copy="$1"
+  J_AREA=25-review-severity-bar
+  J_EXPECTED='AC25 contract-preserved'
+  J_DESC="reintroduced the non-blocking Minor/Nit language"
+  replace_first "$copy/.opencode/skill/code-review/SKILL.md" \
+    'blocks the item' 'not merge-blocking'
+  job_finish "$copy" .opencode/skill/code-review/SKILL.md
 }
 
 # ---------------------------------------------------------------------------
