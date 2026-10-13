@@ -1,17 +1,17 @@
 ---
 feature: 9002-roadmap-b
-phase: roadmap
+phase: manifest
 status: final
 created: 2026-10-08
 updated: 2026-10-08
 ---
 
-# Roadmap — Declared-conflict fixture roadmap B
+# Manifest — Declared-conflict fixture roadmap B
 
 ## Initiative
 
-A committed test fixture, not a real work item. It exercises the cross-roadmap
-same-token control: both roadmaps declare the bare token `0001-shared`, which
+A committed test fixture, not a real work item. It exercises the cross-manifest
+same-token control: both manifests declare the bare token `0001-shared`, which
 resolves sibling-first to a different item in each parent, so the equal token is
 not a shared target. It also proves one-sided naming of a silent sibling.
 

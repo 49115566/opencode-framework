@@ -1,12 +1,12 @@
 ---
 feature: 9001-roadmap-a
-phase: roadmap
+phase: manifest
 status: final
 created: 2026-10-08
 updated: 2026-10-08
 ---
 
-# Roadmap — Declared-conflict fixture roadmap A
+# Manifest — Declared-conflict fixture roadmap A
 
 ## Initiative
 

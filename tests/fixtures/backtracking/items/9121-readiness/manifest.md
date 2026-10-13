@@ -1,16 +1,16 @@
 ---
 feature: 9121-readiness
-phase: roadmap
+phase: manifest
 status: final
 created: 2026-10-09
 updated: 2026-10-09
 ---
 
-# Roadmap — Fixture readiness
+# Manifest — Fixture readiness
 
 ## Initiative
 
-A fixture roadmap exercising the recalled-item readiness revocation; readiness is
+A fixture manifest exercising the recalled-item readiness revocation; readiness is
 derived live and is not stored in the table.
 
 ## Assumptions

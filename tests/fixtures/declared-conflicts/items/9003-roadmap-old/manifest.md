@@ -1,12 +1,12 @@
 ---
 feature: 9003-roadmap-old
-phase: roadmap
+phase: manifest
 status: final
 created: 2026-10-08
 updated: 2026-10-08
 ---
 
-# Roadmap — Legacy fixture roadmap without a conflicts-with column
+# Manifest — Legacy fixture roadmap without a conflicts-with column
 
 ## Initiative
 

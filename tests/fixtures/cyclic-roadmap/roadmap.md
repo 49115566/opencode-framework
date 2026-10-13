@@ -16,6 +16,11 @@ the documented `CYCLIC-DEP` contract against a known-cyclic graph on a fresh
 clone. It lives under `tests/`, never under `work/`, so it never pollutes the
 artifact tree and no sequence number is allocated.
 
+This fixture is the suite's retained legacy-alias sample: it deliberately keeps
+the deprecated `roadmap.md` spelling rather than migrating to the modern
+`manifest.md`, and the guard treats it as an equivalent decomposing-node manifest
+so alias recognition stays observably covered.
+
 ## Assumptions
 
 - The fixture is read-only test data; it is never shipped and never executed by
