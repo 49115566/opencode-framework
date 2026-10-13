@@ -4,7 +4,7 @@
 #
 # The reverse-transition model (the `backtracks.md` record and the `stale:`
 # marker), the findings-challenge record (`challenges.md`) and its adjudication,
-# parent-roadmap revision integrity, the post-ship `reopened:` recall marker and
+# parent-manifest revision integrity, the post-ship `reopened:` recall marker and
 # the resulting readiness revocation, and the new derived states are prompt
 # behaviour in the framework; there is no committed checker. This area pins that
 # behaviour to a committed fixture tree, the same way tests/checks/80-cycle-fixture.sh
@@ -21,7 +21,7 @@
 # their authority: tests/checks/10-readiness.sh owns the readiness single-source
 # phrases (including the recalled-item branch), tests/checks/20-lifecycle.sh owns
 # the core derived-state transitions, tests/checks/80-cycle-fixture.sh owns the
-# roadmap cycle rule, tests/checks/85-conflict-guards.sh owns the declared-conflict
+# decomposing-node cycle rule, tests/checks/85-conflict-guards.sh owns the declared-conflict
 # model, and tests/checks/96-signature-sweep.sh owns the command signatures.
 #
 # Reads only tests/fixtures/** and live surfaces (never work/**); sourced by
@@ -29,7 +29,8 @@
 # a sub-area, so a mutation self-check (tests/mutation.sh) can name the guard it
 # trips: reverse-edge, record-status, stale-downstream, challenge-loop,
 # roadmap-revision, readiness-revocation, derived-state, contract-pins. Structural
-# assertions (fixture-existence, read-only-contract, no-duplication) are labelled
+# assertions (fixture-existence, modern-spelling, read-only-contract,
+# no-duplication) are labelled
 # with the area but carry no mutation.
 #
 # Bash 3.2 compatible: no associative arrays, no mapfile, no empty-array
@@ -48,6 +49,18 @@ bt_show_diff() {
 
 bt_contains() {  # $1 haystack, $2 literal, $3 label
   if printf '%s\n' "$1" | grep -qF -- "$2"; then ok "$3"; else bad "$3 (missing '$2')"; fi
+}
+
+# Resolve a decomposing node's manifest: its modern `manifest.md` spelling when
+# present, else the recognized deprecated alias spelling, else nothing. Lets the
+# discovery loops and path lookups read either spelling without hardcoding a
+# migrated fixture path.
+bt_manifest() {  # $1 = node directory; prints the manifest path, or nothing
+  local d="$1" base
+  for base in manifest roadmap; do
+    if [ -f "$d/$base.md" ]; then printf '%s\n' "$d/$base.md"; return 0; fi
+  done
+  return 1
 }
 
 # Frontmatter `stale:` value of a fixture artifact; empty when the field is
@@ -71,14 +84,14 @@ bt_stale_value() {  # $1 file
 
 # --- fixture discovery -----------------------------------------------------
 
-# Every non-roadmap fixture item that carries a backtrack record.
+# Every non-decomposing fixture item that carries a backtrack record.
 bt_record_refs() {
   local d name
   for d in "$BT_ITEMS"/*/; do
     [ -d "$d" ] || continue
     name="${d%/}"; name="${name##*/}"
     case "$name" in [0-9][0-9][0-9][0-9]-*) : ;; *) continue ;; esac
-    [ -f "$d/roadmap.md" ] && continue
+    bt_manifest "$d" >/dev/null 2>&1 && continue
     [ -f "$d/backtracks.md" ] || continue
     printf '%s\n' "$name"
   done | LC_ALL=C sort
@@ -199,13 +212,24 @@ for bt_fixture in \
   "$BT_ITEMS/9115-stale-challenge/backtracks.md" \
   "$BT_ITEMS/9115-stale-challenge/challenges.md" \
   "$BT_ITEMS/9116-empty/.gitkeep" \
-  "$BT_ITEMS/9120-revised-roadmap/roadmap.md" \
-  "$BT_ITEMS/9121-readiness/roadmap.md"; do
+  "$BT_ITEMS/9120-revised-roadmap/manifest.md" \
+  "$BT_ITEMS/9121-readiness/manifest.md"; do
   if [ -f "$bt_fixture" ]; then
     ok "AC24 fixture-existence: $bt_fixture exists"
   else
     bad "AC24 fixture-existence: $bt_fixture missing"
   fi
+done
+
+# --- AC24 modern-spelling (AC3) ---------------------------------------------
+
+for bt_migrated in \
+  "$BT_ITEMS/9120-revised-roadmap/manifest.md" \
+  "$BT_ITEMS/9121-readiness/manifest.md"; do
+  need "$bt_migrated" 'phase: manifest' \
+    "AC24 modern-spelling: $bt_migrated declares phase: manifest"
+  need "$bt_migrated" '# Manifest — ' \
+    "AC24 modern-spelling: $bt_migrated carries the manifest heading"
 done
 
 if [ -d "$BT_ROOT" ] && ! grep -rq 'work/' "$BT_ROOT" 2>/dev/null; then
@@ -376,14 +400,14 @@ bt_fm_value() {  # $1 file, $2 field name
 
 # --- AC24 challenge-loop (AC4) ---------------------------------------------
 
-# Every non-roadmap fixture item carrying a challenge record.
+# Every non-decomposing fixture item carrying a challenge record.
 bt_challenge_refs() {
   local d name
   for d in "$BT_ITEMS"/*/; do
     [ -d "$d" ] || continue
     name="${d%/}"; name="${name##*/}"
     case "$name" in [0-9][0-9][0-9][0-9]-*) : ;; *) continue ;; esac
-    [ -f "$d/roadmap.md" ] && continue
+    bt_manifest "$d" >/dev/null 2>&1 && continue
     [ -f "$d/challenges.md" ] || continue
     printf '%s\n' "$name"
   done | LC_ALL=C sort
@@ -545,7 +569,7 @@ bt_contains "$BT_CH_STATUS" '9110-challenge-mixed|3|resolved|1' \
 # --- AC24 roadmap-revision (AC5) -------------------------------------------
 
 # Normalized Children table row: `<id>|<dep>|<conflicts-with>|<canonical-ref>`.
-bt_roadmap_rows() {  # $1 roadmap file
+bt_manifest_rows() {  # $1 manifest file
   awk '
     function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
     /^## Children[ \t]*$/ { insec = 1; next }
@@ -569,7 +593,7 @@ bt_roadmap_rows() {  # $1 roadmap file
 }
 
 # The Children header's column names, `|`-joined.
-bt_roadmap_header() {  # $1 roadmap file
+bt_manifest_header() {  # $1 manifest file
   awk '
     function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
     /^## Children[ \t]*$/ { insec = 1; next }
@@ -584,7 +608,7 @@ bt_roadmap_header() {  # $1 roadmap file
 }
 
 # Local ids in `## Sequencing`, in order.
-bt_roadmap_seq() {  # $1 roadmap file
+bt_manifest_seq() {  # $1 manifest file
   awk '
     /^## Sequencing[ \t]*$/ { inseq = 1; next }
     inseq && /^## / { inseq = 0 }
@@ -593,23 +617,24 @@ bt_roadmap_seq() {  # $1 roadmap file
   ' "$1"
 }
 
-# One line per failed revision-integrity check; empty when the fixture roadmap is
-# integral. Instantiates docs/workflow.md -> "Revising a roadmap" on the
+# One line per failed revision-integrity check; empty when the fixture manifest is
+# integral. Instantiates docs/workflow.md -> "Revising a decomposition" on the
 # fixture-local copy; the cycle proof follows tests/checks/80-cycle-fixture.sh
 # and the positional/withdrawal checks defer to tests/checks/85-conflict-guards.sh,
 # restating neither area's authority.
 fixture_revision() {
-  local rm="$BT_ITEMS/9120-revised-roadmap/roadmap.md"
   local parent="$BT_ITEMS/9120-revised-roadmap"
-  [ -f "$rm" ] || { printf 'missing-roadmap|%s\n' "$rm"; return 0; }
+  local rm
+  rm="$(bt_manifest "$parent")"
+  [ -n "$rm" ] || { printf 'missing-manifest|%s\n' "$parent"; return 0; }
 
   local hdr rows seq ids
-  hdr="$(bt_roadmap_header "$rm")"
+  hdr="$(bt_manifest_header "$rm")"
   [ "$hdr" = 'Local id|Title|Scope|Depends on|conflicts-with|Canonical reference' ] \
     || printf 'positional|%s\n' "$hdr"
 
-  rows="$(bt_roadmap_rows "$rm")"
-  seq="$(bt_roadmap_seq "$rm")"
+  rows="$(bt_manifest_rows "$rm")"
+  seq="$(bt_manifest_seq "$rm")"
   ids="$(printf '%s\n' "$rows" | awk -F'|' 'NF { print $1 }')"
 
   local id dep cf ref d seqpos_id seqpos_d child wd
@@ -712,12 +737,12 @@ $rows
 EOF
 }
 
-BT_RM="$BT_ITEMS/9120-revised-roadmap/roadmap.md"
+BT_RM="$(bt_manifest "$BT_ITEMS/9120-revised-roadmap")"
 BT_REVISION="$(fixture_revision)"
 if [ -z "$BT_REVISION" ]; then
-  ok "AC24 roadmap-revision: the revised fixture roadmap is integral (no fault)"
+  ok "AC24 roadmap-revision: the revised fixture manifest is integral (no fault)"
 else
-  bad "AC24 roadmap-revision: the revised fixture roadmap failed an integrity check"
+  bad "AC24 roadmap-revision: the revised fixture manifest failed an integrity check"
   bt_show_diff "(no fault)" "$BT_REVISION"
 fi
 
@@ -748,14 +773,14 @@ fi
 
 # --- AC24 readiness-revocation (AC6) ---------------------------------------
 
-# <dep-ref>|<satisfied 0|1> for each fixture roadmap child. A child is satisfied
+# <dep-ref>|<satisfied 0|1> for each fixture manifest child. A child is satisfied
 # when its ship record has no recall marker, or when its review verdict is
 # approve; a recalled ship record is not satisfied. Readiness is derived live and
 # never stored (the readiness algorithm itself is owned by tests/checks/10-readiness.sh).
 fixture_readiness() {
-  local rm="$BT_ITEMS/9121-readiness/roadmap.md"
-  local rows id dep cf ref base sat
-  rows="$(bt_roadmap_rows "$rm")"
+  local rm rows id dep cf ref base sat
+  rm="$(bt_manifest "$BT_ITEMS/9121-readiness")"
+  rows="$(bt_manifest_rows "$rm")"
   while IFS='|' read -r id dep cf ref; do
     [ -n "$id" ] || continue
     base="$BT_ITEMS/9121-readiness/$id"
@@ -773,9 +798,9 @@ EOF
 
 # <dependent-ref>|<blocked-by list> for each row with an unsatisfied dependency.
 fixture_readiness_blocked() {
-  local rm="$BT_ITEMS/9121-readiness/roadmap.md"
-  local rows id dep cf ref d blocked sat ready
-  rows="$(bt_roadmap_rows "$rm")"
+  local rm rows id dep cf ref d blocked sat ready
+  rm="$(bt_manifest "$BT_ITEMS/9121-readiness")"
+  rows="$(bt_manifest_rows "$rm")"
   ready="$(fixture_readiness)"
   while IFS='|' read -r id dep cf ref; do
     [ -n "$id" ] || continue
@@ -824,11 +849,11 @@ else
   bt_show_diff "$BT_EXP_BLOCKED" "$BT_BLOCKED"
 fi
 
-# No stored readiness value: the fixture roadmap keeps the six-column header.
-if [ "$(bt_roadmap_header "$BT_ITEMS/9121-readiness/roadmap.md")" = 'Local id|Title|Scope|Depends on|conflicts-with|Canonical reference' ]; then
-  ok "AC24 readiness-revocation: the fixture roadmap stores no readiness column"
+# No stored readiness value: the fixture manifest keeps the six-column header.
+if [ "$(bt_manifest_header "$(bt_manifest "$BT_ITEMS/9121-readiness")")" = 'Local id|Title|Scope|Depends on|conflicts-with|Canonical reference' ]; then
+  ok "AC24 readiness-revocation: the fixture manifest stores no readiness column"
 else
-  bad "AC24 readiness-revocation: the fixture roadmap header changed"
+  bad "AC24 readiness-revocation: the fixture manifest header changed"
 fi
 
 # --- AC24 derived-state (AC7, AC8) -----------------------------------------
@@ -839,7 +864,7 @@ bt_has_open_challenge() {  # $1 ref
   printf '%s\n' "$BT_CH_STATUS" | awk -F'|' -v r="$1" '$1 == r && $3 == "open" { f = 1 } END { exit f ? 0 : 1 }'
 }
 
-# Derived-state label for a non-roadmap fixture item, applying the authority's
+# Derived-state label for a non-decomposing fixture item, applying the authority's
 # precedence: earliest stale marker, then a reopened ship record, then the
 # unshipped challenged overlay, then the artifact-presence/verdict rows.
 bt_derive() {  # $1 ref
@@ -865,14 +890,14 @@ bt_derive() {  # $1 ref
   printf 'ship\n'
 }
 
-# <ref>|<label> for every non-roadmap top-level fixture item.
+# <ref>|<label> for every non-decomposing top-level fixture item.
 fixture_derived() {
   local d ref
   for d in "$BT_ITEMS"/*/; do
     [ -d "$d" ] || continue
     ref="${d%/}"; ref="${ref##*/}"
     case "$ref" in [0-9][0-9][0-9][0-9]-*) : ;; *) continue ;; esac
-    [ -f "$d/roadmap.md" ] && continue
+    bt_manifest "$d" >/dev/null 2>&1 && continue
     printf '%s|%s\n' "$ref" "$(bt_derive "$ref")"
   done | LC_ALL=C sort
 }

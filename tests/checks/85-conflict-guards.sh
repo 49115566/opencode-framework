@@ -44,6 +44,17 @@ guard_is_blank() {  # 0 if $1 is empty or only whitespace
   esac
 }
 
+# Resolve a decomposing node's manifest: its modern `manifest.md` spelling when
+# present, else the recognized deprecated alias spelling, else nothing. Lets a
+# discovery loop read either spelling without hardcoding a migrated fixture path.
+guard_manifest() {  # $1 = node directory; prints the manifest path, or nothing
+  local d="$1" base
+  for base in manifest roadmap; do
+    if [ -f "$d/$base.md" ]; then printf '%s\n' "$d/$base.md"; return 0; fi
+  done
+  return 1
+}
+
 # Own declaration record: "PRESENT|<value>" when design.md carries a
 # conflicts-with line (value may be empty), else "ABSENT".
 guard_own_record() {
@@ -67,7 +78,7 @@ guard_own_record() {
   ' "$1"
 }
 
-# Parse a roadmap Children table by header name (not fixed positions), so both
+# Parse a manifest Children table by header name (not fixed positions), so both
 # the current 6-column header and the legacy 5-column header parse. Emits
 # "<local-id>|<depends-on>|<conflicts-with-or-ABSENT>" per data row.
 guard_children_rows() {
@@ -272,13 +283,13 @@ T|$ref|resolved|$rkind|$rid|$ctoken"
 
 guard_build_events() {
   GUARD_EVENTS=""
-  local pd pname rows cd lname sd sname
+  local pd pname pman rows cd lname sd sname
   for pd in "$GUARD_ITEMS"/*/; do
     [ -d "$pd" ] || continue
     pname="${pd%/}"; pname="${pname##*/}"
     case "$pname" in [0-9][0-9][0-9][0-9]-*) : ;; *) continue ;; esac
-    [ -f "$pd/roadmap.md" ] || continue
-    rows="$(guard_children_rows "$pd/roadmap.md")"
+    pman="$(guard_manifest "$pd")" || continue
+    rows="$(guard_children_rows "$pman")"
     for cd in "$pd"/*/; do
       [ -d "$cd" ] || continue
       lname="${cd%/}"; lname="${lname##*/}"
@@ -290,7 +301,7 @@ guard_build_events() {
     [ -d "$sd" ] || continue
     sname="${sd%/}"; sname="${sname##*/}"
     case "$sname" in [0-9][0-9][0-9][0-9]-*) : ;; *) continue ;; esac
-    [ -f "$sd/roadmap.md" ] && continue
+    guard_manifest "$sd" >/dev/null 2>&1 && continue
     [ -f "$sd/spec.md" ] || continue
     guard_emit_entity "$sname" "$sd" "" "$sname" ""
   done
@@ -360,9 +371,9 @@ else
 fi
 
 for guard_file in \
-  "$GUARD_ITEMS/9001-roadmap-a/roadmap.md" \
+  "$GUARD_ITEMS/9001-roadmap-a/manifest.md" \
   "$GUARD_ITEMS/9001-roadmap-a/0004-shipped/ship.md" \
-  "$GUARD_ITEMS/9003-roadmap-old/roadmap.md"; do
+  "$GUARD_ITEMS/9003-roadmap-old/manifest.md"; do
   if [ -f "$guard_file" ]; then
     ok "AC23 fixture-existence: $guard_file exists"
   else
@@ -378,20 +389,32 @@ fi
 
 # --- AC23 column-layout -----------------------------------------------------
 
-if [ -f "$GUARD_ITEMS/9001-roadmap-a/roadmap.md" ]; then
-  need "$GUARD_ITEMS/9001-roadmap-a/roadmap.md" "$GUARD_CANON_HEADER" \
-    "AC23 column-layout: fixture roadmap has the 6-column Children header"
-  need "$GUARD_ITEMS/9003-roadmap-old/roadmap.md" "$GUARD_LEGACY_HEADER" \
-    "AC23 column-layout: legacy fixture roadmap has the 5-column Children header"
+if [ -f "$GUARD_ITEMS/9001-roadmap-a/manifest.md" ]; then
+  need "$GUARD_ITEMS/9001-roadmap-a/manifest.md" "$GUARD_CANON_HEADER" \
+    "AC23 column-layout: fixture manifest has the 6-column Children header"
+  need "$GUARD_ITEMS/9003-roadmap-old/manifest.md" "$GUARD_LEGACY_HEADER" \
+    "AC23 column-layout: legacy fixture manifest has the 5-column Children header"
 else
-  bad "AC23 column-layout: fixture roadmap missing"
+  bad "AC23 column-layout: fixture manifest missing"
 fi
+
+# --- AC23 modern-spelling (AC3) ---------------------------------------------
+
+for guard_migrated in \
+  "$GUARD_ITEMS/9001-roadmap-a/manifest.md" \
+  "$GUARD_ITEMS/9002-roadmap-b/manifest.md" \
+  "$GUARD_ITEMS/9003-roadmap-old/manifest.md"; do
+  need "$guard_migrated" 'phase: manifest' \
+    "AC23 modern-spelling: $guard_migrated declares phase: manifest"
+  need "$guard_migrated" '# Manifest — ' \
+    "AC23 modern-spelling: $guard_migrated carries the manifest heading"
+done
 
 # --- AC23 positional-parse --------------------------------------------------
 
 guard_hdr_line=""
-if [ -f "$GUARD_ITEMS/9001-roadmap-a/roadmap.md" ]; then
-  guard_hdr_line="$(grep -F -- "$GUARD_CANON_HEADER" "$GUARD_ITEMS/9001-roadmap-a/roadmap.md" | head -n1)"
+if [ -f "$GUARD_ITEMS/9001-roadmap-a/manifest.md" ]; then
+  guard_hdr_line="$(grep -F -- "$GUARD_CANON_HEADER" "$GUARD_ITEMS/9001-roadmap-a/manifest.md" | head -n1)"
 fi
 guard_parse="$(printf '%s' "$guard_hdr_line" | awk -F'|' '{ gsub(/^[ \t]+|[ \t]+$/, "", $5); gsub(/^[ \t]+|[ \t]+$/, "", $6); print $5 "|" $6 }')"
 if [ "$guard_parse" = "Depends on|conflicts-with" ]; then
@@ -532,9 +555,9 @@ else
   ok "AC23 pair-predicate: shipped item is excluded as a counterpart"
 fi
 if printf '%s\n' "$ACT_CONFLICTS" | grep -qF '9001-roadmap-a/0002-sibling|9002-roadmap-b/0002-sibling'; then
-  bad "AC23 pair-predicate: cross-roadmap equal token was treated as a shared target"
+  bad "AC23 pair-predicate: cross-manifest equal token was treated as a shared target"
 else
-  ok "AC23 pair-predicate: cross-roadmap equal token is not a shared target"
+  ok "AC23 pair-predicate: cross-manifest equal token is not a shared target"
 fi
 
 # Edge (spec): an empty compared set — no unshipped item declares anything, and
