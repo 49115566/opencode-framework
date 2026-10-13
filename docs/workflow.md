@@ -630,11 +630,14 @@ shipper, the only agent that writes git (see `AGENTS.md` → guardrails). Plan m
   single-feature item. No `review.md` is required — plan mode is a documented
   exception to the approved-work-item entry criterion, like fix mode. The plan
   diff contains no secrets.
-- **Branch.** A dedicated `plan/<ref>` branch, where `<ref>` is the canonical
-  reference with `/` replaced by `-` (for example
-  `plan/0006-parallel-plan-conflicts-0002-plan-record`). Each item gets its own
-  branch, so concurrent publications do not overwrite one another, and the plan
-  branch is distinct from the item's final ship branch.
+- **Branch.** A dedicated `plan/<ref>` branch, where `<ref>` is the item's
+  canonical reference flattened by the single collision-free reversible rule in
+  `.opencode/skill/conventional-commits/SKILL.md` → "Branch naming" (`flatten(ref)`
+  joins the reference's `/`-separated segments with `+`; for example
+  `plan/0013-simultaneous-work-recursion+0004-parallel-publication`). Every
+  surface names the branch only by that rule and never restates it. Each item gets
+  its own branch, so concurrent publications do not overwrite one another, and the
+  plan branch is distinct from the item's final ship branch.
 - **Commit and pull request.** The node's own plan state under `work/<item-ref>/`
   is committed as one conventional commit and pushed — for a decomposing node the
   manifest, its own phase artifacts when present, and its child `.gitkeep`
@@ -663,6 +666,12 @@ shipper, the only agent that writes git (see `AGENTS.md` → guardrails). Plan m
   `backtracks.md` and moves no phase backward.
 - **Idempotence.** Re-invoking publication when the plan is already on the default
   branch and unchanged is a no-op: it reports that and creates nothing.
+- **No migration.** An already-merged plan is read from the default branch and
+  stays valid. A pre-existing **unmerged** branch under the superseded `/` → `-`
+  joined name is not recognized: the gate derives only the collision-free
+  name, so such a branch neither blocks development nor is read as a publication,
+  and it falls to the existing "no publication recorded" case (see
+  "The `/build` plan gate"). Historical and shipped plans are never rewritten.
 
 ### The `/build` plan gate
 
@@ -672,7 +681,8 @@ no `gh` and never hard-fails:
 
 ```
 plan_gate(item_ref):
-  ref         = item_ref with "/" -> "-"
+  ref         = flatten(item_ref)   # the rule in
+                                    # .opencode/skill/conventional-commits/SKILL.md → "Branch naming"
   plan_branch = "plan/" + ref
   default_ref = "origin/<default>" if origin exists, else "<default>"
   # 0. Refresh refs best-effort (an offline fetch is ignored). Refresh the
@@ -701,9 +711,12 @@ plan_gate(item_ref):
       unresolved_plan = true
   if plan_ref is not none:
       unmerged_plan = git diff --quiet <plan_ref> <default_ref> -- work/<item_ref>/ is false
-  # 1. Published / merged? (a differing plan branch is not yet published)
-  if <default_ref> has work/<item_ref>/design.md
-     and not unmerged_plan and not unresolved_plan                  -> PROCEED
+  # 1. Published / merged? A plan is published when the default branch holds the
+  #    item's design artifact or, for a decomposing node, its manifest. A
+  #    differing plan branch is not yet published.
+  published = <default_ref> has work/<item_ref>/design.md
+              or <default_ref> has work/<item_ref>/manifest.md
+  if published and not unmerged_plan and not unresolved_plan          -> PROCEED
   # 2. An unmerged plan branch — or one the remote advertises but that cannot be
   #    resolved and compared — blocks development
   if plan_ref is not none or unresolved_plan                         -> REFUSE
@@ -727,6 +740,10 @@ plan_gate(item_ref):
 - An item with no plan pull request — historical, or created before this flow —
   is not blocked and needs no migration; the builder proceeds and notes that no
   plan publication was found (case 3).
+- A pre-existing **unmerged** branch under the superseded `/` → `-` joined name is
+  not recognized: the gate derives only the collision-free `flatten` name, so such
+  a branch neither refuses development nor is read as a publication, and it falls
+  to case 3 (no publication recorded). See "No migration" above.
 - A plan present on the default branch proceeds even if a merged `plan/<ref>`
   branch is retained, because step 0 refreshes the ref and step 1 treats a
   branch whose plan artifacts already match the default branch as merged, not
@@ -1390,15 +1407,36 @@ linked from its pull request resolve for a reviewer who does not share the
 author's working tree.
 
 Because two branches can each allocate the same next number, a merge can leave
-two items sharing a canonical reference without a filesystem conflict. After a
-merge, scan the top-level `work/` directories — and each decomposing parent's
-child directories — for duplicate 4-digit prefixes. On a collision, follow
-"Renumbering after a parallel merge" in `docs/artifact-conventions.md`: renumber
-the unshipped item to the next number from the allocation contract and update
-every reference in the same change before it ships. A number is never reused.
-Duplicate sequence numbers are only one class of conflict; for every other class
-— shared-surface textual conflicts, `work/` artifact conflicts, and
-derived-agreement drift — see `## Merge conflicts`.
+two items sharing a canonical reference without a filesystem conflict. Duplicate
+`4`-digit prefixes are checked at **every node** of the recursive tree, not only
+the top level plus one child layer; each decomposing node at any depth is checked
+against **its own immediate children**, independently, and the top level is
+checked against the top-level items. No node's check depends on another's, and
+identity is the full canonical path, not the trailing segment — two nodes whose
+local id text matches but whose parents differ are not a duplicate.
+
+The two shipped codes name the two tree positions; a collision is reported under
+exactly one of them:
+
+- `DUPLICATE-PREFIX` — two **top-level** `NNNN` prefixes are equal.
+- `DUPLICATE-CHILD` — two **same-parent** `MMMM` prefixes are equal, at any depth.
+
+A top-level collision is never reported as `DUPLICATE-CHILD`, and a deeper
+collision is never reported as `DUPLICATE-PREFIX`. A `DUPLICATE-CHILD` finding
+names both offenders by their **full canonical reference**; when the collision
+is at depth ≥ 3 — for example two grandchildren, `<parent>/<MMMM-slug>-a` and
+`<parent>/<MMMM-slug>-b` — it also names the **shared parent and shared local
+prefix** in the detail, so the finding is unambiguous at any depth. Findings use
+the class `(c)` label and the finding grammar of `## Merge conflicts`; this rule
+introduces no new code, class, or vocabulary.
+
+On a collision, follow "Renumbering after a parallel merge" in
+`docs/artifact-conventions.md`: renumber the unshipped item to the next number
+from the allocation contract and update every reference in the same change
+before it ships. A number is never reused. Duplicate sequence numbers are only
+one class of conflict; for every other class — shared-surface textual conflicts,
+`work/` artifact conflicts, and derived-agreement drift — see
+`## Merge conflicts`.
 
 ## Merge conflicts
 

@@ -126,9 +126,15 @@ not restated here.
 
 ## Plan artifacts
 
-- Spec: `work/<item-ref>/spec.md`
-- Design: `work/<item-ref>/design.md`
-- Tasks: `work/<item-ref>/tasks.md`
+Link the node's plan state by repository path. A single-feature plan is its
+`spec.md`/`design.md`/`tasks.md`; a decomposing node's plan is its `manifest.md`
+plus its own phase artifacts when it has them (a pure container has only the
+manifest). Omit a line whose artifact does not exist yet.
+
+- Manifest: `work/<item-ref>/manifest.md` (decomposing node only)
+- Spec: `work/<item-ref>/spec.md` (when present)
+- Design: `work/<item-ref>/design.md` (when present)
+- Tasks: `work/<item-ref>/tasks.md` (when present)
 
 ## Testing
 

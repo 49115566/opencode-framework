@@ -49,33 +49,54 @@ followed by `BREAKING CHANGE: <migration notes>`.
 
 ## Branch naming
 
+A work item's branch name is derived from its canonical reference
+(`NNNN-slug`, or `NNNN-slug/MMMM-slug` for a nested child) by one collision-free,
+reversible rule — **`flatten(ref)`** — which joins the reference's
+`/`-separated segments with `+`:
+
 ```
-<type>/<ref-or-short-description>
+flatten(ref) = ref.split("/").join("+")
 ```
 
-`<ref>` is the work item's canonical reference: `NNNN-slug` for a standalone
-item, or `NNNN-slug/MMMM-slug` for a roadmap child with the `/` replaced by `-`
-(`NNNN-slug-MMMM-slug`). Joining the two segments keeps the branch a single ref —
-two children of one roadmap must not map to the same branch — while still
-identifying the exact child work item.
+A canonical reference segment is `[0-9]{4}-[a-z0-9-]+`, so it can never contain
+`+`. That makes `+` a reserved boundary and the mapping an exact inverse:
+`ref.split("/").join("+")` and `flat.split("+")` round-trip, so two distinct
+references at **any depth** always flatten to two distinct strings. A
+single-segment reference is unchanged by the rule.
+
+The **same** flattened token names both branch kinds; only the prefix differs:
+
+- a **ship branch** is `<type>/<flatten(ref)>`, where `<type>` is the commit type
+  (`feat`, `fix`, `docs`, …);
+- a **plan-publication branch** — `/ship plan <item-ref>` before development
+  begins (see `docs/workflow.md` → "Plan publication") — is
+  `plan/<flatten(ref)>`. The fixed `plan` prefix replaces the `<type>` segment and
+  marks the branch as the pre-development plan rather than the item's final ship
+  branch: never reuse the plan branch for the ship.
+
+| Canonical reference | `flatten(ref)` |
+| ------------------- | -------------- |
+| `0001-add-dark-mode` | `0001-add-dark-mode` |
+| `0002-agentic-roadmaps/0001-roadmap-model` | `0002-agentic-roadmaps+0001-roadmap-model` |
+| `0001-a/0002-b/0003-c` | `0001-a+0002-b+0003-c` |
+
+Examples: `feat/0001-add-dark-mode`,
+`feat/0002-agentic-roadmaps+0001-roadmap-model`,
+`plan/0002-agentic-roadmaps+0001-roadmap-model`, `fix/login-timeout`,
+`docs/update-readme`.
+
+**Superseded form.** An older rule joined a nested reference by replacing `/`
+with `-` (`0002-agentic-roadmaps-0001-roadmap-model`). Because `-` is legal
+**inside** a segment, that mapping was not injective: a nested child and a
+distinct top-level item literally named `NNNN-slug-MMMM-slug` could share one
+branch name. `flatten` above replaces it; a pre-existing, unmerged branch under
+the superseded form is not recognized (see `docs/workflow.md` → "Plan
+publication").
 
 A fix with no work item — a `/fix` landed with `/ship fix` — has no canonical
 reference, so name its branch `fix/<short-description>`: the `fix` type plus a
 short kebab-case description of the defect, e.g. `fix/login-timeout`. Never reuse
 a work item's branch for a fix.
-
-Pre-development **plan publication** — `/ship plan <item-ref>` before development
-begins (see `docs/workflow.md` → "Plan publication") — uses a dedicated
-`plan/<ref>` branch, where `<ref>` is the canonical reference with `/` replaced
-by `-`, the same joined form a ship branch uses. The fixed `plan` prefix replaces
-the `<type>` segment and marks the branch as the pre-development plan rather than
-the item's final `<type>/<ref>` ship branch: never reuse the plan branch for the
-ship. A roadmap child keeps its joined reference, e.g.
-`plan/0006-parallel-plan-conflicts-0002-plan-record`.
-
-Examples: `feat/0001-add-dark-mode`,
-`feat/0002-agentic-roadmaps-0001-roadmap-model`, `fix/login-timeout`,
-`docs/update-readme`, `plan/0006-parallel-plan-conflicts-0002-plan-record`.
 
 ## Rules
 
