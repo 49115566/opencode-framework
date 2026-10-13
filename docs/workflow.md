@@ -169,19 +169,27 @@ independent of the flat top-level sequence and of other roadmaps.
 
 ### Dependencies and readiness
 
-The `Children` table in `roadmap.md` is the single machine-readable source for
-the child set and the dependency graph. The `Depends on` cell holds another
-child's **local id**, comma-separated when there are two or more, or `—` when the
-child has none. A dependency may not name its own row, dependencies are
-intra-roadmap only, and the stored graph must be acyclic. If an initiative's
-dependencies are cyclic, the roadmap records the cycle under `## Open issues` and
-leaves the stored graph acyclic.
+The `Children` table in a decomposing node's manifest (`roadmap.md`) is the
+single machine-readable source for the child set and the dependency graph, at
+every depth. The `Depends on` cell holds another child's **local id**,
+comma-separated when there are two or more, or `—` when the child has none. A
+dependency may not name its own row, dependencies are **sibling-only** — a
+`Depends on` value names only a sibling local id in the same `Children` table —
+and the stored graph must be acyclic. An ancestor, descendant, cousin, or
+cross-tree target is not a valid dependency edge; it is reported by the integrity
+window as a `DANGLING-DEP` finding rather than accepted, and no new dependency
+edge kind is introduced. If an initiative's dependencies are cyclic, the roadmap
+records the cycle under `## Open issues` and leaves the stored graph acyclic.
+
+Every decomposing node applies the same readiness rule to its own immediate
+children, independently at every level; a child resolves under the node's own
+canonical reference.
 
 Readiness is derived live from files at status time; it is never stored:
 
 ```
 satisfied(dep_local_id):
-  child_dir = work/<parent>/<dep_local_id>/
+  child_dir = work/<node-ref>/<dep_local_id>/
   if child_dir does not exist        -> dangling; not satisfied
   if child_dir/ship.md exists
        and it carries a `reopened:` marker -> not satisfied  # recalled; shipped signal revoked
@@ -200,6 +208,9 @@ presence rather than contents — or when its `review.md` verdict is `approve`, 
 satisfies the dependency **even if unshipped**. `ship.md` presence takes precedence
 over a `request-changes` verdict; a `request-changes` verdict or a missing
 `review.md` (with no `ship.md`) is not satisfied.
+A `Depends on` target that is itself a decomposing node is satisfied by its own
+signal only — the `ship.md`/`approve` rule above applied to that node — and its
+descendants are not consulted; readiness does not recurse through its children.
 A non-recalled `ship.md` presence and an `approve` verdict satisfy exactly as
 before. A **recalled** item — its `ship.md` carrying a `reopened:` marker — does
 not satisfy the dependency, and its dependents are reported `blocked`, naming the
@@ -278,11 +289,18 @@ SurfacePath        ::= repository-relative file or directory path
 
 ### Status reporting
 
-`/status` reports a roadmap parent separately from its children. The roadmap row
-shows `<ready>/<total> ready` plus a distribution tally of its children across
-phases (`<phase> <n>, ...`), so a roadmap is never presented as a single-feature
-item. Each child row shows its own phase and readiness; a blocked child names the
-specific children blocking it. Status is read-only and modifies nothing.
+`/status` renders the decomposition tree recursively: each decomposing node
+followed by its descendants, **indented to arbitrary depth**. Every node at every
+level shows its derived phase and its readiness as `ready` or
+`blocked: <local ids>` — the comma-separated local ids of the unsatisfied
+siblings that block it. Readiness is derived live from committed files at status
+time and is never stored.
+
+A decomposing node's row shows `<ready>/<total> ready` across its **immediate**
+children plus a distribution tally of those children across phases
+(`<phase> <n>, ...`), so a decomposing node is never presented as a
+single-feature item. Each blocked child names the specific siblings blocking it.
+Status is read-only and modifies nothing.
 
 Status also reports integrity findings rather than failing:
 
@@ -1128,12 +1146,21 @@ challenged, and historical items need no migration.
 There is no state file. `/status` derives each item's phase from artifacts and
 content:
 
+A node that has children derives its phase from **its own phase artifacts
+first**: a node carrying its own phase artifacts derives its phase from them, and
+only a node with a manifest (`roadmap.md`) **and no own phase artifacts** derives
+the container phase `roadmap`. Own artifacts take precedence over the manifest at
+every depth. This composes with the shipped precedence below — the structural
+`stale:` and `reopened:` rows, then the unshipped open-challenge blocked overlay,
+then the artifact-presence and verdict rows — and introduces no new `phase` value
+and no second state model.
+
 | Observed state                                             | Phase        |
 | ---------------------------------------------------------- | ------------ |
 | earliest `stale:` marker among the item's artifacts names phase `P` | `P` (backtracked) |
 | `ship.md` present with a `reopened:` marker naming phase `P` | `P` (reopened) |
 | an open challenge in `challenges.md` (no matching `Response`/`Withdrawal`) on an item that has no `ship.md` | challenged (blocked) |
-| `roadmap.md` present (check before `spec.md`)              | roadmap      |
+| `roadmap.md` present and no own phase artifacts (check before `spec.md`) | roadmap      |
 | `spec.md` missing                                          | not started  |
 | `spec.md` present, `design.md` missing                     | spec         |
 | `design.md` present, `tasks.md` missing                    | design       |
@@ -1191,9 +1218,12 @@ open challenge(s); and for a shipped item carrying an open challenge they surfac
 that challenge as out-of-scope. The report reuses this table and the readiness
 authority as its single sources and restates neither.
 
-A directory containing `roadmap.md` is a roadmap parent and is derived as
-`roadmap` before the single-feature rows. A roadmap child is derived like any
-other item: a child holding only its `.gitkeep` has no phase artifacts and is
+A directory containing `roadmap.md` is a **decomposing node** at any depth — a
+pure container, or a hybrid node that also carries its own artifacts — and, when
+it has a manifest and no own phase artifacts, is derived as `roadmap` before the
+single-feature rows; a decomposing node with its own phase artifacts derives its
+own phase first, independently of its children. A roadmap child is derived like
+any other item: a child holding only its `.gitkeep` has no phase artifacts and is
 `not started`.
 
 ## The fix track
