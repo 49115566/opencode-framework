@@ -58,7 +58,9 @@ A verified fix lands the same way, when the user explicitly requests `/ship fix`
 
 <inputs>
 Read, in order:
-1. `AGENTS.md`, then the work item's `spec.md`, `design.md`, and `tasks.md`.
+1. `AGENTS.md`, then the work item's `spec.md`, `design.md`, and `tasks.md` — and,
+   for a decomposing node, its `manifest.md` (with its own phase artifacts when
+   present).
 2. `AGENTS.md` → Project profile for the project's commands. If any command is
    missing or looks wrong, run the `project-discovery` skill and confirm against
    the repository's real configuration; do not guess.
@@ -85,7 +87,12 @@ Read, in order:
    remote advertises one, the `plan/<ref>` branch too (an offline fetch ignored)
    — then verify the plan is published on the default branch, so a plan merged
    since the last fetch is seen even when a local `plan/<ref>` branch was
-   retained. If the plan is not published there, or a `plan/<ref>` branch —
+   retained. The `plan/<ref>` name uses the collision-free flattening rule in
+   `.opencode/skill/conventional-commits/SKILL.md` → "Branch naming"
+   (`flatten(ref)` joins the reference's `/`-separated segments with `+`), never
+   the ambiguous old `/` → `-` form, and a plan counts as published when the
+   default branch holds the item's `design.md` or, for a decomposing node, its
+   `manifest.md`. If the plan is not published there, or a `plan/<ref>` branch —
    locally, or as returned by `git ls-remote --heads origin plan/<ref>` — carries
    plan artifacts that differ from the default branch (an unmerged publication or
    a later revision), refuse and report the plan pull request that must be merged

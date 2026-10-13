@@ -7,7 +7,8 @@ Run the **Build** phase for: $ARGUMENTS
 
 Follow your Builder agent instructions exactly. In particular:
 
-- Read `AGENTS.md`, then the work item's `spec.md`, `design.md`, and `tasks.md`.
+- Read `AGENTS.md`, then the work item's `spec.md`, `design.md`, and `tasks.md` —
+  and, for a decomposing node, its `manifest.md`.
 - A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item or
   `NNNN-slug/MMMM-slug` for a roadmap child; every `work/<item-ref>/` path
   resolves to that item's directory.
@@ -24,9 +25,13 @@ Follow your Builder agent instructions exactly. In particular:
   "Plan publication": refresh refs best-effort first — `git fetch origin
   <default>`, and, when the remote advertises one, the `plan/<ref>` branch too
   (an offline fetch ignored) — then verify the plan is published on the default
-  branch. If the plan is not published there, or a `plan/<ref>` branch (local or
-  via `git ls-remote` on origin) carries plan artifacts that differ from the
-  default branch (an unmerged publication or a later revision), refuse and report
+  branch. The `plan/<ref>` name is the collision-free `flatten(ref)` from
+  `.opencode/skill/conventional-commits/SKILL.md` → "Branch naming", never the
+  ambiguous old `/` → `-` form, and a plan counts as published when the default
+  branch holds the item's `design.md` or, for a decomposing node, its
+  `manifest.md`. If the plan is not published there, or a `plan/<ref>` branch
+  (local or via `git ls-remote` on origin) carries plan artifacts that differ from
+  the default branch (an unmerged publication or a later revision), refuse and report
   the plan pull request that must be merged first. A plan branch the remote
   advertises but that has no resolvable local ref cannot be compared; refuse
   rather than guess. If neither exists, proceed and note that no plan publication
