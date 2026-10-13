@@ -18,7 +18,7 @@ list, do not change the exact `Usage:` strings, and do not edit `AGENTS.md`,
 `template/AGENTS.md`, `README.md`, `docs/artifact-conventions.md`, or any test
 file.
 
-- [ ] **T1** — In `docs/workflow.md`, replace the `0003`-deferral in
+- [x] **T1** — In `docs/workflow.md`, replace the `0003`-deferral in
       `### Where decomposition is authored and recorded` (lines 66-74) with the
       concrete writer contract, stated once: the planning step (`/plan`,
       `architect`) authors/revises a decomposition at any depth; `/roadmap` is
@@ -43,7 +43,7 @@ file.
       `FRAMEWORK_TEST_AREAS='10-readiness,80-cycle-fixture,85-conflict-guards,87-backtrack-guards,96-signature-sweep' bash tests/run.sh`
       exits 0.
 
-- [ ] **T2** — In `docs/workflow.md`, extend `### 2. Design — /plan <item-ref>`
+- [x] **T2** — In `docs/workflow.md`, extend `### 2. Design — /plan <item-ref>`
       (lines 411-431) for the two planning paths. Purpose covers both deciding a
       design and authoring a decomposition; Entry keeps the single-feature
       `spec.md` requirement **and** admits the decomposition path without the
@@ -58,7 +58,7 @@ file.
       heading is unchanged; `FRAMEWORK_TEST_AREAS='20-lifecycle,96-signature-sweep' bash tests/run.sh`
       exits 0.
 
-- [ ] **T3** — In `docs/workflow.md`, generalize `### Revising a roadmap`
+- [x] **T3** — In `docs/workflow.md`, generalize `### Revising a roadmap`
       (lines 303-388) from "the parent" to a decomposing node at **any depth**:
       `<item-ref>` must resolve to a node that has a manifest
       (`work/<item-ref>/roadmap.md`); a reference with no manifest is refused.
@@ -73,7 +73,7 @@ file.
       sole-writer sentence; the four operations and `stale: roadmap` are intact;
       `FRAMEWORK_TEST_AREAS='87-backtrack-guards' bash tests/run.sh` exits 0.
 
-- [ ] **T4** — In `docs/workflow.md`, broaden `## Plan publication` (lines
+- [x] **T4** — In `docs/workflow.md`, broaden `## Plan publication` (lines
       520-566). Restate the plan definition so a decomposing node's plan is its
       manifest (`roadmap.md`) plus its own `spec.md`/`design.md`/`tasks.md` when
       present plus its child directory reservations. State the precondition as a
@@ -90,7 +90,7 @@ file.
       retained; the `/build` plan gate block is byte-unchanged;
       `FRAMEWORK_TEST_AREAS='20-lifecycle' bash tests/run.sh` exits 0.
 
-- [ ] **T5** — In `docs/workflow.md`, make the minimal consistency touch to the
+- [x] **T5** — In `docs/workflow.md`, make the minimal consistency touch to the
       `## Roadmaps` opening (line 165) and the routing-heuristic `/roadmap`
       bullet (lines 1239-1244): name the planning step (`/plan`) as the author
       and `/roadmap` as the deprecated alias for it, with no competing writer
@@ -102,7 +102,7 @@ file.
       `FRAMEWORK_TEST_AREAS='10-readiness,80-cycle-fixture,96-signature-sweep' bash tests/run.sh`
       exits 0.
 
-- [ ] **T6** — Update the planning-step surfaces: `.opencode/agent/architect.md`
+- [x] **T6** — Update the planning-step surfaces: `.opencode/agent/architect.md`
       and `.opencode/command/plan.md`. In the agent, broaden the mission to
       `design.md`/`tasks.md` and/or the manifest; add the two-path process
       (single-feature design vs. decomposition); state the decomposition rules
@@ -126,7 +126,7 @@ file.
       `FRAMEWORK_TEST_AREAS='10-readiness,20-lifecycle,30-permissions,96-signature-sweep' bash tests/run.sh`
       exits 0.
 
-- [ ] **T7** — Demote the alias surfaces to a thin deprecated alias:
+- [x] **T7** — Demote the alias surfaces to a thin deprecated alias:
       `.opencode/agent/roadmap.md` and `.opencode/command/roadmap.md`. State that
       `/roadmap` is the deprecated alias for the planning step; create mode
       creates a brand-new top-level decomposing node (next top-level `NNNN`) and
@@ -142,7 +142,7 @@ file.
       `FRAMEWORK_TEST_AREAS='30-permissions,40-inventory,96-signature-sweep' bash tests/run.sh`
       exits 0.
 
-- [ ] **T8** — Final verification of the whole item. Run the full committed
+- [x] **T8** — Final verification of the whole item. Run the full committed
       suite; confirm no new agent/command/skill file exists, no documented
       inventory count changed, the six core commands and command→agent pairs are
       unchanged, and the change set is exactly the five files; confirm no

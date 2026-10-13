@@ -65,13 +65,36 @@ phase semantics — a node at any depth runs the same cycle.
 
 ### Where decomposition is authored and recorded
 
-A node's child set is authored and recorded in the planning (design) step — the
-`/plan` (`architect`) step. The `/roadmap` command is retained only as a
-**deprecated alias** for that step. A decomposing node's child set is **committed
-plan state**: it is versioned with the node's other plan artifacts, so a fresh
-clone derives the same decomposition. The concrete writer's command/agent wiring
-and handoff are owned by `0003-recursive-writer`; the model fixes only where
-decomposition is authored and recorded.
+A node's child set is authored and recorded by the **planning step** — `/plan`
+(`architect`) — which is the recursive writer for a decomposition at **any**
+depth. `/roadmap` is retained only as a thin **deprecated alias** for that step:
+`/roadmap <initiative>` creates a brand-new top-level decomposing node (the next
+top-level `NNNN`), and `/roadmap revise <item-ref>` revises an existing
+decomposition at any depth.
+
+For a decomposing node the writer authors the **manifest**
+`work/<item-ref>/roadmap.md`, whose `feature:` is the node's full canonical
+reference and whose `phase` is `roadmap`, and reserves each enumerated child as
+`work/<item-ref>/<MMMM-slug>/` with a `.gitkeep`. The manifest's shape and its
+per-immediate-parent `MMMM` allocation are those of `docs/artifact-conventions.md`
+→ "`roadmap.md` — the manifest of a decomposing node" and "Sequence allocation"
+(referenced, not restated here).
+
+The writer writes **no child phase artifact**: each new child directory holds
+only `.gitkeep`, and the child's own phases stay independently owned. It is
+**autonomous** — it writes the manifest and child reservations with no pre-write
+approval gate, and the user reviews the committed artifact afterward. A node that
+is a genuine single feature is planned as before, producing `design.md`/`tasks.md`
+and no manifest; a decomposing node always gets the manifest and MAY also carry
+its own `design.md`/`tasks.md` when it has a deliverable of its own (a **hybrid**
+node), which are never forced on a pure container.
+
+A decomposing node's child set is **committed plan state**: it is versioned with
+the node's other plan artifacts, so a fresh clone derives the same decomposition.
+The handoff publishes the node's plan state (`## Plan publication`) and then
+routes to `/spec <child-ref>` for each ready child. Revising an existing
+decomposition is `### Revising a roadmap`; the writer defines no second revision
+or publication grammar.
 
 ### Granularity and hybrid nodes
 
@@ -162,10 +185,11 @@ parent has no spec, design, tasks, verification, or review of its own; each chil
 later runs the ordinary per-feature lifecycle unchanged. Artifact shapes and the
 reference grammar are defined in `docs/artifact-conventions.md`.
 
-The `/roadmap` command authors the parent artifact and creates each child
-directory containing only a `.gitkeep`, then stops. It writes no child specs and
-performs no child phase work. Child numbering is local to the parent and
-independent of the flat top-level sequence and of other roadmaps.
+The planning step (`/plan`, `architect`) — reached through the thin deprecated
+`/roadmap` alias — authors the parent artifact and creates each child directory
+containing only a `.gitkeep`, then stops. It writes no child specs and performs
+no child phase work. Child numbering is local to the parent and independent of
+the flat top-level sequence and of other roadmaps.
 
 ### Dependencies and readiness
 
@@ -320,33 +344,36 @@ existing file, and status still reports the child's dependency state afterwards.
 
 ### Revising a roadmap
 
-The `/roadmap` command has two modes: `/roadmap <initiative>` authors a new
-parent (above), and `/roadmap revise <item-ref>` revises an **existing** parent in
-place. `<item-ref>` must resolve to `work/<item-ref>/roadmap.md`; a reference that
-is not a roadmap parent is refused, because the revise mode revises a parent and
-never creates one. The **roadmap agent is the sole writer of the parent
-`roadmap.md`**: a child phase that discovers the parent is wrong records a finding
-in its own committed `backtracks.md` (below, and `## Phase reversal
-(backtracking)`) and recommends the revise route; it never edits the parent. The
-revision writes autonomously, with no pre-write approval gate, exactly as the
-create mode does; the user reviews the committed revision after the fact. A
-revision request that changes nothing is a no-op and modifies no file.
+A decomposition is revised by the **planning step** (`/plan`, `architect`), whose
+`/roadmap revise <item-ref>` route is the thin **deprecated alias** for that step;
+it revises an **existing** decomposition in place at **any depth** — a top-level
+node or a nested child that itself decomposes. `<item-ref>` must resolve to a node
+that has a manifest, `work/<item-ref>/roadmap.md`; a reference with no manifest is
+refused, because the revise route revises an existing decomposition and never
+creates one. The **planning step (`/plan`, `architect`) — or its deprecated
+`/roadmap` alias — is the sole writer of a `roadmap.md`**: no other phase writes
+one. A child phase that discovers the decomposition is wrong records a finding in
+its own committed `backtracks.md` (below, and `## Phase reversal (backtracking)`)
+and recommends the revise route; it never edits the manifest. The revision writes
+autonomously, with no pre-write approval gate, exactly as authoring does; the user
+reviews the committed revision after the fact. A revision request that changes
+nothing is a no-op and modifies no file.
 
-A revision applies four operations to the loaded parent, in one pass, and
+A revision applies four operations to the loaded decomposition, in one pass, and
 validates the result **after all four** (never on an intermediate state):
 
 1. **Re-scope** — replace an existing row's `Title` and/or `Scope` in place. The
    row's `Local id`, child directory, and `Canonical reference` are preserved.
 2. **Add** — append a row for a newly enumerated feature. Its `Local id` is the
    next local number: the greatest 4-digit `MMMM` prefix **ever committed** under
-   `work/<parent>/` plus one, per `docs/artifact-conventions.md` → "Sequence
-   allocation" applied within the parent. A spent number is never reused. Create
-   `work/<parent>/<MMMM-slug>/.gitkeep`, and set the row's `Canonical reference`
+   `work/<item-ref>/` plus one, per `docs/artifact-conventions.md` → "Sequence
+   allocation" applied within the node. A spent number is never reused. Create
+   `work/<item-ref>/<MMMM-slug>/.gitkeep`, and set the row's `Canonical reference`
    to resolve to that directory.
 3. **Withdraw** — remove the row from the `Children` table and from
    `## Sequencing`. The child's directory and spent local number are **preserved**
    (the number is never reused). Record the withdrawal and its rationale under the
-   parent's `## Open issues`, naming the retained directory; the record shape is in
+   node's `## Open issues`, naming the retained directory; the record shape is in
    `docs/artifact-conventions.md` → the `roadmap.md` template. A withdrawal does
    not mark the child stale — it leaves the active set.
 4. **Re-sequence** — edit `Depends on` cells as required and rewrite
@@ -393,16 +420,17 @@ shipped child's artifacts; the post-ship path is `0005-post-ship-pr-denial`.
 A revision records its provenance in committed state. The triggering child's
 detecting phase appends a finding entry to `work/<child-ref>/backtracks.md` — a
 target phase of `roadmap` (the `stale` token), the affected
-`work/<parent-ref>/roadmap.md`, observable evidence, and status `open` — and, when
-the revision completes, the roadmap agent appends the matching resolution entry
-naming what changed. `backtracks.md` is item-level backtrack state, not a phase
-artifact, so appending it does not breach the ownership invariant; the roadmap
-agent appends only this entry and writes no child phase artifact. The parent
-`roadmap.md` changes its frontmatter `updated` date and appends a revision note
-under `## Open issues` naming the date, the triggering child, the operations
-applied, and the invalidated children. The pre-revision roadmap remains
-recoverable from committed git history. The entry shapes are in
-`docs/artifact-conventions.md` → "`backtracks.md`" and the `roadmap.md` template.
+`work/<item-ref>/roadmap.md`, observable evidence, and status `open` — and, when
+the revision completes, the planning step (or its deprecated `/roadmap` alias)
+appends the matching resolution entry naming what changed. `backtracks.md` is
+item-level backtrack state, not a phase artifact, so appending it does not breach
+the ownership invariant; the planning step appends only this entry and writes no
+child phase artifact. The node's `roadmap.md` changes its frontmatter `updated`
+date and appends a revision note under `## Open issues` naming the date, the
+triggering child, the operations applied, and the invalidated children. The
+pre-revision roadmap remains recoverable from committed git history. The entry
+shapes are in `docs/artifact-conventions.md` → "`backtracks.md`" and the
+`roadmap.md` template.
 
 ## Phases
 
@@ -429,21 +457,51 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 ### 2. Design — `/plan <item-ref>`
 
 - **Purpose**: Decide *how* to satisfy the spec and decompose the work into
-  independently verifiable tasks.
-- **Entry**: `spec.md` exists and is unambiguous.
-- **Process**: Read `spec.md` → recon existing architecture and conventions →
-  evaluate at least one alternative → write `design.md` → decompose into
-  `tasks.md`. Details in the `architect` agent prompt.
-- **Exit**: `design.md` names the approach, the alternatives considered, the
-  interfaces/data model affected, and the risks. `tasks.md` is an ordered list
-  where every task is small (roughly one focused commit), has its own
-  verification, and declares dependencies. Every acceptance criterion in
-  `spec.md` maps to at least one task.
-- **Artifact**: `design.md` and `tasks.md`, frontmatter `phase: design` and
-  `phase: tasks` respectively.
-- **Next**: `/ship plan <item-ref>` to publish the plan (see
-  "Plan publication"); then `/build` once the plan is merged. A denied or
-  changes-requested `plan/<ref>` pull request routes back here to re-run
+  independently verifiable tasks — or, for a node that decomposes, author or
+  revise that node's child enumeration (its **decomposition**).
+- **Entry**: For a **single-feature design**, `spec.md` exists and is
+  unambiguous. For a **decomposition**, the node is one that decomposes (an
+  existing `work/<item-ref>/roadmap.md`, or the architect's planning judgment)
+  and the node's own `spec.md` is **not required** — a `.gitkeep`-reserved child
+  or a pure container has none, and the decomposition path writes none. A
+  genuine single feature remains reachable only through the ordinary
+  single-feature path, which requires its `spec.md`.
+- **Process**: Read `spec.md` when present → recon existing architecture and
+  conventions → evaluate at least one alternative → then take one of two paths,
+  selected from the node's committed state:
+
+  - **Single-feature path** (unchanged): write `design.md` → decompose into
+    `tasks.md`. Details in the `architect` agent prompt.
+  - **Decomposition path**: **author** the node's manifest
+    `work/<item-ref>/roadmap.md` (a node with no manifest) or **revise** it (an
+    existing manifest), reserving each enumerated child as
+    `work/<item-ref>/<MMMM-slug>/` with a `.gitkeep`. Authoring and the
+    four-operation revision are `### Where decomposition is authored and
+    recorded` and `### Revising a roadmap`; the writer states no second grammar
+    and writes **no child phase artifact** (each new child holds only
+    `.gitkeep`). It is **autonomous** — no pre-write approval gate; the user
+    reviews the committed artifact. A **hybrid** node also gets its own
+    `design.md`/`tasks.md` when it has a deliverable of its own; neither is ever
+    forced on a pure container.
+- **Exit**: For a single feature, `design.md` names the approach, the
+  alternatives considered, the interfaces/data model affected, and the risks; and
+  `tasks.md` is an ordered list where every task is small (roughly one focused
+  commit), has its own verification, and declares dependencies, with every
+  acceptance criterion in `spec.md` mapping to at least one task. For a
+  decomposition, the manifest and every child reservation exist and the manifest
+  satisfies the manifest quality bar of `docs/artifact-conventions.md` →
+  "`roadmap.md` — the manifest of a decomposing node" — six-column `Children`,
+  every `Depends on` naming another row with no self-dependency and an acyclic
+  stored graph, every `Canonical reference` resolving to its child directory, and
+  every `conflicts-with` cell `—` or well-formed (referenced, not restated).
+- **Artifact**: `design.md` and `tasks.md` (single feature, frontmatter
+  `phase: design` and `phase: tasks`) and/or the manifest `roadmap.md`
+  (frontmatter `phase: roadmap`) plus the child directory reservations, with the
+  node's own `design.md`/`tasks.md` when hybrid.
+- **Next**: `/ship plan <item-ref>` to publish the node's plan state (see
+  "Plan publication"); then `/build` once the plan is merged — for a decomposing
+  node the handoff also names `/spec <child-ref>` for each ready child. A denied
+  or changes-requested `plan/<ref>` pull request routes back here to re-run
   `/plan <item-ref>` and republish — never a force-push, and not a backtrack.
   If the spec is ambiguous or wrong, take the `/plan`→`/spec` reverse edge and
   hand off `Next: /spec <item-ref>` (see "Phase reversal (backtracking)").
@@ -537,29 +595,38 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
 
 ## Plan publication
 
-A work item's **plan** is its committed requirements and design artifacts —
-`work/<item-ref>/spec.md`, `design.md`, and `tasks.md` when present. The plan is
-published to the shared default branch before development begins so other
-maintainers can cross-reference intended surfaces before any code exists. It is a
-process step, not a lifecycle phase: it adds no artifact, no `phase` value, and
-no derived-state row.
+A work item's **plan** is its committed plan state under `work/<item-ref>/`. For a
+single-feature item that is its requirements and design artifacts — `spec.md`,
+`design.md`, and `tasks.md` when present. For a decomposing node it is its
+manifest `roadmap.md`, its own `spec.md`/`design.md`/`tasks.md` when present, and
+its child directory reservations. The plan is published to the shared default
+branch before development begins so other maintainers can cross-reference
+intended surfaces before any code exists. It is a process step, not a lifecycle
+phase: it adds no artifact, no `phase` value, and no derived-state row.
 
 Publication is a **mode of `/ship`** — `/ship plan <item-ref>` — performed by the
 shipper, the only agent that writes git (see `AGENTS.md` → guardrails). Plan mode:
 
-- **Preconditions.** `work/<item-ref>/spec.md` and `design.md` exist (the item has
-  completed `/plan`; `tasks.md` is included when present). No `review.md` is
-  required — plan mode is a documented exception to the approved-work-item entry
-  criterion, like fix mode. The plan diff contains no secrets.
+- **Preconditions.** The item has completed `/plan`: either `work/<item-ref>/spec.md`
+  and `design.md` exist (a single-feature plan; `tasks.md` is included when
+  present), **or** `work/<item-ref>/roadmap.md` exists (a decomposing node's plan,
+  its own `spec.md`/`design.md`/`tasks.md` included when present). The
+  `spec.md` and `design.md` requirement is not relaxed for an ordinary
+  single-feature item. No `review.md` is required — plan mode is a documented
+  exception to the approved-work-item entry criterion, like fix mode. The plan
+  diff contains no secrets.
 - **Branch.** A dedicated `plan/<ref>` branch, where `<ref>` is the canonical
   reference with `/` replaced by `-` (for example
   `plan/0006-parallel-plan-conflicts-0002-plan-record`). Each item gets its own
   branch, so concurrent publications do not overwrite one another, and the plan
   branch is distinct from the item's final ship branch.
-- **Commit and pull request.** The plan artifacts under `work/<item-ref>/` are
-  committed as one conventional commit and pushed; a pull request is opened with
-  the plan description template. The PR links the plan artifacts by repository
-  path and prints the item's declared conflicts, or `—`.
+- **Commit and pull request.** The node's own plan state under `work/<item-ref>/`
+  is committed as one conventional commit and pushed — for a decomposing node the
+  manifest, its own phase artifacts when present, and its child `.gitkeep`
+  reservations, but never a child's own in-flight phase artifacts (a child
+  publishes its own plan). A pull request is opened with the plan description
+  template. The PR links the plan artifacts by repository path and prints the
+  item's declared conflicts, or `—`.
 - **Approval and merge.** At least one human approval is required before the plan
   pull request is merged (a process precondition the framework documents but does
   not verify offline). The shipper neither approves nor merges; the merge is a
@@ -1266,12 +1333,12 @@ both are in flight.
   whose branch was abandoned): record the finding, revoke the shipped signal
   without deleting the historical `ship.md`, and re-enter `spec`/`design`/`build`.
   Explicit and maintainer-invoked; see `### Shipped items and reopen`.
-- **`/roadmap <initiative> | /roadmap revise <item-ref>`** — decompose a broad,
-  multi-feature initiative into a parent roadmap item and nested child work items,
-  or revise an existing parent in place, sequencing them and recording
-  intra-roadmap dependencies. Use before `/spec` when a request spans
-  several interdependent features; a single, self-contained feature still goes
-  straight to `/spec`.
+- **`/roadmap <initiative> | /roadmap revise <item-ref>`** — the thin deprecated
+  alias for the planning step (`/plan`), which decomposes a broad, multi-feature
+  initiative into a parent roadmap item and nested child work items, or revises an
+  existing decomposition in place, sequencing them and recording intra-roadmap
+  dependencies. Use before `/spec` when a request spans several interdependent
+  features; a single, self-contained feature still goes straight to `/spec`.
 - **`/status`** — when unsure where things stand.
 - **`/conflicts [item-ref]`** — to compare the `conflicts-with` declarations of
   unshipped plans before development and report overlaps in the shipped conflict
