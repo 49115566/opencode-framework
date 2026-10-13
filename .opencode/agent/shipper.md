@@ -95,8 +95,9 @@ Read, in order:
      `work/<item-ref>/`; read `work/<item-ref>/spec.md`, `tasks.md`, `verify.md`,
      and `review.md`.
    - `plan <item-ref>` — plan-publication mode; resolves to
-     `work/<item-ref>/`; read `work/<item-ref>/spec.md`, `design.md`, and
-     `tasks.md` (the item's plan). No `review.md` is required.
+     `work/<item-ref>/`; read the node's plan state — `work/<item-ref>/spec.md`,
+     `design.md`, and `tasks.md` when present, or `work/<item-ref>/manifest.md`
+     for a decomposing node (the item's plan). No `review.md` is required.
    - `fix [short description]` — fix-landing mode; take the reproduction, root
      cause, change, files, and check results from the request or the preceding
      `/fix` handoff. A fix has no artifact to read; if any of that evidence is
@@ -158,8 +159,10 @@ to the approved-work-item precondition, driven by the user's explicit request. D
 not proceed unless all hold; otherwise stop and report:
 - The user explicitly invoked `/ship plan <item-ref>`. That request is the consent
   to commit and push; without it, perform no git write.
-- `work/<item-ref>/spec.md` and `design.md` exist (the item has completed
-  `/plan`; `tasks.md` is included when present). No `review.md` is required.
+- The item has completed `/plan`: `work/<item-ref>/spec.md` and `design.md`
+  exist (a single-feature plan), **or** `work/<item-ref>/manifest.md` exists (a
+  decomposing node's manifest-only plan), so a manifest-only plan is publishable.
+  `tasks.md` is included when present. No `review.md` is required.
 - The plan diff contains no secrets.
 - The current branch is not the default branch, or the dedicated `plan/<ref>`
   branch will be created.
@@ -215,9 +218,10 @@ Work-item mode (`/ship <item-ref>`):
    is recorded or shipped, and a failing check is the blocker. An up-to-date branch
    is a `no conflicts` no-op that creates no merge commit.
 3. Verify the work-item preconditions. Report anything that fails and stop.
-4. Choose a branch name per the `conventional-commits` skill (`feat/`, `fix/`,
-   etc., plus the canonical reference; a nested child's `NNNN-slug/MMMM-slug`
-   becomes `NNNN-slug-MMMM-slug`). Create or switch to it.
+4. Choose a branch name per the `conventional-commits` skill
+   (`.opencode/skill/conventional-commits/SKILL.md` → "Branch naming"): a ship
+   branch is `<type>/<flatten(ref)>`, the collision-free reversible flattening of
+   the canonical reference. Create or switch to it.
 5. Stage and commit the item's `work/<item-ref>/` artifacts together with the
    item, so the paths the PR links by repository path exist on the branch. Commit
    in logical units with conventional messages; group related files and do not
@@ -268,17 +272,22 @@ Fix-landing mode (`/ship fix`):
 
 Plan-publication mode (`/ship plan <item-ref>`):
 1. Verify the plan-publication preconditions. Report anything that fails and stop.
-2. Create or switch to the dedicated `plan/<ref>` branch, where `<ref>` is the
-   canonical reference with `/` → `-` (a roadmap child's `NNNN-slug/MMMM-slug`
-   becomes `NNNN-slug-MMMM-slug`); e.g.
-   `plan/0006-parallel-plan-conflicts-0002-plan-record`. Never reuse the plan
+2. Create or switch to the dedicated `plan/<flatten(ref)>` branch, per the
+   `conventional-commits` skill (`.opencode/skill/conventional-commits/SKILL.md`
+   → "Branch naming"); e.g. the nested child
+   `0006-parallel-plan-conflicts/0002-plan-record` gives
+   `plan/0006-parallel-plan-conflicts+0002-plan-record`. Never reuse the plan
    branch for the item's later ship, and give each item its own branch so
    concurrent publications do not overwrite one another.
-3. Scan the plan artifacts for secrets, then stage the plan artifacts under
-   `work/<item-ref>/` — never `git add -A` — and commit them as one conventional
-   commit (`docs(plan): record plan for <item-ref>`). This publishes the item's
-   plan to the shared default branch so other maintainers can cross-reference it
-   before any code exists.
+3. Scan the plan artifacts for secrets, then stage the node's own plan state
+   under `work/<item-ref>/` — never `git add -A`. A single-feature plan is its
+   `spec.md`/`design.md`/`tasks.md`; a decomposing node's plan is its
+   `manifest.md`, its own phase artifacts when present, and its **immediate**
+   child `<MMMM-slug>/.gitkeep` reservations — never a child's own in-flight phase
+   artifacts, because each child publishes its own plan. Commit them as one
+   conventional commit (`docs(plan): record plan for <item-ref>`). This publishes
+   the item's plan to the shared default branch so other maintainers can
+   cross-reference it before any code exists.
 4. Push the branch. This is an `ask` action — request approval before it runs.
 5. Open the PR with `gh pr create` using the `pr-workflow` plan template, which
    links the plan artifacts by repository path and prints the item's declared

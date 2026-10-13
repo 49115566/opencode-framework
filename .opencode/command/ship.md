@@ -52,8 +52,9 @@ Follow your Ship agent instructions exactly. The argument grammar is:
   PR description, and never rebase or force-push.
 - Determine the default branch and current branch.
 - Create or switch to a branch named per the `conventional-commits` skill
-  (`<type>/<ref>`, where `<ref>` is the canonical reference — a roadmap child's
-  `NNNN-slug/MMMM-slug` becomes `NNNN-slug-MMMM-slug`).
+  (`.opencode/skill/conventional-commits/SKILL.md` → "Branch naming"): a ship
+  branch is `<type>/<flatten(ref)>`, the collision-free reversible flattening of
+  the canonical reference.
 - Stage and commit in logical units with conventional messages, scanning staged
   content for secrets first.
 - Push (this requires approval), then open a PR using the `pr-workflow` template,
@@ -89,22 +90,28 @@ Follow your Ship agent instructions exactly. The argument grammar is:
 **Plan-publication mode** (`/ship plan <item-ref>`):
 
 - Publish the item's plan — `work/<item-ref>/spec.md`, `design.md`, and `tasks.md`
-  when present — before development begins. This is a documented exception to the
-  approved-work-item precondition, like fix mode: no `review.md` is required. The
-  plan diff must contain no secrets.
-- Create or switch to a dedicated `plan/<ref>` branch, where `<ref>` is the
-  canonical reference with `/` replaced by `-` (a nested child's
-  `NNNN-slug/MMMM-slug` becomes `NNNN-slug-MMMM-slug`); e.g.
-  `plan/0006-parallel-plan-conflicts-0002-plan-record`. The plan branch is distinct
+  when present, **or** `work/<item-ref>/manifest.md` for a decomposing node (a
+  manifest-only plan is publishable) — before development begins. This is a
+  documented exception to the approved-work-item precondition, like fix mode: no
+  `review.md` is required. The plan diff must contain no secrets.
+- Create or switch to a dedicated `plan/<flatten(ref)>` branch, per the
+  `conventional-commits` skill (`.opencode/skill/conventional-commits/SKILL.md` →
+  "Branch naming"); e.g. the nested child
+  `0006-parallel-plan-conflicts/0002-plan-record` gives
+  `plan/0006-parallel-plan-conflicts+0002-plan-record`. The plan branch is distinct
   from the item's final ship branch, and each item gets its own branch so
   concurrent publications are independent.
-- Stage the plan artifacts under `work/<item-ref>/` (never `git add -A`), scan
-  them for secrets, and commit them as one conventional commit
-  (`docs(plan): record plan for <item-ref>`). Push (this requires approval), then
-  open a PR using the `pr-workflow` plan template, which links the plan artifacts
-  by repository path and prints the item's declared conflicts — its `design.md`
-  frontmatter `conflicts-with` value per `docs/workflow.md` → "Declared conflicts
-  (`conflicts-with`)" — or `—`.
+- Scan the node's own plan state for secrets, then stage it under
+  `work/<item-ref>/` — never `git add -A`. A single-feature plan is its
+  `spec.md`/`design.md`/`tasks.md`; a decomposing node's plan is its `manifest.md`,
+  its own phase artifacts when present, and its **immediate** child
+  `<MMMM-slug>/.gitkeep` reservations — never a child's own in-flight phase
+  artifacts, because each child publishes its own plan. Commit as one conventional
+  commit (`docs(plan): record plan for <item-ref>`). Push (this requires approval),
+  then open a PR using the `pr-workflow` plan template, which links the plan
+  artifacts by repository path and prints the item's declared conflicts — its
+  `design.md` frontmatter `conflicts-with` value per `docs/workflow.md` →
+  "Declared conflicts (`conflicts-with`)" — or `—`.
 - At least one human approval is required before the plan PR is merged. The
   shipper neither approves nor merges; the merge is a human action, and the
   repository may enforce approval via branch protection.

@@ -66,11 +66,17 @@ Example: `test(checks): assert version and changelog agree`
 ## Branch conventions
 
 Branch names are `<type>/<short-description>`, where `<type>` matches the commit
-type and `<short-description>` is a short kebab-case handle:
+type and `<short-description>` is a short kebab-case handle. A work item's branch
+name is derived from its canonical reference by the single collision-free,
+reversible rule in
+[`.opencode/skill/conventional-commits/SKILL.md`](.opencode/skill/conventional-commits/SKILL.md)
+→ "Branch naming" (`flatten(ref)` joins the reference's `/`-separated segments
+with `+`); reference that rule rather than restating or forking it.
 
 - `feat/0001-add-dark-mode` — a work item, named by its canonical reference.
-- `feat/0002-agentic-roadmaps-0001-roadmap-model` — a nested roadmap child, with
-  the reference's `/` replaced by `-`.
+- `feat/0002-agentic-roadmaps+0001-roadmap-model` — a nested roadmap child, its
+  reference flattened by the rule.
+- `feat/0001-a+0002-b+0003-c` — a grandchild at depth three.
 - `fix/login-timeout` — a fix with no work item.
 - `docs/update-readme` — a documentation-only change.
 
