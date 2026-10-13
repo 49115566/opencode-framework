@@ -1,7 +1,8 @@
 # Artifact conventions
 
-Every workflow artifact is a Markdown file under `work/<NNNN-slug>/` — or, for a
-nested roadmap child, `work/<NNNN-slug>/<MMMM-slug>/` — with YAML frontmatter.
+Every workflow artifact is a Markdown file under `work/<item-ref>/` — the
+canonical reference, whose segments nest to any depth (see "Work item
+references") — with YAML frontmatter.
 Agents must follow these formats exactly so that other phases and `/status` can
 parse them deterministically.
 
@@ -15,13 +16,13 @@ Every artifact begins with:
 
 ```yaml
 ---
-feature: 0001-add-dark-mode   # canonical reference: <NNNN-slug>, or <NNNN-slug>/<MMMM-slug> for a nested child
+feature: 0001-add-dark-mode   # the item's full canonical reference: one segment for a standalone item, more when nested
 phase: spec                   # spec | design | roadmap | tasks | test | visual | review | ship
 status: draft                 # draft | final | blocked
 created: 2026-01-31           # ISO-8601 date, first creation
 updated: 2026-02-04           # ISO-8601 date, last edit
 notes: ""                     # optional: skipped phases, caveats
-parent: ""                    # optional: the parent <NNNN-slug> when this item is a nested roadmap child
+parent: ""                    # optional: the immediate parent's canonical reference when this item is a nested child
 stale: ""                     # optional: the backtrack target phase that invalidated this artifact
 reopened: ""                  # optional on ship.md: the phase a recalled item re-enters
 ---
@@ -29,11 +30,15 @@ reopened: ""                  # optional on ship.md: the phase a recalled item r
 
 Rules:
 
-- `feature` is the item's canonical reference, not the title: the directory name
-  `<NNNN-slug>` for a standalone item, or `<NNNN-slug>/<MMMM-slug>` for a child
-  nested under a roadmap (see "Work item references").
-- `parent` is optional and set only on a nested child's artifacts to the parent
-  roadmap's `<NNNN-slug>`. Standalone items omit it.
+- `feature` is the item's full canonical reference, not the title: its directory
+  path relative to `work/`, one segment (`<NNNN-slug>`) for a standalone item and
+  one further `/<MMMM-slug>` segment per nesting level, to any depth (see "Work
+  item references").
+- `parent` is optional and set only on a nested child's artifacts; its value is
+  the **immediate** parent's canonical reference — one segment (`<NNNN-slug>`) at
+  depth two, and the parent's full multi-segment reference at depth three or
+  deeper. The full ancestor chain is derivable from the directory path. Standalone
+  items omit it.
 - `created` never changes; `updated` changes on every edit.
 - `status: final` means the owning agent considers the artifact complete for its
   phase. `blocked` means work cannot proceed without user input; say why in the
@@ -68,34 +73,46 @@ Rules:
 ## Work item references
 
 A work item is addressed by a **canonical reference** — its path relative to
-`work/`:
+`work/`, a recursive path of one or more dash-slug segments:
 
 ```
-item-ref   ::= standalone | child
-standalone ::= NNNN-slug                    e.g. 0007-billing
-child      ::= NNNN-slug "/" MMMM-slug      e.g. 0002-agentic-roadmaps/0001-roadmap-model
+item-ref   ::= NNNN-slug ( "/" MMMM-slug )*   # one segment = standalone item
+                                              # two segments = the special case
+segment    ::= [0-9]{4}-[a-z0-9-]+
 ```
 
 Reference regex:
-`^[0-9]{4}-[a-z0-9-]+(/[0-9]{4}-[a-z0-9-]+)?$`.
+`^[0-9]{4}-[a-z0-9-]+(/[0-9]{4}-[a-z0-9-]+)*$`.
 
-- `NNNN` is the top-level sequence number. `MMMM` is the child's **local**
-  sequence number, allocated per parent and independent of the top-level
-  sequence and of other roadmaps.
-- Any reference resolves to the directory `work/<item-ref>/`:
-  `work/0007-billing/` for a standalone item, or
-  `work/0002-agentic-roadmaps/0001-roadmap-model/` for a nested child.
+A trailing slash, an empty segment, or a non-conforming segment is not a valid
+reference and is not treated as one.
+
+- The **first** segment is the top-level `NNNN`, allocated across the whole
+  `work/` tree. Each **further** `MMMM` segment is the local sequence number of a
+  child of its **immediate** parent (the preceding segment), independent of the
+  top-level sequence and of every other node. Any node may decompose into
+  children, so the path nests to arbitrary depth.
+- A reference resolves to the directory `work/<item-ref>/` by following its
+  segments in order: `work/0007-billing/` for a standalone item,
+  `work/0002-agentic-roadmaps/0001-roadmap-model/` for a two-segment child, and
+  `work/<NNNN-slug>/<MMMM-slug>/<MMMM-slug>/` and deeper for a longer path.
+- The one-segment standalone form is unchanged, and the two-segment form is a
+  **special case** of the recursive path, not a maximum depth.
 - A **roadmap** is a parent work item identified by its `roadmap.md` artifact.
-  Its child features are nested at `work/<NNNN-slug>/<MMMM-slug>/`. The parent
-  holds only `roadmap.md`; each child later runs the ordinary per-feature
-  lifecycle unchanged.
+  Its child features are nested at `work/<parent-ref>/<MMMM-slug>/`, and each
+  child later runs the ordinary per-feature lifecycle unchanged. A pure roadmap
+  parent holds only `roadmap.md`; a node that also runs its own lifecycle holds
+  the manifest alongside its own phase artifacts (see "`roadmap.md` — the
+  manifest of a decomposing node").
 - Phase commands accept an `item-ref` wherever a `<slug>` was accepted before. A
   one-segment reference behaves exactly as it did before nesting existed, and
   standalone items require no `parent` and no roadmap metadata.
 
 Nested children's artifacts set `feature` to the full canonical reference
-(`<parent-NNNN-slug>/<child-MMMM-slug>`) and MAY set `parent:` to the parent's
-`<NNNN-slug>`.
+(their path relative to `work/`) and MAY set `parent:` to the **immediate**
+parent's canonical reference — one segment (`<NNNN-slug>`) at depth two, and the
+parent's full multi-segment reference at depth three or deeper; the full ancestor
+chain is derivable from the directory path.
 
 ## Task IDs
 
@@ -104,14 +121,20 @@ in `[depends: T1]` annotations. Check boxes are `- [ ]` / `- [x]`.
 
 ## Templates
 
-### `roadmap.md` (roadmap) — parent item
+### `roadmap.md` (roadmap) — the manifest of a decomposing node
 
-A roadmap is the first-class planning artifact of a parent work item. It
-enumerates child features and their intra-roadmap dependencies and is authored
-before any child spec. It is not a single-feature artifact: the parent has no
-spec, design, tasks, verification, or review of its own. The `Children` table is
-the machine-readable source of the child set and dependency graph; `/status`
-parses it directly.
+A **manifest** is the child-enumeration artifact of any node that decomposes
+into children. It is the generic enumeration source for a decomposing node
+**at every depth** — a standalone item that decomposes, a nested child that
+decomposes, or a node that carries a manifest alongside its own phase artifacts
+— and it is authored before any child spec. It is not a single-feature artifact:
+a node that decomposes records its children in its manifest rather than in a
+spec, design, tasks, verification, or review of its own, though a hybrid node may
+carry both at once (see `docs/workflow.md` → "The recursive lifecycle model").
+The manifest's **shipped concrete spelling** is `roadmap.md` with
+`phase: roadmap` at **every** depth; no new file name, `phase` value, or
+artifact-presence row is introduced. The `Children` table is the machine-readable
+source of the child set and dependency graph; `/status` parses it directly.
 
 ```markdown
 ---
@@ -157,10 +180,17 @@ What the initiative is and who it serves.
   roadmap.
 ```
 
-- **Local id** is the child's directory name, `MMMM-slug`, and is the key used
-  in `Depends on`.
-- **Canonical reference** is the full item-ref; phase commands and `/status`
-  address the child by it.
+- **Local id** is the child's directory name, `MMMM-slug`, scoped to the
+  decomposing node that owns the manifest (the child's **immediate** parent), and
+  is the key used in `Depends on`.
+- **Canonical reference** is the child's full item-ref — the owning node's
+  canonical reference with the child's `MMMM-slug` appended — and resolves to
+  `work/<canonical-reference>/`; phase commands and `/status` address the child by
+  it. A child may itself decompose, so the reference and the layout nest to
+  arbitrary depth (see "Work item references").
+- **Child reservation** — each child directory is reserved with a `.gitkeep` at
+  that level (`work/<parent-ref>/<MMMM-slug>/.gitkeep`), at every depth, not only
+  the top level.
 - **Depends on** names local ids of other rows in this same table only, as a
   comma-separated list when there are two or more (`—` when there are none). A
   dependency may not name its own row, and the stored graph must be acyclic. If
@@ -169,7 +199,9 @@ What the initiative is and who it serves.
 - **conflicts-with** declares the targets the row expects to collide with. Use `—`
   when the row declares none, or one `ConflictTargetList`. The grammar is defined
   in `docs/workflow.md` → "Declared conflicts (`conflicts-with`)". The declaration
-  is advisory and never changes `Depends on` or readiness.
+  is advisory and never changes `Depends on` or readiness. The shipped grammar is
+  preserved unchanged; generalizing `conflicts-with` targets to arbitrary depth is
+  deferred to the successor roadmap that owns "`conflicts-with` at every level".
 - **Withdrawal record** — a revision that withdraws a child removes its row from
   the `Children` table and `## Sequencing` but preserves the child directory and
   its spent local number (never reused), recording the withdrawal and its rationale
@@ -641,10 +673,12 @@ or any other allocation file; the committed tree and its history are the only
 source.
 
 To allocate a child's local `MMMM`, apply the same contract within
-`work/<parent-NNNN-slug>/`: take the greatest 4-digit prefix ever present in that
-parent's committed history and add one. Child numbers are scoped to their parent:
-they are independent of the top-level sequence and of other roadmaps, and are
-never reused within that parent.
+`work/<parent-ref>/` (the allocating node's own canonical reference): take the
+greatest 4-digit prefix ever committed under that parent and add one. Every
+further level allocates its own children's `MMMM` the same way, scoped to its
+**immediate** parent, so allocation applies per level to arbitrary depth. Child
+numbers are scoped to their parent: they are independent of the top-level
+sequence and of every other node, and are never reused within that parent.
 
 ### Renumbering after a parallel merge
 
