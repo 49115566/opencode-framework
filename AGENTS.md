@@ -33,7 +33,7 @@ command runs as the named agent.
 | Phase       | Command            | Agent       | Reads                    | Writes                         |
 | ----------- | ------------------ | ----------- | ------------------------ | ------------------------------ |
 | Requirements| `/spec <feature or problem description \| item-ref>` | `product`   | repo, request            | `spec.md`                      |
-| Design      | `/plan <item-ref>` | `architect` | `spec.md`                | `design.md`, `tasks.md`        |
+| Design      | `/plan <item-ref or initiative>` | `architect` | `spec.md`                | `design.md`, `tasks.md`        |
 | Build       | `/build [item-ref or task-id]` | `builder`   | `design.md`, `tasks.md`  | code, updated `tasks.md`       |
 | Test        | `/test [item-ref]` | `tester`    | `spec.md`, `tasks.md`    | tests, `verify.md` †           |
 | Review      | `/review [item-ref]` | `reviewer`  | diff, `spec.md`, `tasks.md` | `review.md`                 |
@@ -44,13 +44,13 @@ browser and writes `visual.md` plus screenshots. Review must consider it when
 present. Non-UI projects skip it.
 
 Supporting commands: `/fix <bug description>` (lightweight fix), `/status [item-ref]` (phase report),
-`/conflicts [item-ref]` (declared-conflict report), `/roadmap <initiative> | /roadmap revise <item-ref>` (author a multi-feature roadmap, or revise an existing parent in place), `/bootstrap` (adopt
-into a project), `/visual [url or item-ref]` (browser QA), `/doctor` (read-only drift
-diagnostic; framework-maintainer only).
+`/conflicts [item-ref]` (declared-conflict report), `/bootstrap` (adopt into a project),
+`/visual [url or item-ref]` (browser QA), `/doctor` (read-only drift diagnostic;
+framework-maintainer only).
 Supporting agents: `scout` (recon), `scribe` (artifact editing), `bootstrap`
-(provisioning), `status` (read-only reporting), `roadmap` (roadmap authoring),
-`visual` (browser inspection), `ask` (read-only Q&A), `doctor` (read-only
-consistency diagnostic; framework-maintainer only).
+(provisioning), `status` (read-only reporting), `visual` (browser inspection),
+`ask` (read-only Q&A), `doctor` (read-only consistency diagnostic;
+framework-maintainer only).
 
 The authoritative description of each phase, its inputs, and its exit criteria
 lives in `docs/workflow.md`. The exact artifact formats live in
@@ -64,8 +64,8 @@ Workflow artifacts under `work/` are **committed working state**:
 version-controlled so a fresh clone, a teammate, and CI derive the same phase.
 Only `scratch/` and opencode's generated state are ignored.
 
-A **roadmap** is a parent work item at `work/<NNNN-slug>/` whose `roadmap.md`
-enumerates child features; its children are nested at
+A **decomposing node** is a work item at `work/<NNNN-slug>/` whose **manifest**
+`manifest.md` enumerates child features; its children are nested at
 `work/<NNNN-slug>/<MMMM-slug>/` and later run the ordinary lifecycle unchanged. A
 work item is addressed by its **canonical reference** — `NNNN-slug`, or
 `NNNN-slug/MMMM-slug` for a nested child — and phase commands accept either
@@ -75,7 +75,9 @@ unchanged.
 Every work item is a **node** in a recursive plan: a node may decompose into
 children to unbounded depth, and may carry its own phase artifacts and a child
 set at the same time. `docs/workflow.md` → "The recursive lifecycle model" is
-the single authority; `roadmap` is a deprecated alias for a decomposing node.
+the single authority. The legacy `roadmap.md` carrying `phase: roadmap` remains
+a recognized deprecated alias for the manifest and is never written for a new
+node.
 
 - Only the owning phase writes its artifact. Do not edit another phase's file.
 - Every artifact starts with YAML frontmatter (`feature`, `phase`, `status`,

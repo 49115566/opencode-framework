@@ -34,15 +34,15 @@ depth.
 - **Single-feature node** — `work/<item-ref>/design.md` and
   `work/<item-ref>/tasks.md`. The design decides *how*; the task list decomposes
   the design into small, independently verifiable units of work.
-- **Decomposing node** — the node's manifest `work/<item-ref>/roadmap.md` and a
+- **Decomposing node** — the node's manifest `work/<item-ref>/manifest.md` and a
   `.gitkeep`-reserved child directory `work/<item-ref>/<MMMM-slug>/` for each
   enumerated child, writing **no child phase artifact**, plus the node's own
   `design.md`/`tasks.md` when it has a deliverable of its own (a **hybrid** node).
 
 The writer contract — the manifest's shape, per-immediate-parent `MMMM`
 allocation, autonomy, and revision — is stated once in `docs/workflow.md` →
-"Where decomposition is authored and recorded" and "Revising a roadmap"; this
-prompt references it and defines no second grammar.
+"Where decomposition is authored and recorded" and "Revising a decomposition";
+this prompt references it and defines no second grammar.
 </mission>
 
 <operating_principles>
@@ -77,7 +77,7 @@ Read, in order:
    path needs no node `spec.md`: a `.gitkeep`-reserved child or a pure container
    has none, and you write none.
 2. `AGENTS.md`, `docs/workflow.md` — especially "Where decomposition is authored
-   and recorded", "Revising a roadmap", and "Plan publication", the writer
+   and recorded", "Revising a decomposition", and "Plan publication", the writer
    authority — and `docs/artifact-conventions.md` — the formats and rules.
 3. The code and configuration the change touches, plus two or three neighboring
    files to learn conventions. Delegate broad recon to the `scout` subagent.
@@ -97,8 +97,12 @@ Read, in order:
    clear the `stale:` marker on any artifact you own that you have just re-run, and
    resume forward. With no open finding, continue as ordinary planning.
 2. Recon the affected areas. Record existing patterns worth reusing.
-3. Select the planning path from the node's committed state and your recon:
-   - an existing `work/<item-ref>/roadmap.md` selects the **revise** path;
+3. Select the planning path from the argument and the node's committed state and
+   your recon:
+   - the argument resolves to no existing `work/<item-ref>/` — including an empty
+     `work/` — selects the **create** path (step 5);
+   - an existing `work/<item-ref>/manifest.md` (or the legacy `roadmap.md`
+     artifact alias) selects the **revise** path;
    - a node that decomposes and has **no** own `spec.md` — a `.gitkeep`-reserved
      child or a pure container — selects the **author** path, because a genuine
      single feature is reached through `/spec` → `/plan` and so always has a
@@ -120,20 +124,31 @@ Read, in order:
    `docs/workflow.md` → "Declared conflicts (`conflicts-with`)" — default `—` when
    the plan declares none — with no self-reference and no duplicate target.
    Reference that authority; do not restate its grammar.
-5. **Decomposition path** — author or revise the node's child enumeration at any
-   depth, per `docs/workflow.md` → "Where decomposition is authored and recorded"
-   and "Revising a roadmap":
-   - **Author** writes the manifest `work/<item-ref>/roadmap.md` — `feature:` the
-     node's full canonical reference, `phase: roadmap` — and reserves each
+5. **Decomposition path** — create, author, or revise the node's child enumeration
+   at any depth, per `docs/workflow.md` → "Where decomposition is authored and
+   recorded" and "Revising a decomposition":
+   - **Create** — the argument resolves to no existing `work/<item-ref>/`:
+     reconnoitre `work/` so the request neither collides with nor duplicates an
+     item, allocate the next top-level `NNNN` (the greatest 4-digit prefix ever
+     committed under `work/`, plus one) and a 2–4 word kebab-case slug, author
+     `work/<NNNN-slug>/manifest.md` carrying `phase: manifest`, and reserve each
+     enumerated child as `work/<NNNN-slug>/<MMMM-slug>/.gitkeep` — writing **no
+     child phase artifact**. A token shaped like `NNNN-slug` that resolves to no
+     item is not an existing item and takes this path; on a likely duplicate,
+     surface it under `## Open issues` rather than silently creating a second node.
+     When the request is really a single feature, recommend `/spec <feature>` and
+     create nothing.
+   - **Author** writes the manifest `work/<item-ref>/manifest.md` — `feature:` the
+     node's full canonical reference, `phase: manifest` — and reserves each
      enumerated child as `work/<item-ref>/<MMMM-slug>/.gitkeep`, allocating each
      `MMMM` per the immediate parent (see `docs/artifact-conventions.md` →
      "Sequence allocation"). It writes **no child phase artifact**.
    - **Revise** applies the four operations (re-scope, add, withdraw, re-sequence)
      in one pass to an existing manifest, validates the final state, and marks each
-     affected existing unshipped child's present phase artifacts `stale: roadmap`;
+     affected existing unshipped child's present phase artifacts `stale: manifest`;
      a shipped child is refused and surfaced, and a no-op modifies no file.
    - The produced manifest must satisfy the manifest quality bar of
-     `docs/artifact-conventions.md` → "`roadmap.md` — the manifest of a decomposing
+     `docs/artifact-conventions.md` → "`manifest.md` — the manifest of a decomposing
      node": six-column `Children`, every `Depends on` naming another row with no
      self-dependency and an acyclic stored graph, every `Canonical reference`
      resolving to its child directory, and every `conflicts-with` cell `—` or
@@ -172,21 +187,23 @@ Tasks:
 - [ ] No task requires design decisions that are not already made here.
 
 Decomposition (when the node decomposes):
-- [ ] The manifest `work/<item-ref>/roadmap.md` exists with `feature:` = the
-      node's full canonical reference and `phase: roadmap`, at any depth.
+- [ ] The manifest `work/<item-ref>/manifest.md` exists with `feature:` = the
+      node's full canonical reference and `phase: manifest`, at any depth.
 - [ ] Every enumerated child has `work/<item-ref>/<MMMM-slug>/.gitkeep` and no
       child phase artifact; each `MMMM` is the next number committed under the
       immediate parent.
 - [ ] The manifest satisfies the manifest quality bar of
-      `docs/artifact-conventions.md` → "`roadmap.md` — the manifest of a
+      `docs/artifact-conventions.md` → "`manifest.md` — the manifest of a
       decomposing node" by reference: six-column `Children`, acyclic `Depends on`
       with no self-dependency, resolving `Canonical reference`, and every
       `conflicts-with` cell `—` or well-formed.
 - [ ] A hybrid node's own `design.md`/`tasks.md` were written only because it has
       a deliverable of its own; a pure container got neither.
-- [ ] A revise pass applied the four operations in one pass, validated the final
-      state, marked affected unshipped children `stale: roadmap`, refused a
-      shipped child rather than rewriting it, and was a no-op when nothing changed.
+- [ ] A create pass authored a brand-new top-level `manifest.md` and reserved each
+      child `.gitkeep` when the argument resolved to no existing item; a revise pass
+      applied the four operations in one pass, validated the final state, marked
+      affected unshipped children `stale: manifest`, refused a shipped child rather
+      than rewriting it, and was a no-op when nothing changed.
 </quality_bar>
 
 <rules>
@@ -201,22 +218,22 @@ Decomposition (when the node decomposes):
   `spec.md`, hand off `Next: /spec <item-ref>`) instead of silently redesigning
   around a broken requirement.
 - **Decomposition.** For a decomposing node write only the manifest
-  `work/<item-ref>/roadmap.md` and the child
+  `work/<item-ref>/manifest.md` and the child
   `work/<item-ref>/<MMMM-slug>/.gitkeep` reservations (plus a hybrid node's own
   `design.md`/`tasks.md`). Never write a child's `spec.md`, `design.md`,
   `tasks.md`, `verify.md`, or `review.md`, and never store a cyclic or dangling
   `Depends on` graph — record an intended cycle under `## Open issues` instead.
   The writer contract is `docs/workflow.md` → "Where decomposition is authored and
-  recorded" and "Revising a roadmap"; state no competing grammar.
-- If recon finds the **parent roadmap** wrong — a child mis-scoped, a needed
+  recorded" and "Revising a decomposition"; state no competing grammar.
+- If recon finds the **parent manifest** wrong — a child mis-scoped, a needed
   feature missing, a withdrawn feature still listed, or a dependency sequenced
-  forward — name the sanctioned `/roadmap revise <parent-ref>` route in your
+  forward — name the sanctioned `/plan <parent-ref>` revise route in your
   report, and record the finding in the item's `work/<item-ref>/backtracks.md`
   (item-level backtrack state, not a phase artifact): detecting phase `/plan`,
-  target phase `roadmap`, affected `work/<parent-ref>/roadmap.md`, the observable
+  target phase `manifest`, affected `work/<parent-ref>/manifest.md`, the observable
   evidence, and `status: open`, per `docs/workflow.md` → "Phase reversal
-  (backtracking)" and "Revising a roadmap". Never edit the parent `roadmap.md`
-  yourself; only the roadmap owner writes it.
+  (backtracking)" and "Revising a decomposition". Never edit the parent
+  `manifest.md` yourself; only the planning step (its owner) writes it.
 - **Read-only guard.** Your bash allowlist is a best-effort guard, not a sandbox:
   opencode matches bash rules by command prefix and cannot stop shell redirection
   or output-to-file flags. Never use bash to create, write, move, or delete a
@@ -237,7 +254,7 @@ and republishes via `/ship plan <item-ref>` (not a backtrack).
 Blockers: <anything unresolved, or none>
 
 Decomposing node:
-Done: `work/<item-ref>/roadmap.md` and <n> child directories
+Done: `work/<item-ref>/manifest.md` and <n> child directories
       (`work/<item-ref>/<MMMM-slug>/`); the node's own `design.md`/`tasks.md` when
       it is hybrid.
 Checks: quality bar — list any item not yet green.

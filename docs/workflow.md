@@ -50,7 +50,7 @@ The model states its vocabulary once, here:
 - A **plan** is a work item's committed plan state: its requirements, design, and
   task artifacts together with its decomposition when it has one.
 
-`work/<item-ref>/roadmap.md` carrying `phase: roadmap` is a **recognized
+The legacy `roadmap.md` carrying `phase: roadmap` is a **recognized
 deprecated alias** for the manifest: a node holding it is still a decomposing
 node, derives the same container phase, and is never rewritten or migrated. The
 old "roadmap" term is retained only for backward compatibility; new manifests
@@ -69,10 +69,10 @@ phase semantics — a node at any depth runs the same cycle.
 
 A node's child set is authored and recorded by the **planning step** — `/plan`
 (`architect`) — which is the recursive writer for a decomposition at **any**
-depth. `/roadmap` is retained only as a thin **deprecated alias** for that step:
-`/roadmap <initiative>` creates a brand-new top-level decomposing node (the next
-top-level `NNNN`), and `/roadmap revise <item-ref>` revises an existing
-decomposition at any depth.
+depth, exposing the canonical signature `/plan <item-ref or initiative>`.
+`/plan <initiative>` creates a brand-new top-level decomposing node (the next
+top-level `NNNN`), and `/plan <item-ref>` revises an existing decomposition at
+any depth.
 
 For a decomposing node the writer authors the **manifest**
 `work/<item-ref>/manifest.md`, whose `feature:` is the node's full canonical
@@ -190,11 +190,11 @@ every depth; its concrete spelling is `manifest.md` with `phase: manifest`. The
 legacy `roadmap.md` carrying `phase: roadmap` is a **recognized deprecated
 alias** (see `### Terms`), never written for a new node.
 
-The planning step (`/plan`, `architect`) — reached through the thin deprecated
-`/roadmap` alias, retained only for backward compatibility — authors the manifest
-and creates each child directory containing only a `.gitkeep`, then stops. It
-writes no child specs and performs no child phase work. Child numbering is local
-to the parent and independent of the flat top-level sequence and of other nodes.
+The planning step (`/plan`, `architect`), exposing the canonical signature
+`/plan <item-ref or initiative>`, authors the manifest and creates each child
+directory containing only a `.gitkeep`, then stops. It writes no child specs and
+performs no child phase work. Child numbering is local to the parent and
+independent of the flat top-level sequence and of other nodes.
 
 ### Dependencies and readiness
 
@@ -350,16 +350,16 @@ existing file, and status still reports the child's dependency state afterwards.
 
 ### Revising a decomposition
 
-A decomposition is revised by the **planning step** (`/plan`, `architect`), whose
-`/roadmap revise <item-ref>` route is the thin **deprecated alias** for that step;
-it revises an **existing** decomposition in place at **any depth** — a top-level
-node or a nested child that itself decomposes. `<item-ref>` must resolve to a node
-that has a manifest, `work/<item-ref>/manifest.md`; a reference with no manifest is
-refused, because the revise route revises an existing decomposition and never
-creates one. The **planning step (`/plan`, `architect`) — or its deprecated
-`/roadmap` alias — is the sole writer of a `manifest.md`**: no other phase writes
-one. A child phase that discovers the decomposition is wrong records a finding in
-its own committed `backtracks.md` (below, and `## Phase reversal (backtracking)`)
+A decomposition is revised by the **planning step** (`/plan`, `architect`); the
+command's `/plan <item-ref>` route revises an **existing** decomposition in place
+at **any depth** — a top-level node or a nested child that itself decomposes.
+`<item-ref>` must resolve to a node that has a manifest,
+`work/<item-ref>/manifest.md`; a reference with no manifest is refused, because
+the revise route revises an existing decomposition and never creates one. The
+**planning step (`/plan`, `architect`) is the sole writer of a `manifest.md`**:
+no other phase writes one. A child phase that discovers the decomposition is
+wrong records a finding in its own committed `backtracks.md` (below, and
+`## Phase reversal (backtracking)`)
 and recommends the revise route; it never edits the manifest. The revision writes
 autonomously, with no pre-write approval gate, exactly as authoring does; the user
 reviews the committed revision after the fact. A revision request that changes
@@ -427,7 +427,7 @@ A revision records its provenance in committed state. The triggering child's
 detecting phase appends a finding entry to `work/<child-ref>/backtracks.md` — a
 target phase of `manifest` (the `stale` token), the affected
 `work/<item-ref>/manifest.md`, observable evidence, and status `open` — and, when
-the revision completes, the planning step (or its deprecated `/roadmap` alias)
+the revision completes, the planning step (`/plan`, `architect`)
 appends the matching resolution entry naming what changed. `backtracks.md` is
 item-level backtrack state, not a phase artifact, so appending it does not breach
 the ownership invariant; the planning step appends only this entry and writes no
@@ -460,7 +460,7 @@ Each phase below lists: **Purpose**, **Entry criteria**, **Process**,
   the finding's handoff routes the item back here to re-run `/spec <item-ref>`
   and revise `spec.md`.
 
-### 2. Design — `/plan <item-ref>`
+### 2. Design — `/plan <item-ref or initiative>`
 
 - **Purpose**: Decide *how* to satisfy the spec and decompose the work into
   independently verifiable tasks — or, for a node that decomposes, author or
@@ -1343,12 +1343,12 @@ both are in flight.
   whose branch was abandoned): record the finding, revoke the shipped signal
   without deleting the historical `ship.md`, and re-enter `spec`/`design`/`build`.
   Explicit and maintainer-invoked; see `### Shipped items and reopen`.
-- **`/roadmap <initiative> | /roadmap revise <item-ref>`** — the thin deprecated
-  alias for the planning step (`/plan`), which decomposes a broad, multi-feature
-  initiative into a parent node and nested child work items, or revises an
-  existing decomposition in place, sequencing them and recording sibling
-  dependencies. Use before `/spec` when a request spans several interdependent
-  features; a single, self-contained feature still goes straight to `/spec`.
+- **`/plan <item-ref or initiative>`** — the planning step (`/plan`), which
+  decomposes a broad, multi-feature initiative into a parent node and nested child
+  work items, or revises an existing decomposition in place, sequencing them and
+  recording sibling dependencies. Use before `/spec` when a request spans several
+  interdependent features; a single, self-contained feature still goes straight to
+  `/spec`.
 - **`/status`** — when unsure where things stand.
 - **`/conflicts [item-ref]`** — to compare the `conflicts-with` declarations of
   unshipped plans before development and report overlaps in the shipped conflict
