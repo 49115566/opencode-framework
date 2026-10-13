@@ -1377,15 +1377,36 @@ linked from its pull request resolve for a reviewer who does not share the
 author's working tree.
 
 Because two branches can each allocate the same next number, a merge can leave
-two items sharing a canonical reference without a filesystem conflict. After a
-merge, scan the top-level `work/` directories — and each decomposing parent's
-child directories — for duplicate 4-digit prefixes. On a collision, follow
-"Renumbering after a parallel merge" in `docs/artifact-conventions.md`: renumber
-the unshipped item to the next number from the allocation contract and update
-every reference in the same change before it ships. A number is never reused.
-Duplicate sequence numbers are only one class of conflict; for every other class
-— shared-surface textual conflicts, `work/` artifact conflicts, and
-derived-agreement drift — see `## Merge conflicts`.
+two items sharing a canonical reference without a filesystem conflict. Duplicate
+`4`-digit prefixes are checked at **every node** of the recursive tree, not only
+the top level plus one child layer; each decomposing node at any depth is checked
+against **its own immediate children**, independently, and the top level is
+checked against the top-level items. No node's check depends on another's, and
+identity is the full canonical path, not the trailing segment — two nodes whose
+local id text matches but whose parents differ are not a duplicate.
+
+The two shipped codes name the two tree positions; a collision is reported under
+exactly one of them:
+
+- `DUPLICATE-PREFIX` — two **top-level** `NNNN` prefixes are equal.
+- `DUPLICATE-CHILD` — two **same-parent** `MMMM` prefixes are equal, at any depth.
+
+A top-level collision is never reported as `DUPLICATE-CHILD`, and a deeper
+collision is never reported as `DUPLICATE-PREFIX`. A `DUPLICATE-CHILD` finding
+names both offenders by their **full canonical reference**; when the collision
+is at depth ≥ 3 — for example two grandchildren, `<parent>/<MMMM-slug>-a` and
+`<parent>/<MMMM-slug>-b` — it also names the **shared parent and shared local
+prefix** in the detail, so the finding is unambiguous at any depth. Findings use
+the class `(c)` label and the finding grammar of `## Merge conflicts`; this rule
+introduces no new code, class, or vocabulary.
+
+On a collision, follow "Renumbering after a parallel merge" in
+`docs/artifact-conventions.md`: renumber the unshipped item to the next number
+from the allocation contract and update every reference in the same change
+before it ships. A number is never reused. Duplicate sequence numbers are only
+one class of conflict; for every other class — shared-surface textual conflicts,
+`work/` artifact conflicts, and derived-agreement drift — see
+`## Merge conflicts`.
 
 ## Merge conflicts
 
