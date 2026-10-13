@@ -202,12 +202,13 @@ What the initiative is and who it serves.
   the initiative's dependencies form a cycle, record the cycle under
   `## Open issues` and leave the stored graph acyclic.
 - **conflicts-with** declares the targets the row expects to collide with. Use `—`
-  when the row declares none, or one `ConflictTargetList`. The grammar is defined
-  in `docs/workflow.md` → "Declared conflicts (`conflicts-with`)". The declaration
-  is advisory and never changes `Depends on` or readiness. The shipped grammar is
-  preserved unchanged; generalizing `conflicts-with` targets to arbitrary depth is
-  deferred to the successor decomposing node that owns "`conflicts-with` at every
-  level".
+  when the row declares none, or one `ConflictTargetList`. The recursive grammar is
+  defined in `docs/workflow.md` → "Declared conflicts (`conflicts-with`)":
+  references nest to arbitrary depth (`NNNN-slug(/MMMM-slug)*`) and resolve from
+  the repository root, while a bare sibling local id resolves against the
+  declaring entity's immediate parent's `Children` table first, then the
+  repository root. The declaration is advisory and never changes `Depends on` or
+  readiness.
 - **Withdrawal record** — a revision that withdraws a child removes its row from
   the `Children` table and `## Sequencing` but preserves the child directory and
   its spent local number (never reused), recording the withdrawal and its rationale

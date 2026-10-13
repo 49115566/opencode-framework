@@ -283,30 +283,39 @@ ConflictTargetList ::= "—"                              # no declared conflict
                     | ConflictTarget ("," ConflictTarget)*
 
 ConflictTarget     ::= SiblingOrItemRef | SurfacePath
-SiblingOrItemRef   ::= [0-9]{4}-[a-z0-9-]+( /[0-9]{4}-[a-z0-9-]+ )?
+SiblingOrItemRef   ::= [0-9]{4}-[a-z0-9-]+( /[0-9]{4}-[a-z0-9-]+ )*
 SurfacePath        ::= repository-relative file or directory path
 ```
 
 - **Three target kinds.** Each target is exactly one of: a **sibling local id**
   (`MMMM-slug`) naming a different row in the same `Children` table; a
   **canonical work-item reference** — a top-level `NNNN-slug` (including a
-  decomposing parent) or a nested `NNNN-slug/MMMM-slug` — resolving to `work/<ref>/`;
-  or a **repository-relative surface path**, an exact file or directory path (for
-  example `docs/workflow.md`, `tests/checks`). Surface paths are exact: no glob
-  metacharacters, no `..`, no absolute paths.
+  decomposing parent), optionally followed by nested `/<MMMM-slug>` segments,
+  `NNNN-slug(/MMMM-slug)*`, nesting to arbitrary depth — resolving to
+  `work/<ref>/`; or a **repository-relative surface path**, an exact file or
+  directory path (for example `docs/workflow.md`, `tests/checks`). A reference
+  resolves from the repository root, independent of the declaring node, and may
+  name an ancestor, a descendant, or an item in a different subtree: cross-level
+  naming is permitted. Surface paths are exact: no glob metacharacters, no `..`,
+  no absolute paths.
 - **Separation and empty value.** Targets are comma-separated and each is trimmed
   of surrounding whitespace. Repository paths and references contain no comma, so
   a comma always separates targets. A cell that is `—` (em dash, the same
   convention as `Depends on`) declares no conflicts; an empty or whitespace-only
   cell is malformed, not equivalent to `—`.
 - **Reference-vs-path discriminator.** A target matching
-  `^[0-9]{4}-[a-z0-9-]+(/[0-9]{4}-[a-z0-9-]+)?$` is a reference (a sibling local id
-  or a canonical work-item reference); any other target is a surface path. For a
-  reference with no `/`, resolution precedence is the **sibling row in the same
-  table first, then `work/<token>/`**, so a bare `MMMM-slug` is deterministic when
-  a sibling row and a top-level item could share the same text.
-- **Well-formedness.** A reference may not name the declaring row's own local id
-  (no self-reference), and a list may not repeat a target after trimming.
+  `^[0-9]{4}-[a-z0-9-]+(/[0-9]{4}-[a-z0-9-]+)*$` — one or more segments — is a
+  reference (a sibling local id, or a canonical work-item reference at arbitrary
+  depth); any other target is a surface path. A reference containing `/` is
+  **root-relative** and is never resolved against a sibling table. For a **bare**
+  single-segment reference (no `/`), resolution precedence is the **declaring
+  entity's immediate parent's `Children` table first, then `work/<token>/` at the
+  repository root**, so a bare `MMMM-slug` is deterministic when a sibling row and
+  a top-level item could share the same text; an entity with no immediate parent
+  (a standalone top-level item) has only the root `work/<token>/` fallback.
+- **Well-formedness.** A reference may not name the declaring entity's own local
+  id or its own full canonical reference (both are unresolved self-references),
+  and a list may not repeat a target after trimming.
 - **Unresolved declarations.** A malformed cell, or a target that resolves to no
   sibling row, no `work/<ref>/` directory, and no existing path, is an
   **unresolved declaration**. It is reported by a later read-only check and never
@@ -765,53 +774,57 @@ item.
 ### The compared set
 
 The check reads only committed `work/` state and the local repository (for target
-resolution). It considers every **unshipped item** under `work/` — a decomposing
-child or a standalone item — and derives that item's **declared set**:
+resolution). It walks the committed tree recursively and considers every
+**unshipped entity** at **any depth**, deriving each one's **declared set**:
 
-- **Decomposing parent** — never an entity itself; it is a container. Its
-  `Children` table supplies each row's declaration. A decomposition authored
-  before the `conflicts-with` column existed has no column, treated as `—` for
-  every row.
-- **Decomposing child** — one entity per `Children` row, even when the child
+- **Decomposing node** — never an entity itself as a container; it is a
+  decomposition. Each row of its `Children` table is an entity keyed by its full
+  canonical reference (the node's own reference with the row's local id
+  appended), and when that row's child directory itself holds a manifest
+  (`manifest.md`, or the legacy `roadmap.md` alias) the child is **also** a
+  decomposition whose rows are recursed the same way — to arbitrary depth. A
+  decomposition authored before the `conflicts-with` column existed has no
+  column, treated as `—` for every row.
+- **Child entity** — one entity per `Children` row, even when the child
   directory holds only `.gitkeep` (the parent cell still represents it). A child
-  whose `work/<parent>/<local-id>/ship.md` exists is **excluded**; a child with no
-  `ship.md` is included.
+  whose `work/<child-ref>/ship.md` exists is **excluded** as a counterpart; a
+  child with no `ship.md` is included.
   - `own` is the child's `design.md` frontmatter `conflicts-with` (absent or `—`
     → empty); `cell` is the row's `conflicts-with` cell (absent column or `—` →
     empty).
-  - The child's declared set is `own ∪ cell`.
+  - The child's declared set is `own ∪ cell`, at every depth.
   - When `own` and `cell` are **both present** (neither `—`) and the two sets are
     **not identical** — a subset relationship still counts — the check reports
     the discrepancy (`DRIFT-FACT`, below) and prefers neither. A one-sided record
     is the union and is not a discrepancy.
 - **Standalone item** — one entity per top-level item directory that is not a
-  decomposing parent and has a `spec.md`. Its declaration is its `design.md`
+  decomposing node and has a `spec.md`. Its declaration is its `design.md`
   frontmatter `conflicts-with`. A `ship.md` excludes it.
 
-An item with an empty declared set — absent field, absent column, or `—` —
+An entity with an empty declared set — absent field, absent column, or `—` —
 contributes no declared target of its own, so it yields no finding **from its own
 declaration** and historical items remain valid with no migration. It is still an
-unshipped item: a declared target that names it is a counterpart under the
-one-sided naming clause below, even though the named item declares nothing. A
-**shipped** item still **resolves** as a target but is not a counterpart: naming
-it produces neither a conflict nor an unresolved finding.
+unshipped entity: a declared target that names it is a counterpart under the
+one-sided naming clause below, even though the named entity declares nothing. A
+**shipped** entity still **resolves** as a target but is not a counterpart:
+naming it produces neither a conflict nor an unresolved finding.
 
 Each target token is resolved with the single algorithm in "Declared conflicts
-(`conflicts-with`)" above — the reference-vs-path discriminator, the sibling-first
-precedence for a bare `MMMM-slug`, exact repository-relative surface paths, and
-the prohibition on glob metacharacters, `..`, and absolute paths. A reference
-token resolves to a canonical item reference (a sibling row's
-`<parent>/<local-id>` or a `work/<NNNN-slug>[/<MMMM-slug>]/` directory); a surface
-token resolves to its repository-relative path. A token that is malformed (empty
-or whitespace-only, a glob metacharacter, `..`, or absolute) or that resolves to
-no sibling row, no `work/<ref>/`, and no existing repository path is an
-**unresolved declaration**: it is reported (`DANGLING-DEP`, below) and never
-dropped or auto-repaired.
+(`conflicts-with`)" above — the reference-vs-path discriminator, the
+immediate-parent-then-root precedence for a bare `MMMM-slug`, exact
+repository-relative surface paths, and the prohibition on glob metacharacters,
+`..`, and absolute paths. A reference token resolves to a canonical item
+reference (a bare token's sibling row `<parent>/<local-id>`, or the root-relative
+`work/<ref>/` directory at arbitrary depth); a surface token resolves to its
+repository-relative path. A token that is malformed (empty or whitespace-only, a
+glob metacharacter, `..`, or absolute) or that resolves to no sibling row, no
+`work/<ref>/`, and no existing repository path is an **unresolved declaration**:
+it is reported (`DANGLING-DEP`, below) and never dropped or auto-repaired.
 
 ### The pair predicate
 
-`conflict(A, B)` is evaluated between any two **unshipped items** `A` and `B` and
-is true exactly when one of:
+`conflict(A, B)` is evaluated between any two **unshipped entities at any depth**
+`A` and `B` and is true exactly when one of:
 
 1. **Shared target** — some target of `A` and some target of `B` are the same
    target. Two targets share identity when their trimmed repository-relative
@@ -821,10 +834,10 @@ is true exactly when one of:
    decompositions — are **not** the same target.
 2. **One side names the other** — a target of `A` resolves to `B`'s canonical
    reference, or a target of `B` resolves to `A`'s. A one-sided declaration
-   suffices; no reciprocity is required. The named item need not declare anything
-   itself: an unshipped item with an empty declared set is still a counterpart
-   under this clause, so a declaration that names it is reported even though that
-   item contributes no target of its own.
+   suffices; no reciprocity is required. The named entity need not declare
+   anything itself: an unshipped entity with an empty declared set is still a
+   counterpart under this clause, so a declaration that names it is reported even
+   though that entity contributes no target of its own.
 
 Each unordered pair is reported **once**: reciprocal naming, or a pair that both
 shares a target and names the other, yields exactly one finding. The finding list
@@ -842,10 +855,10 @@ their **planning-time meaning**:
 
 | Situation | Code | Class | Offender / detail |
 | --------- | ---- | ----- | ----------------- |
-| Two unshipped plans share a surface target outside `work/` | `TEXTUAL-CONFLICT` | `(a)` | the two item refs; detail names the shared path |
-| Two unshipped plans share a `work/` path or name each other | `TEXTUAL-CONFLICT` | `(b)` | the two item refs; detail names the shared target |
-| A declared target is malformed or resolves to nothing | `DANGLING-DEP` | `(b)` | the declaring item ref; detail names the target |
-| A child's own declaration and parent cell disagree (both non-`—`, sets unequal) | `DRIFT-FACT` | `(d)` | the child ref; detail shows both sets |
+| Two unshipped entities share a surface target outside `work/` | `TEXTUAL-CONFLICT` | `(a)` | the two entity refs; detail names the shared path |
+| Two unshipped entities share a `work/` path or name each other | `TEXTUAL-CONFLICT` | `(b)` | the two entity refs; detail names the shared target |
+| A declared target is malformed or resolves to nothing | `DANGLING-DEP` | `(b)` | the declaring entity ref; detail names the target |
+| An entity's own declaration and its immediate parent's cell disagree (both non-`—`, sets unequal) | `DRIFT-FACT` | `(d)` | the entity ref; detail shows both sets |
 
 The shipped merge-time meanings of these codes are unchanged. The two notes that
 scope `TEXTUAL-CONFLICT` to the dry-run-detected case remain true of that case,
@@ -876,8 +889,8 @@ The check runs at three prompt-only enforcement points:
   findings never change the gate outcome and never stop the build. The check
   itself performs no fetch; the gate's own best-effort ref refresh is separate.
 
-An empty compared set — no unshipped plans, no declarations, or all plans already
-shipped — reports no findings and does not error.
+An empty compared set — no unshipped entities, no declarations, or all entities
+already shipped — reports no findings and does not error.
 
 ## Phase reversal (backtracking)
 
