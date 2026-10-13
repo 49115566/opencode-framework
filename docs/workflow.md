@@ -128,14 +128,20 @@ work/
       ...
 ```
 
+This layout repeats at every level: any node may hold a manifest and child
+directories, so nesting continues to arbitrary depth.
+
 - `NNNN` is the next zero-padded sequence number across the whole `work/` tree.
   Allocate it by finding the highest existing directory name and adding one.
 - `slug` is a short kebab-case handle derived from the request (e.g.
   `add-dark-mode`). Prefer 2–4 words. It is immutable once created.
-- A **canonical reference** is an item's path relative to `work/`: `NNNN-slug`
-  for a standalone item, or `NNNN-slug/MMMM-slug` for a nested roadmap child.
-  Phase commands accept either form; a one-segment reference behaves exactly as
-  before. See "Roadmaps" for the nested layout.
+- A **canonical reference** is an item's path relative to `work/`: a recursive
+  path of one or more dash-slug segments — `NNNN-slug` for a standalone item,
+  then one further `/<MMMM-slug>` per nesting level, to arbitrary depth. The
+  one-segment form is unchanged and the two-segment form is a special case, not a
+  maximum; phase commands accept any depth, and a one-segment reference behaves
+  exactly as before. The grammar is defined in `docs/artifact-conventions.md` →
+  "Work item references".
 - Workflow artifacts under `work/` are committed working state:
   version-controlled so a fresh clone, a teammate, and CI derive the same
   phase. Only `scratch/` and opencode's generated state are ignored.
