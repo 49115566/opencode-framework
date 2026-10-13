@@ -19,33 +19,35 @@ Each phase reads the previous artifact and writes its own, under
 a teammate, and CI derive the same phase; state is derived from those files,
 never recorded separately.
 
-A **roadmap** is a parent item at `work/<NNNN-slug>/roadmap.md` whose children
-are nested at `work/<NNNN-slug>/<MMMM-slug>/`. Address a child by its
-**canonical reference** — `NNNN-slug/MMMM-slug` — which resolves to
-`work/<NNNN-slug>/<MMMM-slug>/`. A one-segment reference (`NNNN-slug`) is a
-standalone item and behaves exactly as before.
+A **decomposing node** is a parent item holding its **manifest** at
+`work/<NNNN-slug>/manifest.md` (the legacy `roadmap.md` is the recognized
+deprecated alias), whose children are nested at
+`work/<NNNN-slug>/<MMMM-slug>/`. Address a child by its **canonical reference** —
+`NNNN-slug/MMMM-slug` — which resolves to `work/<NNNN-slug>/<MMMM-slug>/`. A
+one-segment reference (`NNNN-slug`) is a standalone item and behaves exactly as
+before.
 
 ## Which command now?
 
 ```
-Broad, multi-feature initiative? → /roadmap <initiative> | /roadmap revise <item-ref>
+Broad, multi-feature initiative? → /plan <item-ref or initiative>
 No spec.md?                      → /spec <feature or problem description | item-ref>
-spec.md, no design.md?           → /plan <item-ref>
+spec.md, no design.md?           → /plan <item-ref or initiative>
 design.md, tasks.md unchecked?   → /build [item-ref or task-id]
 all tasks checked, no verify.md? → /test [item-ref]
 UI work, before /review?         → /visual [url or item-ref]   (optional)
 verify.md, no review.md?         → /review [item-ref]
 review.md verdict request-changes→ /build [item-ref or task-id]   (rework findings)
 review.md verdict approve, no ship.md?→ /ship [item-ref]
-build finds the design wrong?    → /plan <item-ref>   (reverse edge; record the finding)
+build finds the design wrong?    → /plan <item-ref or initiative>   (reverse edge; record the finding)
 plan finds the spec wrong?       → /spec <feature or problem description | item-ref>   (reverse edge; record the finding)
-open finding targets /plan?      → /plan <item-ref>   (re-entry; revise and resolve)
+open finding targets /plan?      → /plan <item-ref or initiative>   (re-entry; revise and resolve)
 open finding targets /spec?      → /spec <feature or problem description | item-ref>   (re-entry; revise and resolve)
 open challenge on a review finding?→ /review [item-ref]   (adjudicate; respond in challenges.md)
 open challenge on a verify defect?→ /test [item-ref]   (adjudicate; respond in challenges.md)
-/test defect is a design fault?  → /plan <item-ref>   (reverse edge; record the finding)
+/test defect is a design fault?  → /plan <item-ref or initiative>   (reverse edge; record the finding)
 /test defect is a spec fault?    → /spec <feature or problem description | item-ref>   (reverse edge; record the finding)
-plan/<ref> PR denied/changes-requested?→ /plan <item-ref>   (re-run; republish with /ship plan <item-ref>)
+plan/<ref> PR denied/changes-requested?→ /plan <item-ref or initiative>   (re-run; republish with /ship plan <item-ref>)
 ship.md present but PR denied/closed/changes-requested?→ /ship recall <item-ref> <phase>   (recall; revoke and re-enter)
 Verified /fix complete?          → /ship fix   (explicit request; shipper lands it)
 Declared plan conflicts?         → /conflicts [item-ref]   (read-only, advisory)
@@ -57,13 +59,14 @@ Unclear?                         → /status [item-ref]
 
 `docs/workflow.md` → "Derived state" is the authority; this is the quick view.
 The Phase column mirrors that table's Phase cell: the base phases (`not started`,
-`spec`, `design`, `build`, `test`, `review`, `ship`, `shipped`, `roadmap`) plus
+`spec`, `design`, `build`, `test`, `review`, `ship`, `shipped`, `manifest`) plus
 these derived labels.
 
-A **decomposing node** — a directory containing `roadmap.md`, at any depth —
-derives its phase from its **own phase artifacts first**; only a manifest with no
-own phase artifacts derives the container phase `roadmap`, and own artifacts take
-precedence over the manifest at every depth.
+A **decomposing node** — a directory containing a manifest (`manifest.md`, or the
+legacy `roadmap.md` alias), at any depth — derives its phase from its **own phase
+artifacts first**; only a manifest with no own phase artifacts derives the
+container phase `manifest`, and own artifacts take precedence over the manifest at
+every depth.
 
 - `P (backtracked)` — the earliest `stale:` marker across the item's artifacts
   names phase `P`. The marked artifact is not the item's current phase artifact
@@ -85,8 +88,9 @@ out-of-scope for a challenge, because post-ship reversal is recall's domain
 (`/ship recall`); no shipped item is ever derived `challenged`. The
 `stale:`/`reopened:` structural states are evaluated before the challenged
 overlay, which is evaluated before the artifact-presence and verdict rows. A
-`stale: roadmap` token maps to `spec`. `/status` adds a per-item Notes line naming
-the target phase and affected upstream artifact and the invalidated downstream
+`stale: manifest` token maps to `spec` (a legacy `stale: roadmap` is accepted as
+the deprecated equivalent). `/status` adds a per-item Notes line naming the
+target phase and affected upstream artifact and the invalidated downstream
 artifacts (or `none`), the recall, or the open challenge; readiness is derived
 independently at every level of the tree and is otherwise unchanged — a recalled
 dependency does not satisfy a dependent, while a non-recalled `ship.md` presence
