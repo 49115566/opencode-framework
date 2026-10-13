@@ -111,7 +111,7 @@ with a stable `ACn` token.
 | `50-instructions.sh` | always-loaded instruction set agreement |
 | `60-default-agent.sh` | default-agent agreement |
 | `70-pin.sh` | external pin agreement |
-| `80-cycle-fixture.sh` | roadmap cycle rule and committed fixture |
+| `80-cycle-fixture.sh` | decomposing-node cycle rule and committed fixture |
 | `85-conflict-guards.sh` | declared-conflict declaration model and check guards (suite token `AC23`) |
 | `87-backtrack-guards.sh` | backtracking and reopen guards (suite token `AC24`) |
 | `90-packaging.sh` | packaging agreement: manifest ↔ changelog, copy-set, `Layout` (suite tokens `AC18`–`AC20`) |
