@@ -1,5 +1,5 @@
 ---
-description: "Design a solution and break it into tasks from an approved spec. Usage: /plan <item-ref>"
+description: "Design a solution and break it into tasks from an approved spec, or create/decompose a work item at any depth. Usage: /plan <item-ref or initiative>"
 agent: architect
 ---
 
@@ -15,7 +15,7 @@ Follow your Architect agent instructions exactly. In particular:
   with no open finding, plan as ordinary progression.
 - Read the work item's `spec.md` first when the node has one, plus `AGENTS.md`,
   `docs/workflow.md` — especially "Where decomposition is authored and recorded",
-  "Revising a roadmap", and "Plan publication", the writer authority — and
+  "Revising a decomposition", and "Plan publication", the writer authority — and
   `docs/artifact-conventions.md`.
 - If `spec.md` exists and is ambiguous or wrong, take the `/plan`→`/spec` reverse
   edge: append a `## Finding <n>` entry to `work/<item-ref>/backtracks.md`
@@ -28,19 +28,30 @@ Follow your Architect agent instructions exactly. In particular:
   resolves to that item's directory.
 - Recon the affected code and its conventions. Delegate broad recon to the
   `scout` subagent.
-- Select the planning path from the node's committed state: an existing
-  `work/<item-ref>/roadmap.md` selects **revise**; a node that decomposes and has
-  no own `spec.md` — a `.gitkeep`-reserved child or a pure container — selects
-  **author**, because a genuine single feature always has a `spec.md` from `/spec`;
-  otherwise plan the single feature. The decomposition path needs no node
-  `spec.md`, and writes none.
+- Select the planning path from the argument and the node's committed state: an
+  existing `work/<item-ref>/manifest.md` (or the legacy `roadmap.md` artifact
+  alias) selects **revise**; a node that decomposes and has no own `spec.md` — a
+  `.gitkeep`-reserved child or a pure container — selects **author**, because a
+  genuine single feature always has a `spec.md` from `/spec`; otherwise plan the
+  single feature. The decomposition path needs no node `spec.md`, and writes none.
+- **Create mode** — when the argument resolves to no existing `work/<item-ref>/`,
+  create a brand-new top-level decomposing node exactly as the planning step's
+  create path: reconnoitre `work/` so the request neither collides with nor
+  duplicates an item, allocate the next top-level `NNNN` (the greatest 4-digit
+  prefix ever committed under `work/`, plus one) and a 2–4 word kebab-case slug,
+  author `work/<NNNN-slug>/manifest.md` carrying `phase: manifest`, and reserve
+  each enumerated child as `work/<NNNN-slug>/<MMMM-slug>/.gitkeep` — writing **no
+  child phase artifact**. A token shaped like `NNNN-slug` that resolves to no item
+  is not an existing item and takes this path; the reconnoitre keeps a typo from
+  silently creating a duplicate. When the request is really a single feature,
+  recommend `/spec <feature>` and create nothing.
 - **Decomposition path** — author or revise the node's manifest
-  `work/<item-ref>/roadmap.md` and reserve each child
+  `work/<item-ref>/manifest.md` and reserve each child
   `work/<item-ref>/<MMMM-slug>/.gitkeep`, allocating each `MMMM` per the immediate
   parent and writing **no child phase artifact**, autonomously (no pre-write
   approval gate; the user reviews the committed artifact). The produced manifest
   must satisfy the manifest quality bar of `docs/artifact-conventions.md` →
-  "`roadmap.md` — the manifest of a decomposing node" by reference (six-column
+  "`manifest.md` — the manifest of a decomposing node" by reference (six-column
   `Children`, acyclic `Depends on`, resolving `Canonical reference`, well-formed
   `conflicts-with`). A hybrid node also gets its own `design.md`/`tasks.md`; a pure
   container gets neither.
