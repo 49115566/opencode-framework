@@ -13,7 +13,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. Docs-only; all edits
 are to the two authority surfaces named in the spec. `tests/checks/85-conflict-guards.sh`
 and `tests/fixtures/declared-conflicts/` are never touched.
 
-- [ ] **T1** — Generalize the target grammar, discriminator, and target-resolution
+- [x] **T1** — Generalize the target grammar, discriminator, and target-resolution
       rules in `docs/workflow.md` → "Declared conflicts (`conflicts-with`)":
       change `SiblingOrItemRef`'s trailing `( /[0-9]{4}-[a-z0-9-]+ )?` to
       `( /[0-9]{4}-[a-z0-9-]+ )*`; change the reference-vs-path discriminator
@@ -31,7 +31,7 @@ and `tests/fixtures/declared-conflicts/` are never touched.
       section for the immediate-parent-then-root precedence, cross-level naming,
       and self-reference statements. Confirm the old `)?`/`)?$` forms are gone.
 
-- [ ] **T2** — Recursify "The compared set" in `docs/workflow.md` →
+- [x] **T2** — Recursify "The compared set" in `docs/workflow.md` →
       "Declared-conflict check": re-express the enumerations as a recursive walk
       in which every decomposing node's `Children` rows are entities keyed by
       full canonical reference, a row whose child directory holds a manifest
@@ -47,7 +47,7 @@ and `tests/fixtures/declared-conflicts/` are never touched.
       shipped-exclusion sentence; read the section and confirm a nested
       decomposing child is both an entity and recursed.
 
-- [ ] **T3** — Generalize the resolution paragraph, the pair predicate, and the
+- [x] **T3** — Generalize the resolution paragraph, the pair predicate, and the
       contract in `docs/workflow.md` → "Declared-conflict check" while
       preserving the vocabulary: update "sibling-first precedence for a bare
       `MMMM-slug`" to immediate-parent-then-root and the
@@ -67,7 +67,7 @@ and `tests/fixtures/declared-conflicts/` are never touched.
       `(d)`, and the exact finding-line grammar, and contains none of `(e)`,
       `DECLARED-`, `PLAN-`, `CONFLICT-`.
 
-- [ ] **T4** — Remove the deferral in `docs/artifact-conventions.md` → the
+- [x] **T4** — Remove the deferral in `docs/artifact-conventions.md` → the
       manifest `conflicts-with` bullet: delete the sentence stating the grammar
       is "preserved unchanged" and the generalization "is deferred to the
       successor decomposing node that owns '`conflicts-with` at every level'",
@@ -79,7 +79,7 @@ and `tests/fixtures/declared-conflicts/` are never touched.
       returns nothing; grep the bullet for the arbitrary-depth statement and the
       authority reference.
 
-- [ ] **T5** — Verify the whole change: run the committed suite and confirm the
+- [x] **T5** — Verify the whole change: run the committed suite and confirm the
       guard surfaces are untouched and the two authority sections are mutually
       consistent. [AC15] [AC17] [depends: T1] [depends: T2] [depends: T3]
       [depends: T4]
