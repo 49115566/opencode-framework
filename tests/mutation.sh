@@ -71,7 +71,7 @@ RESULT_DIR="$SCRATCH/results"
 
 # The job inventory (job_1..job_<JOB_COUNT>). Kept as a count so worker
 # assignment and result aggregation iterate the same range.
-JOB_COUNT=29
+JOB_COUNT=30
 
 # Mutation counters (the MUTATION TOTAL line) and a separate setup-failure tally:
 # the two whole-suite setup runs are not mutations, so they do not inflate the
@@ -617,6 +617,17 @@ job_29() {
   replace_first "$copy/.opencode/skill/code-review/SKILL.md" \
     'blocks the item' 'not merge-blocking'
   job_finish "$copy" .opencode/skill/code-review/SKILL.md
+}
+
+# AC26 renumber-sweep completeness -> 88-renumber-sweep
+job_30() {
+  local copy="$1"
+  J_AREA=88-renumber-sweep
+  J_EXPECTED='AC26 renumber-sweep'
+  J_DESC="dropped the conflicts-with rewrite bullet from the renumber sweep"
+  delete_first_line "$copy/.opencode/skill/merge-conflict/SKILL.md" \
+    'every `conflicts-with` target that names the old local id'
+  job_finish "$copy" .opencode/skill/merge-conflict/SKILL.md
 }
 
 # ---------------------------------------------------------------------------
