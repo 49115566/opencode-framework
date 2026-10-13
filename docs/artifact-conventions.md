@@ -699,20 +699,30 @@ directories, the merge produces no conflict and can silently leave two items
 sharing a canonical reference. Resolve it on the merged tree before either item
 ships:
 
-1. **Detect.** Any two top-level `work/` directories whose 4-digit prefix is
-   equal are a collision; likewise any two canonical references that differ only
-   by slug under the same number. Check each decomposing node's child numbers the
-   same way.
+1. **Detect.** Any two top-level `work/` directories whose 4-digit `NNNN`
+   prefix is equal are a `DUPLICATE-PREFIX` collision; and, for **every
+   decomposing node at any depth**, any two of its immediate children whose local
+   4-digit `MMMM` prefix is equal are a `DUPLICATE-CHILD` collision. This is the
+   recursive rule stated once in `docs/workflow.md` → "Multiple work items"; each
+   offender is identified by its **full canonical reference**, and a collision at
+   depth ≥ 3 also names the **shared parent and shared local prefix**.
 2. **Choose one.** Renumber the item that is not yet approved or shipped; if both
    are unshipped, renumber the one whose directory was added later by commit time
    (`git log --diff-filter=A`), breaking ties by slug order. The chosen number
    stays spent and is never reassigned.
 3. **Renumber.** `git mv work/<old>/ work/<new>/` using the allocation contract
    above.
-4. **Update every reference in the same change:** the directory name; the
-   artifact `feature:` frontmatter value; a nested child's `parent:` value; the
-   manifest `Children` table `Canonical reference` cells; `ship.md` and
-   PR/handoff paths; and any prose that names the old reference.
+4. **Update every affected reference in the same change.** When the chosen node
+   is itself a decomposing node, its **whole subtree** moves with it — rewrite:
+   - the directory name;
+   - the node's own `feature:` frontmatter value, and **every descendant
+     artifact's** `feature:` value (the full canonical reference);
+   - the owning manifest's `Children` row `Local id` and `Canonical reference`
+     cells for the renumbered node, and **every intermediate manifest's**
+     `Children` `Canonical reference` cell on the changed path;
+   - **every descendant's** `parent:` value on the changed path;
+   - `ship.md` and PR/handoff paths; and
+   - any prose that names the old reference.
 5. **Record.** Note the renumber in the item's newest artifact frontmatter
    `notes` (or the PR description when the artifacts are already immutable
    history).
