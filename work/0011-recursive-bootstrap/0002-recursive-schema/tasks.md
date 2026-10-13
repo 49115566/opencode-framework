@@ -16,7 +16,7 @@ suite use the project's configured test command, `bash tests/run.sh`, optionally
 area-scoped via `FRAMEWORK_TEST_AREAS`. Do not touch any literal listed in the
 design's "Must-not-restate / must-not-touch" lists.
 
-- [ ] **T1** — In `docs/artifact-conventions.md`, generalize the canonical
+- [x] **T1** — In `docs/artifact-conventions.md`, generalize the canonical
       reference to a recursive path. Rewrite `## Work item references` so
       `item-ref ::= NNNN-slug ( "/" MMMM-slug )*` with regex
       `^[0-9]{4}-[a-z0-9-]+(/[0-9]{4}-[a-z0-9-]+)*$`; state that the first
@@ -35,7 +35,7 @@ design's "Must-not-restate / must-not-touch" lists.
       `(...)?$` is gone; `FRAMEWORK_TEST_AREAS='87-backtrack-guards,96-signature-sweep' bash tests/run.sh`
       exits 0.
 
-- [ ] **T2** — In `docs/artifact-conventions.md`, generalize the frontmatter
+- [x] **T2** — In `docs/artifact-conventions.md`, generalize the frontmatter
       `parent:` field. Update the template comment (line 24), the `parent` rule
       (lines 35–36), and the "Nested children's artifacts…" paragraph
       (lines 96–98): a nested child's `parent:` names the **immediate** parent's
@@ -49,7 +49,7 @@ design's "Must-not-restate / must-not-touch" lists.
       depth-≥3 distinction; `FRAMEWORK_TEST_AREAS='87-backtrack-guards' bash tests/run.sh`
       exits 0.
 
-- [ ] **T3** — In `docs/artifact-conventions.md`, generalize `## Sequence
+- [x] **T3** — In `docs/artifact-conventions.md`, generalize `## Sequence
       allocation` (lines 630–647): keep the top-level `NNNN` rule unchanged and
       state that every further level allocates its children's local `MMMM`
       scoped to the **immediate** parent (the greatest 4-digit prefix ever
@@ -61,7 +61,7 @@ design's "Must-not-restate / must-not-touch" lists.
       the immediate parent as the scope; `FRAMEWORK_TEST_AREAS='96-signature-sweep' bash tests/run.sh`
       exits 0.
 
-- [ ] **T4** — In `docs/artifact-conventions.md`, recast the `### roadmap.md`
+- [x] **T4** — In `docs/artifact-conventions.md`, recast the `### roadmap.md`
       template section (lines 107–179) as the **manifest** of a decomposing
       node. Rewrite the intro to state that a decomposing node records its
       children in its manifest, that the manifest is the generic
@@ -84,7 +84,7 @@ design's "Must-not-restate / must-not-touch" lists.
       `FRAMEWORK_TEST_AREAS='80-cycle-fixture,85-conflict-guards,87-backtrack-guards' bash tests/run.sh`
       exits 0.
 
-- [ ] **T5** — In `docs/workflow.md`, make the two **minimal** restatements
+- [x] **T5** — In `docs/workflow.md`, make the two **minimal** restatements
       consistent with the schema, touching `## The work item directory` only.
       (a) Generalize the canonical-reference bullet (lines 135–138) from the
       two-level maximum to the recursive path and point to
@@ -100,7 +100,7 @@ design's "Must-not-restate / must-not-touch" lists.
       `FRAMEWORK_TEST_AREAS='10-readiness,20-lifecycle,80-cycle-fixture,85-conflict-guards,87-backtrack-guards,96-signature-sweep' bash tests/run.sh`
       exits 0.
 
-- [ ] **T6** — Confirm the whole repository is green and scoped. Run the full
+- [x] **T6** — Confirm the whole repository is green and scoped. Run the full
       committed suite, confirm no new agent/command/skill file exists, no
       documented inventory count changed, and the change set is only the two
       documentation files. [AC9] [AC10] [AC11] [depends: T1, T2, T3, T4, T5]
