@@ -686,6 +686,11 @@ further level allocates its own children's `MMMM` the same way, scoped to its
 numbers are scoped to their parent: they are independent of the top-level
 sequence and of every other node, and are never reused within that parent.
 
+Duplicate `4`-digit prefixes — at the top level and at every node of the tree —
+are detected by the recursive rule stated once in `docs/workflow.md` →
+"Multiple work items"; this section defines no duplicate-detection rule of its
+own.
+
 ### Renumbering after a parallel merge
 
 Two branches may each allocate the same next number; because they create distinct
