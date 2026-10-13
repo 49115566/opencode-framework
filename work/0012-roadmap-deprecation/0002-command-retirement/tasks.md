@@ -21,12 +21,12 @@ greps at T1–T6 and run the affected non-`96` areas; T7 edits the signature
 registry and T8 runs the full suite, because `96` cannot pass until both the
 surfaces and its registry agree.
 
-- [ ] **T1** — Remove the retired command and agent. Delete
+- [x] **T1** — Remove the retired command and agent. Delete
       `.opencode/command/roadmap.md` and `.opencode/agent/roadmap.md`. [AC1, AC2]
       Verify: `ls .opencode/command .opencode/agent` lists no `roadmap.md`;
       `grep -rn 'agent: roadmap' .opencode/command` returns nothing.
 
-- [ ] **T2** — Move the create mode into the planning step and modernize the
+- [x] **T2** — Move the create mode into the planning step and modernize the
       writer. In `.opencode/command/plan.md`, set the `description:` usage string
       to `Usage: /plan <item-ref or initiative>` (`:2`) and add the create-mode
       branch to the body (`:18,31-45`). In `.opencode/agent/architect.md`, re-home
@@ -45,7 +45,7 @@ surfaces and its registry agree.
       shows the modern vocabulary; `grep -nF '/roadmap' .opencode/agent/architect.md .opencode/command/plan.md`
       returns nothing.
 
-- [ ] **T3** — Retire the `/roadmap` command-alias prose and update the
+- [x] **T3** — Retire the `/roadmap` command-alias prose and update the
       Design-phase signature in `docs/workflow.md`. Rewrite the alias clauses at
       `:72-75`, `:193-194`, `:353-360`, `:430`, and the routing-heuristics bullet
       at `:1346-1351` so `/plan` is the sole recursive writer exposing
@@ -59,7 +59,7 @@ surfaces and its registry agree.
       `grep -n 'roadmap.md' docs/workflow.md` shows only the recognized-deprecated-alias
       notes.
 
-- [ ] **T4** — Reconcile `README.md`. Rewrite the multi-feature prose (`:183-189`)
+- [x] **T4** — Reconcile `README.md`. Rewrite the multi-feature prose (`:183-189`)
       to name `/plan <item-ref or initiative>` and `manifest.md`; change the
       lifecycle mermaid `/plan` label (`:140`) to the dual form; remove the
       `/roadmap` Commands-table row (`:203`) and set the `/plan` row (`:196`) to
@@ -71,7 +71,7 @@ surfaces and its registry agree.
       `grep -n '# 13 role prompts\|# 12 slash commands' README.md` matches;
       `FRAMEWORK_TEST_AREAS='40-inventory,30-permissions' bash tests/run.sh` passes.
 
-- [ ] **T5** — Reconcile `AGENTS.md` and `template/AGENTS.md` identically.
+- [x] **T5** — Reconcile `AGENTS.md` and `template/AGENTS.md` identically.
       Set the Design row (`AGENTS.md:36` / `template/AGENTS.md:38`) to
       `/plan <item-ref or initiative>`; remove the `/roadmap` clause from the
       supporting-commands list (`:47` / `:49`); remove the `roadmap` agent from
@@ -84,7 +84,7 @@ surfaces and its registry agree.
       Verify: `grep -nF '/roadmap' AGENTS.md template/AGENTS.md` returns nothing;
       `FRAMEWORK_TEST_AREAS='95-split-guard,40-inventory' bash tests/run.sh` passes.
 
-- [ ] **T6** — Reconcile the `workflow-lifecycle` skill
+- [x] **T6** — Reconcile the `workflow-lifecycle` skill
       (`.opencode/skill/workflow-lifecycle/SKILL.md`). Replace the `/roadmap`
       routing line (`:31`) with the `/plan <item-ref or initiative>` route and
       update every other `/plan` signature in the routing block (`:33,40,42,46,48`)
@@ -97,7 +97,7 @@ surfaces and its registry agree.
       returns nothing; `grep -n 'manifest.md\|manifest\b\|stale: manifest' .opencode/skill/workflow-lifecycle/SKILL.md`
       matches; `FRAMEWORK_TEST_AREAS='20-lifecycle,10-readiness' bash tests/run.sh` passes.
 
-- [ ] **T7** — Reconcile the signature guard `tests/checks/96-signature-sweep.sh`:
+- [x] **T7** — Reconcile the signature guard `tests/checks/96-signature-sweep.sh`:
       change the `/plan` registry entry to `/plan <item-ref or initiative>`
       (`:40`), delete the `/roadmap` registry entry (`:47`), and remove
       `/roadmap` from `AGENTS_REQUIRED` (`:226`), `README_REQUIRED` (`:228`),
@@ -106,7 +106,7 @@ surfaces and its registry agree.
       Verify: `grep -nF 'roadmap' tests/checks/96-signature-sweep.sh` returns
       nothing; `bash tests/run.sh` passes (all areas, `0 failed`).
 
-- [ ] **T8** — Verify the whole change: run the suite, confirm the scope, and
+- [x] **T8** — Verify the whole change: run the suite, confirm the scope, and
       confirm no new surface or rewritten artifact. [AC12, AC13, AC14]
       [depends: T1, T2, T3, T4, T5, T6, T7]
       Verify: `bash tests/run.sh` → `TOTAL: <n> passed, 0 failed`;

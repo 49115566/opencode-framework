@@ -137,7 +137,7 @@ then land it with `/ship fix`.
 ```mermaid
 flowchart LR
     spec["/spec &lt;feature or problem description | item-ref&gt;"] --> specmd["spec.md"]
-    specmd --> plan["/plan &lt;item-ref&gt;"]
+    specmd --> plan["/plan &lt;item-ref or initiative&gt;"]
     plan --> design["design.md<br/>tasks.md"]
     design --> build["/build [item-ref or task-id]"]
     build --> code["code + [x] tasks"]
@@ -181,10 +181,11 @@ Each phase reads the previous artifact and writes its own. Full details in
 [`docs/workflow.md`](docs/workflow.md).
 
 For a broad, multi-feature initiative, plan first with
-`/roadmap <initiative> | /roadmap revise <item-ref>`: the create form authors a
-parent roadmap item (`work/<NNNN-slug>/roadmap.md`) enumerating child features and
-their dependencies, each nested at `work/<NNNN-slug>/<MMMM-slug>/`, and the revise
-form amends an existing parent in place. Every child is then addressed by its
+`/plan <item-ref or initiative>`: the create form authors a parent work item
+(`work/<NNNN-slug>/manifest.md`) enumerating child features and their
+dependencies, each nested at `work/<NNNN-slug>/<MMMM-slug>/`, and the
+existing-item form designs a single feature or amends an existing node's
+decomposition in place. Every child is then addressed by its
 **canonical reference** (`NNNN-slug/MMMM-slug`) and runs the ordinary lifecycle
 unchanged. A standalone item is still just `NNNN-slug`.
 
@@ -193,14 +194,13 @@ unchanged. A standalone item is still just `NNNN-slug`.
 | Command            | Agent       | What it does                                             |
 | ------------------ | ----------- | -------------------------------------------------------- |
 | `/spec <feature or problem description \| item-ref>`  | `product`   | Requirements → `spec.md`                                 |
-| `/plan <item-ref>` | `architect` | Design + task breakdown → `design.md`, `tasks.md`        |
+| `/plan <item-ref or initiative>` | `architect` | Design + task breakdown → `design.md`, `tasks.md`        |
 | `/build [item-ref or task-id]`    | `builder`   | Implement a task; update `tasks.md`                      |
 | `/test [item-ref]` | `tester`    | Verify acceptance criteria → `verify.md`                 |
 | `/visual [url or item-ref]`    | `visual`    | Browser QA of a running UI → `visual.md` (optional)      |
 | `/review [item-ref]`| `reviewer` | Read-only review → `review.md`                           |
 | `/ship [item-ref]` | `shipper`   | Branch, conventional commits, PR, `ship.md`              |
 | `/fix <bug description>`       | `builder`   | Lightweight reproduce → fix → test; land with `/ship fix` |
-| `/roadmap <initiative> \| /roadmap revise <item-ref>` | `roadmap` | Decompose a multi-feature initiative, or revise an existing parent in place → `roadmap.md` + child dirs |
 | `/status [item-ref]` | `status`  | Report each work item's phase (read-only)                |
 | `/conflicts [item-ref]` | `status`  | Report declared conflicts among unshipped plans (read-only) |
 | `/doctor`          | `doctor`    | Read-only framework drift check: inventories, counts, permissions, ignore rules — framework-maintainer only |
@@ -212,7 +212,6 @@ unchanged. A standalone item is still just `NNNN-slug`.
 | ----------- | ----------------- | --------------------------------------- | --------------------------- |
 | `product`   | primary (default) | `work/**` + `**/work/**`                | read-only, best-effort †    |
 | `architect` | primary           | `work/**` + `**/work/**`                | read-only, best-effort †    |
-| `roadmap`   | primary           | `work/**` + `**/work/**`                | read-only, best-effort †    |
 | `builder`   | primary           | any source                              | allow                       |
 | `tester`    | primary           | test files + `work/**` + `**/work/**`   | allow                       |
 | `visual`    | all               | `work/**` + `**/work/**`                | allow                       |
@@ -270,8 +269,8 @@ permission model.
 
 ```
 .opencode/
-  agent/     # 14 role prompts
-  command/   # 13 slash commands
+  agent/     # 13 role prompts
+  command/   # 12 slash commands
   skill/     # 11 knowledge skills
 docs/
   workflow.md               # lifecycle, phases, state, routing

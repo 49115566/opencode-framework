@@ -37,14 +37,13 @@ echo "== AC22 signature agreement =="
 canonical_signature() {
   case "$1" in
     /spec)    printf '%s' '/spec <feature or problem description | item-ref>' ;;
-    /plan)    printf '%s' '/plan <item-ref>' ;;
+    /plan)    printf '%s' '/plan <item-ref or initiative>' ;;
     /build)   printf '%s' '/build [item-ref or task-id]' ;;
     /test)    printf '%s' '/test [item-ref]' ;;
     /review)  printf '%s' '/review [item-ref]' ;;
     /ship)    printf '%s' '/ship [item-ref]' ;;
     /visual)  printf '%s' '/visual [url or item-ref]' ;;
     /fix)     printf '%s' '/fix <bug description>' ;;
-    /roadmap) printf '%s' '/roadmap <initiative> | /roadmap revise <item-ref>' ;;
     /status)  printf '%s' '/status [item-ref]' ;;
     /conflicts) printf '%s' '/conflicts [item-ref]' ;;
     /doctor|/bootstrap) printf '%s' "$1" ;;
@@ -219,15 +218,15 @@ EOF
 }
 
 # --- required sets per surface ----------------------------------------------
-# Root/template AGENTS.md: the six lifecycle commands plus the seven supporting
+# Root/template AGENTS.md: the six lifecycle commands plus the six supporting
 # commands. docs/workflow.md: the six phase commands plus `/visual`.
-# README.md: the thirteen Commands-table commands (a superset of the mermaid
-# labels). The skill: the ten routing targets.
-AGENTS_REQUIRED="/spec /plan /build /test /review /ship /fix /status /roadmap /bootstrap /visual /doctor /conflicts"
+# README.md: the twelve Commands-table commands (a superset of the mermaid
+# labels). The skill: the nine routing targets.
+AGENTS_REQUIRED="/spec /plan /build /test /review /ship /fix /status /bootstrap /visual /doctor /conflicts"
 WF_REQUIRED="/spec /plan /build /test /review /ship /visual"
-README_REQUIRED="/spec /plan /build /test /visual /review /ship /fix /roadmap /status /doctor /bootstrap /conflicts"
+README_REQUIRED="/spec /plan /build /test /visual /review /ship /fix /status /doctor /bootstrap /conflicts"
 MERMAID_REQUIRED="/spec /plan /build /test /review /ship /visual"
-SKILL_REQUIRED="/roadmap /spec /plan /build /test /visual /review /ship /status /conflicts"
+SKILL_REQUIRED="/spec /plan /build /test /visual /review /ship /status /conflicts"
 
 TEMPLATE_AGENTS="template/AGENTS.md"
 SWEEP_SKILL="$SKILL_DIR/workflow-lifecycle/SKILL.md"
@@ -267,7 +266,7 @@ run_surface "$SWEEP_SKILL" "$SKILL_REQUIRED" "$skill_data"
 # so each command file's `description:` line must carry `Usage: <canonical>`.
 # The two repaired commands (`/spec`, `/ship`) are included in the loop; the
 # `/ship` fix-landing clause is asserted separately below.
-ALL_COMMANDS='/spec /plan /build /test /review /ship /visual /fix /roadmap /status /doctor /bootstrap /conflicts'
+ALL_COMMANDS='/spec /plan /build /test /review /ship /visual /fix /status /doctor /bootstrap /conflicts'
 for _cmd in $ALL_COMMANDS; do
   _cmd_file="$CMD_DIR/${_cmd#/}.md"
   _cmd_canon="$(canonical_signature "$_cmd")"
