@@ -458,9 +458,9 @@ job_15() {
   J_AREA=85-conflict-guards
   J_EXPECTED='FAIL  AC23 column-layout'
   J_DESC="renamed the conflicts-with fixture column"
-  replace_first "$copy/tests/fixtures/declared-conflicts/items/9001-roadmap-a/roadmap.md" \
+  replace_first "$copy/tests/fixtures/declared-conflicts/items/9001-roadmap-a/manifest.md" \
     'conflicts-with' 'conflicts'
-  job_finish "$copy" tests/fixtures/declared-conflicts/items/9001-roadmap-a/roadmap.md
+  job_finish "$copy" tests/fixtures/declared-conflicts/items/9001-roadmap-a/manifest.md
 }
 
 # AC23 conflict guards: positional parse -> 85-conflict-guards
@@ -469,10 +469,10 @@ job_16() {
   J_AREA=85-conflict-guards
   J_EXPECTED='FAIL  AC23 positional-parse'
   J_DESC="reordered the fixture Children header"
-  replace_first "$copy/tests/fixtures/declared-conflicts/items/9001-roadmap-a/roadmap.md" \
+  replace_first "$copy/tests/fixtures/declared-conflicts/items/9001-roadmap-a/manifest.md" \
     '| Local id | Title | Scope | Depends on | conflicts-with | Canonical reference |' \
     '| Local id | Title | Scope | conflicts-with | Depends on | Canonical reference |'
-  job_finish "$copy" tests/fixtures/declared-conflicts/items/9001-roadmap-a/roadmap.md
+  job_finish "$copy" tests/fixtures/declared-conflicts/items/9001-roadmap-a/manifest.md
 }
 
 # AC23 conflict guards: cell resolution -> 85-conflict-guards
@@ -558,10 +558,10 @@ job_24() {
   J_AREA=87-backtrack-guards
   J_EXPECTED='AC24 roadmap-revision'
   J_DESC="reordered the fixture Children header"
-  replace_first "$copy/tests/fixtures/backtracking/items/9120-revised-roadmap/roadmap.md" \
+  replace_first "$copy/tests/fixtures/backtracking/items/9120-revised-roadmap/manifest.md" \
     '| Local id | Title | Scope | Depends on | conflicts-with | Canonical reference |' \
     '| Local id | Title | Scope | conflicts-with | Depends on | Canonical reference |'
-  job_finish "$copy" tests/fixtures/backtracking/items/9120-revised-roadmap/roadmap.md
+  job_finish "$copy" tests/fixtures/backtracking/items/9120-revised-roadmap/manifest.md
 }
 
 # AC24 backtrack guards: readiness-revocation -> 87-backtrack-guards

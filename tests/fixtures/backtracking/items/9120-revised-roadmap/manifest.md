@@ -1,16 +1,16 @@
 ---
 feature: 9120-revised-roadmap
-phase: roadmap
+phase: manifest
 status: final
 created: 2026-10-09
 updated: 2026-10-09
 ---
 
-# Roadmap — Fixture revised roadmap
+# Manifest — Fixture revised roadmap
 
 ## Initiative
 
-A fixture roadmap after a revision that re-scopes, adds, withdraws, and
+A fixture manifest after a revision that re-scopes, adds, withdraws, and
 re-sequences, exercising the revision-integrity rules.
 
 ## Assumptions

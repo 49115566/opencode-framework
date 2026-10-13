@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# AC13 — roadmap cycle rule and committed fixture.
+# AC13 — decomposing-node cycle rule and committed fixture.
 #
 # The cycle diagnostic (`CYCLIC-DEP`) is prose-only in the framework; this check
-# pins it to behavior. It reads the committed fixture
-# tests/fixtures/cyclic-roadmap/roadmap.md, parses the Children table's
+# pins it to behavior. It resolves the committed fixture's manifest (the retained
+# legacy alias tests/fixtures/cyclic-roadmap/roadmap.md), parses the Children table's
 # `Depends on` column with pure awk (no optional runtime), proves the graph is
 # genuinely cyclic, then asserts the documented rule contract: a child in a cycle
 # is never `ready`, and a cycle is reported as a non-fatal integrity finding
@@ -18,20 +18,56 @@
 # sourced by tests/run.sh, so it must not call exit. Prints ok/FAIL lines labelled
 # with its stable AC13 token.
 
-echo "== AC13 roadmap cycle rule and committed fixture =="
+echo "== AC13 decomposing-node cycle rule and committed fixture =="
+
+# Resolve a decomposing node's manifest through the same manifest-then-alias
+# lookup the sibling guards use: the modern `manifest.md` spelling when present,
+# else the recognized deprecated alias `roadmap.md`, else nothing. This fixture
+# is the suite's retained legacy-alias sample, so the guard must resolve it by
+# either spelling rather than hardcoding the file name.
+cycle_manifest() {  # $1 = node directory; prints the manifest path, or nothing
+  local d="$1" base
+  for base in manifest roadmap; do
+    if [ -f "$d/$base.md" ]; then printf '%s\n' "$d/$base.md"; return 0; fi
+  done
+  return 1
+}
 
 # Resolved relative to the repo root the suite was pointed at (run.sh cds to it),
 # so a mutated copy in tests/mutation.sh is observed. Never under work/.
-CYCLE_FIXTURE="tests/fixtures/cyclic-roadmap/roadmap.md"
+CYCLE_DIR="tests/fixtures/cyclic-roadmap"
+CYCLE_FIXTURE="$(cycle_manifest "$CYCLE_DIR" || true)"
 
-# (i) The committed fixture exists and is shaped like a roadmap artifact.
+# (i) The committed fixture exists and is shaped like a decomposing-node manifest.
 if [ -f "$CYCLE_FIXTURE" ]; then
   ok "AC13 committed cycle fixture exists at $CYCLE_FIXTURE"
+  # The retained fixture must resolve to the legacy alias spelling: it is the
+  # committed sample that proves the deprecated `roadmap.md` is recognized as an
+  # equivalent decomposing manifest, so alias coverage does not silently drop.
+  case "$CYCLE_FIXTURE" in
+    */roadmap.md)
+      ok "AC13 cycle fixture resolves to the retained legacy roadmap.md alias" ;;
+    *)
+      bad "AC13 cycle fixture did not resolve to the retained legacy roadmap.md alias (got '$CYCLE_FIXTURE')" ;;
+  esac
   need "$CYCLE_FIXTURE" 'phase: roadmap' "AC13 cycle fixture declares phase: roadmap"
+  need "$CYCLE_FIXTURE" '# Roadmap —' "AC13 cycle fixture keeps the legacy # Roadmap — heading"
   need "$CYCLE_FIXTURE" '| Local id | Title | Scope | Depends on | conflicts-with | Canonical reference |' \
     "AC13 cycle fixture has a Children table header"
 else
   bad "AC13 committed cycle fixture missing at $CYCLE_FIXTURE"
+fi
+
+# (i-b) AC3 (negative): the migration moved every other decomposing-node fixture
+# to `manifest.md`, so the retained cyclic alias must be the only `roadmap.md`
+# left under tests/fixtures/. A manifest-first resolver masks a stray duplicate,
+# so the fixture set is pinned explicitly; this names no migrated fixture's old
+# path (AC5), only the retained legacy alias the migration deliberately keeps.
+legacy_fixtures="$(find tests/fixtures -name roadmap.md 2>/dev/null | LC_ALL=C sort)"
+if [ "$legacy_fixtures" = "tests/fixtures/cyclic-roadmap/roadmap.md" ]; then
+  ok "AC13 the retained cyclic alias is the only roadmap.md fixture (AC3)"
+else
+  bad "AC13 unexpected roadmap.md fixture set (AC3): $(printf '%s' "$legacy_fixtures" | tr '\n' ' ')"
 fi
 
 # (ii) Parse the Children `Depends on` graph and prove it is cyclic. Kahn's
