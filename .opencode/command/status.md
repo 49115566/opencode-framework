@@ -1,5 +1,5 @@
 ---
-description: "Report the phase of every work item by inspecting the work/ directory, including roadmap parents and their children. Usage: /status [item-ref]"
+description: "Report the phase of every work item by inspecting the work/ directory, including decomposing nodes and their descendants at any depth. Usage: /status [item-ref]"
 agent: status
 ---
 
@@ -12,8 +12,12 @@ Follow your Status agent instructions exactly. In particular:
   marker and, where present, the item's `backtracks.md` finding/resolution
   entries, its `challenges.md` challenge/response/withdrawal entries, and the
   `ship.md` `reopened:` marker.
-- Detect a **roadmap parent** by the presence of `roadmap.md`; treat everything
-  else as a single-feature item. Decide this before deriving any phase.
+- Detect a **decomposing node** by the presence of `roadmap.md` — at any depth,
+  a pure container or a hybrid that also carries its own artifacts; treat
+  everything else as a single-feature item. Decide this before deriving any
+  phase. A decomposing node derives its phase from its own phase artifacts
+  first; only a manifest with no own phase artifacts derives the container phase
+  `roadmap`.
 - Derive each item's phase and derived condition using the "Derived state" table
   in `docs/workflow.md`, applying its precedence: the earliest `stale:` target
   `P` → `P (backtracked)`; a `reopened:` phase `P` on `ship.md` → `P (reopened)`;
@@ -27,20 +31,24 @@ Follow your Status agent instructions exactly. In particular:
   integrity observation without reordering it or inventing a finding code. Base
   the derivation on artifacts and contents, not timestamps. A `.gitkeep`-only
   child directory is `not started`.
-- For each roadmap parent, parse the **Children** table and compute each child's
-  readiness with the authoritative readiness definition in `docs/workflow.md` →
-  "Dependencies and readiness". Do not restate its branch sequence here. In
-  short: a `review.md` verdict of `approve` satisfies a dependency even when
-  unshipped, and presence of the dependency's `ship.md` satisfies it too; a
-  **recalled** dependency — its `ship.md` carrying a `reopened:` marker — does not
-  satisfy the dependency, so its dependents are reported `blocked`, naming the
-  recalled item as the unsatisfied dependency, until it re-ships; a child with no
-  dependencies is `ready`; a child in a cycle is never `ready`.
-  Name the specific blocking children for each blocked child.
-- Report the roadmap row separately from its children, showing
-  `<ready>/<total> ready` plus a distribution tally of its children across phases
-  (`<phase> <n>, ...`); list child rows beneath it. A standalone row keeps
-  `checked/total tasks`.
+- For each decomposing node — at any depth — parse its **Children** table and
+  compute each immediate child's readiness with the authoritative readiness
+  definition in `docs/workflow.md` → "Dependencies and readiness". Do not
+  restate its branch sequence here. In short, applied independently at every
+  level (a child resolves under its own node's canonical reference): a
+  `review.md` verdict of `approve` satisfies a dependency even when unshipped,
+  and presence of the dependency's `ship.md` satisfies it too; a **recalled**
+  dependency — its `ship.md` carrying a `reopened:` marker — does not satisfy the
+  dependency, so its dependents are reported `blocked`, naming the recalled item
+  as the unsatisfied dependency, until it re-ships; `Depends on` is sibling-only,
+  and a target that is itself a decomposing node is satisfied by its own signal
+  only; a child in a cycle is never `ready`; a child with no dependencies is
+  `ready`. Name the specific blocking children for each blocked child.
+- Report each decomposing node's row separately from its descendants, showing
+  `<ready>/<total> ready` plus a distribution tally of its immediate children
+  across phases (`<phase> <n>, ...`); render its descendants indented beneath it
+  to arbitrary depth, each node showing its derived phase and its readiness
+  (`ready`/`blocked: <local ids>`). A standalone row keeps `checked/total tasks`.
 - Emit `DANGLING-DEP` / `MISSING-CHILD` / `UNLISTED-CHILD` / `CYCLIC-DEP`
   findings for broken or cyclic references. Report them without failing and
   without modifying anything. An `UNLISTED-CHILD` observation for a child

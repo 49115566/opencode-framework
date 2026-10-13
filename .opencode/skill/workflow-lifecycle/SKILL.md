@@ -60,6 +60,11 @@ The Phase column mirrors that table's Phase cell: the base phases (`not started`
 `spec`, `design`, `build`, `test`, `review`, `ship`, `shipped`, `roadmap`) plus
 these derived labels.
 
+A **decomposing node** — a directory containing `roadmap.md`, at any depth —
+derives its phase from its **own phase artifacts first**; only a manifest with no
+own phase artifacts derives the container phase `roadmap`, and own artifacts take
+precedence over the manifest at every depth.
+
 - `P (backtracked)` — the earliest `stale:` marker across the item's artifacts
   names phase `P`. The marked artifact is not the item's current phase artifact
   and is never read as a satisfied downstream prerequisite.
@@ -82,10 +87,11 @@ out-of-scope for a challenge, because post-ship reversal is recall's domain
 overlay, which is evaluated before the artifact-presence and verdict rows. A
 `stale: roadmap` token maps to `spec`. `/status` adds a per-item Notes line naming
 the target phase and affected upstream artifact and the invalidated downstream
-artifacts (or `none`), the recall, or the open challenge; readiness is unchanged —
-a recalled dependency does not satisfy a dependent, while a non-recalled `ship.md`
-presence and an `approve` verdict still do (`docs/workflow.md` → "Dependencies
-and readiness").
+artifacts (or `none`), the recall, or the open challenge; readiness is derived
+independently at every level of the tree and is otherwise unchanged — a recalled
+dependency does not satisfy a dependent, while a non-recalled `ship.md` presence
+and an `approve` verdict still do (`docs/workflow.md` → "Dependencies and
+readiness").
 
 ## Handoff block
 
