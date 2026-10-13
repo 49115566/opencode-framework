@@ -407,6 +407,9 @@ truncated, even for a large collision set.
         manifest's** `Children` `Canonical reference` cell on the changed path;
       - **every descendant's** `parent:` value on the changed path;
       - every `Depends on` cell that names the old local id;
+      - every `conflicts-with` target that names the old local id or old
+        canonical reference — the manifest `Children` `conflicts-with` cell and
+        the `design.md` frontmatter `conflicts-with` value;
       - the `ship.md` record and the PR/handoff paths; and
       - any `prose` naming the old reference.
       Assert that `no reference to the old canonical reference remains`, by

@@ -114,6 +114,7 @@ with a stable `ACn` token.
 | `80-cycle-fixture.sh` | decomposing-node cycle rule and committed fixture |
 | `85-conflict-guards.sh` | declared-conflict declaration model and check guards (suite token `AC23`) |
 | `87-backtrack-guards.sh` | backtracking and reopen guards (suite token `AC24`) |
+| `88-renumber-sweep.sh` | renumber-sweep reference completeness (suite token `AC26`) |
 | `90-packaging.sh` | packaging agreement: manifest ↔ changelog, copy-set, `Layout` (suite tokens `AC18`–`AC20`) |
 | `95-split-guard.sh` | adoption split guard: quickstart sources, `docs/customization.md` contract, `template/AGENTS.md` placeholder profile and shared-body parity, copy-set surfaces, `bootstrap` deny rules (suite token `AC21`) |
 | `96-signature-sweep.sh` | command signature agreement across the in-scope surfaces plus the `ask` agent description (suite token `AC22`) |
@@ -214,6 +215,22 @@ only the committed `tests/fixtures/backtracking/` fixture root and never live
 A live `/status` render, a real backtrack, or a `/ship recall` is not executable
 in CI; like the cycle diagnostic's LLM-run residual, it remains a documented
 manual check.
+
+`88-renumber-sweep.sh` uses the stable suite token `AC26`, which guards the
+renumber-sweep reference completeness of "Renumbering after a parallel merge"
+(`docs/artifact-conventions.md` step 4) and its operational mirror
+(`.opencode/skill/merge-conflict/SKILL.md`, the class (c) renumber step 3) against
+the recursive `conflicts-with` grammar. Both lists must enumerate, besides the
+existing directory / `feature:` / `Children` / `parent:` / `ship.md` / prose
+bullets, every `Depends on` cell naming the old local id and every
+`conflicts-with` target naming the old local id or old canonical reference — the
+manifest `Children` cell and the `design.md` frontmatter value — and the
+authority must carry the skill's closing "no reference to the old canonical
+reference remains" assertion, so a renumber cannot leave a declaration stale and
+make the read-only declared-conflict check report `DANGLING-DEP` (or
+`DRIFT-FACT`). It adds no production checker and no new class or code; like
+`95-split-guard.sh` and `96-signature-sweep.sh` it is a live-surface agreement
+check reading only committed surfaces, never live `work/**`.
 
 `25-review-severity-bar.sh` uses the stable suite token `AC25`, which maps to the
 `0009-minor-nit-resolution` acceptance criteria: spec AC1/AC2/AC8 → `AC25

@@ -720,9 +720,15 @@ ships:
    - the owning manifest's `Children` row `Local id` and `Canonical reference`
      cells for the renumbered node, and **every intermediate manifest's**
      `Children` `Canonical reference` cell on the changed path;
+   - every `Depends on` cell that names the old local id;
+   - every `conflicts-with` target that names the old local id or old canonical
+     reference — the manifest `Children` `conflicts-with` cell and the
+     `design.md` frontmatter `conflicts-with` value;
    - **every descendant's** `parent:` value on the changed path;
    - `ship.md` and PR/handoff paths; and
    - any prose that names the old reference.
+   Assert that `no reference to the old canonical reference remains`, by
+   scanning the repository for the old canonical reference.
 5. **Record.** Note the renumber in the item's newest artifact frontmatter
    `notes` (or the PR description when the artifacts are already immutable
    history).
