@@ -1438,7 +1438,7 @@ disagreement, this section is the source of truth.
 | ----- | -------- | ------------------- |
 | (a) shared-surface textual conflict | Both branches edit the same framework file, so Git emits conflict markers. | `README.md`, `AGENTS.md`, `docs/*.md`, `.opencode/{agent,command,skill}/**`, `template/**`, `tests/checks/**` |
 | (b) `work/` artifact conflict | Both branches edit the same committed work artifact. | Decomposition `Children` / `Depends on` tables, artifact frontmatter, nested-child intersections |
-| (c) duplicate sequence number | Both branches allocate the same `NNNN`, or the same per-parent `MMMM`. | Top-level `work/<NNNN-slug>`, per-parent `work/<NNNN-slug>/<MMMM-slug>` |
+| (c) duplicate sequence number | Both branches allocate the same top-level `NNNN`, or the same local `MMMM` under the **same parent at any node** of the tree. | Top-level `work/<NNNN-slug>`; and, for any decomposing node at any depth, its immediate children `work/<node-ref>/<MMMM-slug>` |
 | (d) derived-agreement drift | A duplicated inventory or count fact merges cleanly but the two sides now disagree. | README Layout counts, README Skills table |
 
 ### Lifecycle placement
@@ -1448,12 +1448,13 @@ before the shipper performs any ship operation, and a **post-merge integrity
 pass** after a merge to the default branch. The pre-ship reconcile merges the
 default branch forward into the item branch and resolves any conflicts, so a
 ship is never built on a stale merge base. The post-merge integrity pass is a
-documented, shipper-owned checklist run on the merged tree: re-scan top-level
-and per-parent `work/` directories for duplicate 4-digit prefixes, re-check
-every `Depends on` against its `Children` table for dangling, missing,
-unlisted, or cyclic references, and re-run the repository's own configured test
-command — the Project profile `Test:` value — to surface derived-agreement
-drift.
+documented, shipper-owned checklist run on the merged tree: re-scan
+**every node of the recursive tree** for duplicate 4-digit prefixes — the top
+level against the top-level items, and each decomposing node at any depth
+against its own immediate children, independently — re-check every `Depends on`
+against **its own node's** `Children` table for dangling, missing, unlisted, or
+cyclic references, and re-run the repository's own configured test command — the
+Project profile `Test:` value — to surface derived-agreement drift.
 
 When the branch is already up to date, both steps are no-ops and do not error.
 
@@ -1488,18 +1489,22 @@ there.
 The invariants this merge-conflict contract protects are stated once here. The
 guard is **prompt behavior only**: there is **no committed checker, script, helper, or executable tool** for it and **no tests/ agreement area**, and no separate checker exists. It runs at two prompt-only enforcement points and adds no separate guard:
 
-- **`/status`** reports the invariants **offline and read-only** on demand, as
-  the guard's read-only window.
-- The **`/ship` post-merge integrity pass** runs **after a merge to the default
-  branch**, as the `shipper`-owned checklist described under "Lifecycle
-  placement".
+- **`/status`** reports the invariants **at every node, offline and read-only**
+  on demand, as the guard's read-only window.
+- The **`/ship` post-merge integrity pass** runs **at every node** and **after a
+  merge to the default branch**, as the `shipper`-owned checklist described under
+  "Lifecycle placement".
 
-The guard observes the same invariant set at both points, and neither defines a separate guard. The invariant set, with the finding code that names each invariant and the class it belongs to:
+The guard observes the same invariant set at both points, and neither defines a separate guard.
+
+The invariant set is evaluated at **every node** of the recursive tree: the top level against the top-level items, and each decomposing node at any depth against its own immediate children, independently — no node's check depends on another's. Both enforcement points below observe the full invariant set at every node. The duplicate-sequence rows agree with the rule stated once in `docs/workflow.md` → "Multiple work items" and restate no competing duplicate rule.
+
+The invariant set, with the finding code that names each invariant and the class it belongs to:
 
 | Invariant | Code | Class |
 | --------- | ---- | ----- |
 | no two top-level `work/` items share a 4-digit `NNNN` prefix | `DUPLICATE-PREFIX` | `(c)` |
-| no two children of one decomposing parent share a 4-digit `MMMM` | `DUPLICATE-CHILD` | `(c)` |
+| no two same-parent children of one decomposing node share a 4-digit `MMMM`, at any depth | `DUPLICATE-CHILD` | `(c)` |
 | every `Depends on` resolves to an existing `Children` row and child directory | `DANGLING-DEP` | `(b)` |
 | the stored dependency graph is acyclic | `CYCLIC-DEP` | `(b)` |
 | no child is missing — a `Children` row whose child directory is absent | `MISSING-CHILD` | `(b)` |
@@ -1524,9 +1529,10 @@ suite. The duplicated-inventory/count-fact invariant is nevertheless
 
 ### Relationship to renumbering
 
-Duplicate sequence numbers — class (c) — are handled by "Renumbering after a
-parallel merge" in `docs/artifact-conventions.md`. This section defers to and
-extends that rule; it never defines a second renumbering rule.
+Duplicate sequence numbers — class (c) — are handled **at any depth** by
+"Renumbering after a parallel merge" in `docs/artifact-conventions.md`. Those
+steps apply identically to a collision at any node of the tree; this section
+defers to and extends that rule and never defines a second renumbering rule.
 
 ## Resuming and interruption
 

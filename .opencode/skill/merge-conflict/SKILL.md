@@ -70,26 +70,33 @@ pre-flights may run without interfering — they take no lock and write nothing.
      directories whose 4-digit `NNNN` prefix is equal are a duplicate top-level
      class `(c)` collision, even when their slugs differ. Compare the directory
      names under `work/` to find them.
-   - **Duplicate per-parent roadmap child numbers.** Within each roadmap parent,
-     any two child directories whose local 4-digit `MMMM` prefix is equal are a
-     duplicate per-parent class `(c)` collision. Check every parent the same way.
-   - **Roadmap graph faults.** For each `roadmap.md`, resolve every `Depends on`
-     local id against the `Children` table and report each `dangling` reference
-     (a dependency with no child directory or no table row), `missing` child (a
-     Children-table row whose directory is absent), `unlisted` child (a child
-     directory absent from the table), and `cyclic` dependency (a cycle in the
-     graph). These are class `(b)`.
+   - **Duplicate same-parent child numbers at every node.** At every node of the
+     recursive tree — the top level and each decomposing node at any depth — any
+     two of one node's immediate child directories whose local 4-digit `MMMM`
+     prefix is equal are a duplicate class `(c)` collision. Check every
+     decomposing node at any depth the same way, scanning each node's own
+     immediate children; the rule is stated once in `docs/workflow.md` →
+     "Multiple work items".
+   - **Roadmap graph faults.** For each decomposing node at any depth — its
+     `manifest.md`, or the legacy `roadmap.md` alias — resolve every `Depends on`
+     local id in **its own** `Children` table and report each `dangling`
+     reference (a dependency with no child directory or no table row), `missing`
+     child (a Children-table row whose directory is absent), `unlisted` child (a
+     child directory absent from the table), and `cyclic` dependency (a cycle in
+     the graph). These are class `(b)`.
    - **Duplicated inventory/count facts.** Compare README.md's Layout counts
      (`# N role prompts`, `# N slash commands`, `# N knowledge skills`) and its
      Skills table membership with the on-disk `.opencode/{agent,command,skill}/`
      sets, and report any disagreement as class `(d)` drift.
    - **Cross-branch prefix collision.** A class `(c)` collision can exist only
      between the two branches: each may add a distinct directory under the same
-     `NNNN`. Compare the local `work/` directory names with
-     `git ls-tree --name-only origin/<default>:work` (and per-parent for roadmap
-     children), and report a collision when a 4-digit prefix is shared by two
-     different canonical references. `/status` stays offline and does not perform
-     this cross-branch read.
+     prefix. Descend **every node at every depth**, comparing each node's
+     immediate children against the corresponding
+     `git ls-tree --name-only origin/<default>:work/<node-ref>/` path — the top
+     level against `git ls-tree --name-only origin/<default>:work` — and report a
+     collision when a 4-digit prefix is shared by two different canonical
+     references. `/status` stays offline and does not perform this cross-branch
+     read.
 
 ### Finding grammar
 
@@ -281,9 +288,10 @@ escalate).
 
 6. **Post-merge integrity pass.** After a merge to the default branch, run this
    documented, shipper-owned checklist on the merged tree:
-   - re-scan top-level and per-parent `work/` directories for duplicate 4-digit
-     prefixes;
-   - re-check every roadmap `Depends on` against its `Children` table for
+   - re-scan **every node** of the recursive tree for duplicate 4-digit prefixes —
+     the top level against the top-level items, and each decomposing node at any
+     depth against its own immediate children, independently;
+   - re-check every `Depends on` against **its own node's** `Children` table for
      dangling, missing, unlisted, or cyclic references;
    - re-run the repository's own configured test command — the Project profile
      `Test:` value — to surface derived-agreement drift.
@@ -362,16 +370,17 @@ truncated, even for a large collision set.
    than inventing a rule. This skill `never defines a second renumbering rule`.
    The `work/` renumber procedure is:
 
-   1. **Detect.** After the merge, scan the merged tree for two different
-      top-level `work/` references that share an `NNNN` 4-digit prefix, and for
-      two child references of one roadmap parent that share an `MMMM` 4-digit
-      prefix. Include a collision that exists only between the item branch and
-      the default branch: compare the local `work/` names with
-      `git ls-tree --name-only origin/<default>:work` (and, for each roadmap
-      parent, `git ls-tree --name-only origin/<default>:work/<parent>`). Two
-      directories that share a prefix under different slugs are a class (c)
-      collision too. Report each collision with its `canonical reference(s)`;
-      report every colliding prefix, `never truncated`, even for a large set.
+   1. **Detect.** After the merge, scan the merged tree at **every node at every
+      depth**: two different top-level `work/` references that share an `NNNN`
+      4-digit prefix, and, for every decomposing node at any depth, two of its
+      immediate child references that share an `MMMM` 4-digit prefix. Include a
+      collision that exists only between the item branch and the default branch:
+      at every node at every depth, compare the local children against
+      `git ls-tree --name-only origin/<default>:work/<node-ref>/` (the top level
+      against `git ls-tree --name-only origin/<default>:work`). Two directories
+      that share a prefix under different slugs are a class (c) collision too.
+      Report each collision with its `canonical reference(s)`; report every
+      colliding prefix, `never truncated`, even for a large set.
 
    2. **Choose the item to renumber by the existing rule**, in order. Renumber
       the item that is `not yet approved or shipped` — shipped is the presence
@@ -388,14 +397,20 @@ truncated, even for a large collision set.
       was deleted — allocate the next free number instead.
 
    3. **Move the chosen item and rewrite every reference `in the same change`.**
-      Move it with `git mv work/<old> work/<new>`, and in the same change update
-      the directory name; the artifact `feature` frontmatter; a nested child's
-      `parent` value; the roadmap `Children` table's `Local id` and
-      `Canonical reference` cells for the renumbered row; every `Depends on`
-      cell that names the old local id; the `ship.md` record and the PR/handoff
-      paths; and any `prose` naming the old reference. Assert that
-      `no reference to the old canonical reference remains`, by scanning the
-      repository for the old canonical reference.
+      Move it with `git mv work/<old> work/<new>`, and in the same change
+      rewrite the whole affected subtree's references:
+      - the directory name;
+      - the node's own `feature:` frontmatter value, and **every descendant
+        artifact's** `feature:` value (the full canonical reference);
+      - the owning manifest's `Children` row `Local id` and `Canonical
+        reference` cells for the renumbered node, and **every intermediate
+        manifest's** `Children` `Canonical reference` cell on the changed path;
+      - **every descendant's** `parent:` value on the changed path;
+      - every `Depends on` cell that names the old local id;
+      - the `ship.md` record and the PR/handoff paths; and
+      - any `prose` naming the old reference.
+      Assert that `no reference to the old canonical reference remains`, by
+      scanning the repository for the old canonical reference.
 
    4. **Escalate an undecidable renumber rather than guess.** If the child
       cannot be distinguished (`both are already shipped`, or approval/shipped
