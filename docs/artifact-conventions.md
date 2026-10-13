@@ -17,7 +17,7 @@ Every artifact begins with:
 ```yaml
 ---
 feature: 0001-add-dark-mode   # the item's full canonical reference: one segment for a standalone item, more when nested
-phase: spec                   # spec | design | roadmap | tasks | test | visual | review | ship
+phase: spec                   # spec | design | manifest | tasks | test | visual | review | ship
 status: draft                 # draft | final | blocked
 created: 2026-01-31           # ISO-8601 date, first creation
 updated: 2026-02-04           # ISO-8601 date, last edit
@@ -50,10 +50,12 @@ Rules:
   `docs/workflow.md` → "Declared conflicts (`conflicts-with`)".
 - `stale` is optional and marks this artifact as invalidated by a backtrack whose
   target phase is the named token. Its token is a target phase label
-  (`spec | design | build | test | review`) — plus `roadmap` for a
-  phase→parent-`roadmap.md` backtrack — not a new `phase` value. The owning phase
-  clears the marker when it re-runs; until then the artifact is neither the item's
-  current phase artifact nor a satisfied downstream prerequisite. See
+  (`spec | design | build | test | review`) — plus `manifest` for a
+  phase→parent-manifest backtrack — not a new `phase` value. A legacy
+  `stale: roadmap` is accepted as the deprecated equivalent of `stale: manifest`
+  and maps to `spec` when the item's phase is derived. The owning phase clears the
+  marker when it re-runs; until then the artifact is neither the item's current
+  phase artifact nor a satisfied downstream prerequisite. See
   `docs/workflow.md` → "Phase reversal (backtracking)".
 - `reopened` is optional and appears only on `ship.md`. It is set by
   `/ship recall <item-ref> <phase>` when a shipped item's PR is denied, closed, or
@@ -94,19 +96,20 @@ reference and is not treated as one.
   children, so the path nests to arbitrary depth.
 - A reference resolves to the directory `work/<item-ref>/` by following its
   segments in order: `work/0007-billing/` for a standalone item,
-  `work/0002-agentic-roadmaps/0001-roadmap-model/` for a two-segment child, and
-  `work/<NNNN-slug>/<MMMM-slug>/<MMMM-slug>/` and deeper for a longer path.
+  `work/0006-parallel-plan-conflicts/0001-conflict-declaration-model/` for a
+  two-segment child, and `work/<NNNN-slug>/<MMMM-slug>/<MMMM-slug>/` and deeper
+  for a longer path.
 - The one-segment standalone form is unchanged, and the two-segment form is a
   **special case** of the recursive path, not a maximum depth.
-- A **roadmap** is a parent work item identified by its `roadmap.md` artifact.
-  Its child features are nested at `work/<parent-ref>/<MMMM-slug>/`, and each
-  child later runs the ordinary per-feature lifecycle unchanged. A pure roadmap
-  parent holds only `roadmap.md`; a node that also runs its own lifecycle holds
-  the manifest alongside its own phase artifacts (see "`roadmap.md` — the
-  manifest of a decomposing node").
+- A **decomposing node** is a parent work item identified by its manifest
+  (`manifest.md`, or the legacy `roadmap.md` alias). Its child features are nested
+  at `work/<parent-ref>/<MMMM-slug>/`, and each child later runs the ordinary
+  per-feature lifecycle unchanged. A pure container holds only its manifest; a
+  hybrid node that also runs its own lifecycle holds the manifest alongside its
+  own phase artifacts (see "`manifest.md` — the manifest of a decomposing node").
 - Phase commands accept an `item-ref` wherever a `<slug>` was accepted before. A
   one-segment reference behaves exactly as it did before nesting existed, and
-  standalone items require no `parent` and no roadmap metadata.
+  standalone items require no `parent` and no manifest metadata.
 
 Nested children's artifacts set `feature` to the full canonical reference
 (their path relative to `work/`) and MAY set `parent:` to the **immediate**
@@ -121,7 +124,7 @@ in `[depends: T1]` annotations. Check boxes are `- [ ]` / `- [x]`.
 
 ## Templates
 
-### `roadmap.md` (roadmap) — the manifest of a decomposing node
+### `manifest.md` (manifest) — the manifest of a decomposing node
 
 A **manifest** is the child-enumeration artifact of any node that decomposes
 into children. It is the generic enumeration source for a decomposing node
@@ -131,21 +134,23 @@ decomposes, or a node that carries a manifest alongside its own phase artifacts
 a node that decomposes records its children in its manifest rather than in a
 spec, design, tasks, verification, or review of its own, though a hybrid node may
 carry both at once (see `docs/workflow.md` → "The recursive lifecycle model").
-The manifest's **shipped concrete spelling** is `roadmap.md` with
-`phase: roadmap` at **every** depth; no new file name, `phase` value, or
-artifact-presence row is introduced. The `Children` table is the machine-readable
-source of the child set and dependency graph; `/status` parses it directly.
+The manifest's **concrete spelling** is `manifest.md` with `phase: manifest` at
+**every** depth; no new artifact-presence row is introduced. The legacy
+`roadmap.md` with `phase: roadmap` remains a **recognized deprecated alias**,
+accepted so an existing decomposing node stays valid with no migration, but it is
+never used for a new manifest. The `Children` table is the machine-readable source
+of the child set and dependency graph; `/status` parses it directly.
 
 ```markdown
 ---
 feature: NNNN-slug
-phase: roadmap
+phase: manifest
 status: final
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 ---
 
-# Roadmap — <initiative title>
+# Manifest — <initiative title>
 
 ## Initiative
 
@@ -177,7 +182,7 @@ What the initiative is and who it serves.
 - **Revised <YYYY-MM-DD>.** Triggered by `work/<parent>/<child-ref>/` (finding in
   its `backtracks.md`). Operations: <re-scope/add/withdraw/re-sequence>.
   Invalidated: <affected child refs>. See git history for the pre-revision
-  roadmap.
+  manifest.
 ```
 
 - **Local id** is the child's directory name, `MMMM-slug`, scoped to the
@@ -201,19 +206,20 @@ What the initiative is and who it serves.
   in `docs/workflow.md` → "Declared conflicts (`conflicts-with`)". The declaration
   is advisory and never changes `Depends on` or readiness. The shipped grammar is
   preserved unchanged; generalizing `conflicts-with` targets to arbitrary depth is
-  deferred to the successor roadmap that owns "`conflicts-with` at every level".
+  deferred to the successor decomposing node that owns "`conflicts-with` at every
+  level".
 - **Withdrawal record** — a revision that withdraws a child removes its row from
   the `Children` table and `## Sequencing` but preserves the child directory and
   its spent local number (never reused), recording the withdrawal and its rationale
   under `## Open issues` in the shape above. The named directory is the recognition
   signal for a deliberate withdrawal: an `UNLISTED-CHILD` observation for it is
   report-only and never auto-repaired. See `docs/workflow.md` →
-  "Revising a roadmap".
+  "Revising a decomposition".
 - **Revision note** — a revision changes the frontmatter `updated` date and appends
   a revision note under `## Open issues` naming the date, the triggering child, the
   operations applied, and the invalidated children; the pre-revision content stays
   recoverable from committed git history. See `docs/workflow.md` →
-  "Revising a roadmap".
+  "Revising a decomposition".
 
 ### `spec.md` (product)
 
@@ -689,7 +695,7 @@ ships:
 
 1. **Detect.** Any two top-level `work/` directories whose 4-digit prefix is
    equal are a collision; likewise any two canonical references that differ only
-   by slug under the same number. Check each roadmap parent's child numbers the
+   by slug under the same number. Check each decomposing node's child numbers the
    same way.
 2. **Choose one.** Renumber the item that is not yet approved or shipped; if both
    are unshipped, renumber the one whose directory was added later by commit time
@@ -699,7 +705,7 @@ ships:
    above.
 4. **Update every reference in the same change:** the directory name; the
    artifact `feature:` frontmatter value; a nested child's `parent:` value; the
-   roadmap `Children` table `Canonical reference` cells; `ship.md` and
+   manifest `Children` table `Canonical reference` cells; `ship.md` and
    PR/handoff paths; and any prose that names the old reference.
 5. **Record.** Note the renumber in the item's newest artifact frontmatter
    `notes` (or the PR description when the artifacts are already immutable
