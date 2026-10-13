@@ -13,7 +13,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. After T1 the suite i
 temporarily red until the guard tasks land; each task's own `Verify:` states the
 check that must pass for that task.
 
-- [ ] **T1** — Migrate the five decomposing-node fixtures to the modern spelling.
+- [x] **T1** — Migrate the five decomposing-node fixtures to the modern spelling.
       `git mv` `tests/fixtures/declared-conflicts/items/9001-roadmap-a/roadmap.md`,
       `tests/fixtures/declared-conflicts/items/9002-roadmap-b/roadmap.md`,
       `tests/fixtures/declared-conflicts/items/9003-roadmap-old/roadmap.md`,
@@ -31,7 +31,7 @@ check that must pass for that task.
       `tests/fixtures/cyclic-roadmap/roadmap.md`; `ls tests/fixtures/declared-conflicts/items/9001-roadmap-a tests/fixtures/backtracking/items/9120-revised-roadmap`
       shows `manifest.md` and no `roadmap.md`; `grep -rl 'phase: manifest' tests/fixtures` lists the five migrated files.
 
-- [ ] **T2** — Reconcile `tests/checks/85-conflict-guards.sh` to the migrated
+- [x] **T2** — Reconcile `tests/checks/85-conflict-guards.sh` to the migrated
       fixtures and to both manifest spellings. Add a local resolver
       (`<dir>/manifest.md` when present, else `<dir>/roadmap.md`, else empty) and
       use it for the parent detection in `guard_build_events` (the parent
@@ -47,7 +47,7 @@ check that must pass for that task.
       `TOTAL:` with `0 failed`; `grep -n 'roadmap.md' tests/checks/85-conflict-guards.sh`
       returns nothing.
 
-- [ ] **T3** — Reconcile `tests/checks/87-backtrack-guards.sh` to the migrated
+- [x] **T3** — Reconcile `tests/checks/87-backtrack-guards.sh` to the migrated
       backtracking manifests and to both spellings. Add the same local resolver
       and use it in `bt_record_refs`, `bt_challenge_refs`, and `fixture_derived`
       to skip a decomposing-node fixture by either spelling, and to resolve the
@@ -67,7 +67,7 @@ check that must pass for that task.
       returns nothing; `grep -c 'AC24 roadmap-revision' tests/checks/87-backtrack-guards.sh`
       is unchanged (the stable label is preserved).
 
-- [ ] **T4** — Reconcile `tests/checks/80-cycle-fixture.sh` to recognize the
+- [x] **T4** — Reconcile `tests/checks/80-cycle-fixture.sh` to recognize the
       retained legacy alias. Resolve the cycle fixture through the same
       manifest-then-alias lookup (prefer
       `tests/fixtures/cyclic-roadmap/manifest.md`, fall back to `roadmap.md`) and
@@ -84,7 +84,7 @@ check that must pass for that task.
       returns nothing; `grep -n 'AC13 committed cycle fixture missing' tests/checks/80-cycle-fixture.sh`
       still matches.
 
-- [ ] **T5** — Update `tests/mutation.sh` fixture paths. Repoint `job_15` and
+- [x] **T5** — Update `tests/mutation.sh` fixture paths. Repoint `job_15` and
       `job_16` at `tests/fixtures/declared-conflicts/items/9001-roadmap-a/manifest.md`
       (both the mutation target and the `job_finish` restore path) and `job_24`
       at `tests/fixtures/backtracking/items/9120-revised-roadmap/manifest.md`;
@@ -95,7 +95,7 @@ check that must pass for that task.
       `grep -n 'roadmap-a/roadmap.md\|9120-revised-roadmap/roadmap.md' tests/mutation.sh`
       returns nothing.
 
-- [ ] **T6** — Modernize `tests/README.md` terminology. Change the
+- [x] **T6** — Modernize `tests/README.md` terminology. Change the
       `80-cycle-fixture.sh` Checks-table cell from "roadmap cycle rule and
       committed fixture" to a manifest/decomposing-node wording. Keep every
       stable `ACn` token, agreement-area label (including `AC24 roadmap-revision`),
@@ -106,7 +106,7 @@ check that must pass for that task.
       `FRAMEWORK_TEST_AREAS=90-packaging,95-split-guard bash tests/run.sh` prints
       `TOTAL:` with `0 failed`.
 
-- [ ] **T7** — Full verification and scope checks. Run the whole suite and the
+- [x] **T7** — Full verification and scope checks. Run the whole suite and the
       mutation pass; confirm the seven grandfathered parents and every
       out-of-scope surface are untouched; confirm no new agreement area, guard,
       command, or artifact kind was introduced and that this item's committed
