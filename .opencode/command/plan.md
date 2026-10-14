@@ -23,9 +23,10 @@ Follow your Architect agent instructions exactly. In particular:
   existing downstream artifacts (`design.md`, `tasks.md`, `verify.md`,
   `review.md`) `stale: spec`, do not edit `spec.md`, and end with
   `Next: /spec <item-ref>`.
-- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item or
-  `NNNN-slug/MMMM-slug` for a roadmap child; every `work/<item-ref>/` path
-  resolves to that item's directory.
+- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item, or a
+  nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per
+  `docs/artifact-conventions.md` → "Work item references", resolving to the
+  directory `work/<item-ref>/`.
 - Recon the affected code and its conventions. Delegate broad recon to the
   `scout` subagent.
 - Select the planning path from the argument and the node's committed state: an

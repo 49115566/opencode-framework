@@ -9,9 +9,10 @@ Follow your Builder agent instructions exactly. In particular:
 
 - Read `AGENTS.md`, then the work item's `spec.md`, `design.md`, and `tasks.md` —
   and, for a decomposing node, its `manifest.md`.
-- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item or
-  `NNNN-slug/MMMM-slug` for a roadmap child; every `work/<item-ref>/` path
-  resolves to that item's directory.
+- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item, or a
+  nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per
+  `docs/artifact-conventions.md` → "Work item references", resolving to the
+  directory `work/<item-ref>/`.
 - Resolve the project's test, lint, and typecheck commands via the
   `project-discovery` skill if `AGENTS.md` does not already state them.
 - Re-entry: read `work/<item-ref>/backtracks.md` for an entry whose target phase

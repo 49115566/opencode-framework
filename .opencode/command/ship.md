@@ -18,9 +18,10 @@ Follow your Ship agent instructions exactly. The argument grammar is:
 
 **Work-item mode** (`/ship <item-ref>`):
 
-- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item or
-  `NNNN-slug/MMMM-slug` for a roadmap child; every `work/<item-ref>/` path
-  resolves to that item's directory.
+- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item, or a
+  nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per
+  `docs/artifact-conventions.md` → "Work item references", resolving to the
+  directory `work/<item-ref>/`.
 - Verify the preconditions: `review.md` verdict is `approve` (or the user
   explicitly overrides), the tree contains only work-item changes, no secrets are
   present, and tests/lint/typecheck pass.
@@ -36,7 +37,7 @@ Follow your Ship agent instructions exactly. The argument grammar is:
   with `git merge --no-edit origin/<default>`, resolve class (a) shared-surface
   conflicts preserving both sides, and, for class (b) `work/` conflicts and a
   class (c) duplicate sequence number, run the skill's `work/` artifact reconcile:
-  merge `work/` artifact content preserving both sides, re-check the roadmap
+  merge `work/` artifact content preserving both sides, re-check the manifest's
   dependency graph, apply "Renumbering after a parallel merge" to a
   top-level/per-parent `NNNN`/`MMMM` collision — `git mv` the chosen item.
   Update every reference in one change so no reference to the old canonical

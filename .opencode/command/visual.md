@@ -9,9 +9,10 @@ Follow your Visual QA agent instructions exactly. In particular:
 
 - Read the work item's `spec.md` and `design.md` for the UI surface, and load
   the `browser-verification` skill for the method.
-- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item or
-  `NNNN-slug/MMMM-slug` for a roadmap child; every `work/<item-ref>/` path
-  resolves to that item's directory.
+- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item, or a
+  nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per
+  `docs/artifact-conventions.md` → "Work item references", resolving to the
+  directory `work/<item-ref>/`.
 - Confirm the Playwright browser tools are available; if not, tell the user how
   to enable the `playwright` MCP server and stop.
 - Resolve the target URL (from `AGENTS.md` or the argument) and make sure the app

@@ -8,9 +8,10 @@ Run the **Test** phase for: $ARGUMENTS
 Follow your Tester agent instructions exactly. In particular:
 
 - Read the work item's `spec.md`, `design.md`, `tasks.md`, and the diff.
-- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item or
-  `NNNN-slug/MMMM-slug` for a roadmap child; every `work/<item-ref>/` path
-  resolves to that item's directory.
+- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item, or a
+  nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per
+  `docs/artifact-conventions.md` → "Work item references", resolving to the
+  directory `work/<item-ref>/`.
 - Confirm the test command via the `project-discovery` skill if needed.
 - Build a coverage matrix mapping every acceptance criterion and edge case to a
   test or to a documented manual/untestable reason.

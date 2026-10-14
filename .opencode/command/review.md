@@ -8,9 +8,10 @@ Run the **Review** phase for: $ARGUMENTS
 Follow your Review agent instructions exactly. In particular:
 
 - Read `work/<item-ref>/spec.md`, `design.md`, `tasks.md`, and `verify.md`.
-- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item or
-  `NNNN-slug/MMMM-slug` for a roadmap child; every `work/<item-ref>/` path
-  resolves to that item's directory.
+- A work-item reference (`item-ref`) is `NNNN-slug` for a standalone item, or a
+  nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per
+  `docs/artifact-conventions.md` → "Work item references", resolving to the
+  directory `work/<item-ref>/`.
 - If `work/<item-ref>/challenges.md` holds an open challenge against a
   `review.md` finding, adjudicate it first: re-evaluate the finding against the
   spec and diff, append a `## Response <n>` recording `adjudicator`, `decision`,
