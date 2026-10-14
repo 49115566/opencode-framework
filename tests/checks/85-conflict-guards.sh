@@ -12,8 +12,11 @@
 # command, is invoked by no framework command, and never reads live work/**.
 # Item references are resolved inside the fixture-local tree
 # tests/fixtures/declared-conflicts/items/, which shadows the live work/ root;
-# surface paths resolve against the repository copy root. The suite is read-only
-# and fresh-clone-clean.
+# surface paths resolve against the repository copy root. A second, additive
+# fixture root tests/fixtures/recursive-conflicts/items/ carries a depth-≥3 tree
+# with a decomposing child so the recursive grammar and the recursion into that
+# child's own Children rows are pinned too. The suite is read-only and
+# fresh-clone-clean.
 #
 # It also asserts the shipped reporting vocabulary (finding grammar, codes, and
 # classes) on the live authority and the operative prompts, so a dropped code,
@@ -26,12 +29,18 @@
 # tests/run.sh, so it must not call exit. Prints ok/FAIL lines labelled AC23 plus
 # a sub-area, so a mutation self-check (tests/mutation.sh) can name the guard it
 # trips: column-layout, positional-parse, cell-resolution, pair-predicate,
-# reporting-vocabulary.
+# reporting-vocabulary, and the depth-≥3 recursive sub-areas
+# recursive-fixture-existence, recursive-read-only-contract,
+# recursive-column-layout, recursive-traversal, recursive-reference,
+# recursive-sibling-precedence, recursive-union, recursive-drift,
+# recursive-pair, recursive-shipped, recursive-unresolved.
 
 echo "== AC23 declared-conflict declaration model and check guards =="
 
 GUARD_ROOT="tests/fixtures/declared-conflicts"
 GUARD_ITEMS="$GUARD_ROOT/items"
+RC_ROOT="tests/fixtures/recursive-conflicts"   # additive depth-≥3 fixture root
+RC_ITEMS="$RC_ROOT/items"                       # its fixture-local shadow root
 GUARD_CANON_HEADER='| Local id | Title | Scope | Depends on | conflicts-with | Canonical reference |'
 GUARD_LEGACY_HEADER='| Local id | Title | Scope | Depends on | Canonical reference |'
 
@@ -170,7 +179,7 @@ guard_malformed() {  # $1 token, $2 entity ref, $3 local id
 # "unresolved|". $2 is the parent ref (empty for standalone), $3 the local id,
 # $4 the parent's parsed Children rows.
 guard_resolve() {
-  if printf '%s' "$1" | grep -qE '^[0-9]{4}-[a-z0-9-]+(/[0-9]{4}-[a-z0-9-]+)?$'; then
+  if printf '%s' "$1" | grep -qE '^[0-9]{4}-[a-z0-9-]+(/[0-9]{4}-[a-z0-9-]+)*$'; then
     case "$1" in
       */*)
         if [ -d "$GUARD_ITEMS/$1" ]; then printf 'item|%s\n' "$1"; else printf 'unresolved|\n'; fi
@@ -281,22 +290,40 @@ T|$ref|resolved|$rkind|$rid|$ctoken"
   done <<< "$cand"
 }
 
+# Recursively emit the entities of one decomposing node: every immediate child
+# directory is an entity, and a child that itself holds a manifest recurses so
+# its own Children rows enter the compared set at arbitrary depth, keyed by their
+# full canonical reference. A decomposing child is therefore both an entity (from
+# its parent's row) and the source of further entities.
+guard_walk_node() {  # $1 node-ref, $2 node-dir, $3 node-rows
+  local node_ref="$1" node_dir="$2" node_rows="$3"
+  local cd lname cman child_rows
+  for cd in "$node_dir"/*/; do
+    [ -d "$cd" ] || continue
+    lname="${cd%/}"; lname="${lname##*/}"
+    case "$lname" in [0-9][0-9][0-9][0-9]-*) : ;; *) continue ;; esac
+    guard_emit_entity "$node_ref/$lname" "$cd" "$node_ref" "$lname" "$node_rows"
+    if cman="$(guard_manifest "$cd")"; then
+      child_rows="$(guard_children_rows "$cman")"
+      guard_walk_node "$node_ref/$lname" "$cd" "$child_rows"
+    fi
+  done
+}
+
 guard_build_events() {
   GUARD_EVENTS=""
-  local pd pname pman rows cd lname sd sname
+  local pd pname pman rows sd sname
+  # Top level: a directory holding a manifest is a container walked recursively
+  # (never emitted as an entity itself).
   for pd in "$GUARD_ITEMS"/*/; do
     [ -d "$pd" ] || continue
     pname="${pd%/}"; pname="${pname##*/}"
     case "$pname" in [0-9][0-9][0-9][0-9]-*) : ;; *) continue ;; esac
     pman="$(guard_manifest "$pd")" || continue
     rows="$(guard_children_rows "$pman")"
-    for cd in "$pd"/*/; do
-      [ -d "$cd" ] || continue
-      lname="${cd%/}"; lname="${lname##*/}"
-      case "$lname" in [0-9][0-9][0-9][0-9]-*) : ;; *) continue ;; esac
-      guard_emit_entity "$pname/$lname" "$cd" "$pname" "$lname" "$rows"
-    done
+    guard_walk_node "$pname" "$pd" "$rows"
   done
+  # Top level: a directory with spec.md and no manifest is a standalone entity.
   for sd in "$GUARD_ITEMS"/*/; do
     [ -d "$sd" ] || continue
     sname="${sd%/}"; sname="${sname##*/}"
@@ -305,6 +332,15 @@ guard_build_events() {
     [ -f "$sd/spec.md" ] || continue
     guard_emit_entity "$sname" "$sd" "" "$sname" ""
   done
+}
+
+# Build the event stream for one items root, saving and restoring the active
+# root so both fixtures are produced by the same code and analyzers.
+guard_collect() {  # $1 = items root
+  local saved="$GUARD_ITEMS"
+  GUARD_ITEMS="$1"
+  guard_build_events
+  GUARD_ITEMS="$saved"
 }
 
 # --- analyzers --------------------------------------------------------------
@@ -322,6 +358,13 @@ fixture_unresolved() {
 
 fixture_drift() {
   printf '%s\n' "$GUARD_EVENTS" | awk -F'|' '$1=="D"{ print $2 }' | LC_ALL=C sort -u
+}
+
+# The compared-set entity stream: "<canonical-ref>|<shipped 0|1>" per entity,
+# sorted by canonical reference (a plain path order, so a node sorts before its
+# own children), so the recursive fixture's traversal can be asserted directly.
+fixture_entities() {
+  printf '%s\n' "$GUARD_EVENTS" | awk -F'|' '$1=="E"{ print $2"|"$3 }' | LC_ALL=C sort -t'|' -k1,1
 }
 
 fixture_conflicts() {
@@ -586,6 +629,309 @@ else
   bad "AC23 pair-predicate: an all-shipped compared set produced a finding"
   guard_show_diff "(empty)" "$guard_empty_shipped"
 fi
+
+# --- AC23 recursive-* : depth-≥3 declared-conflict guard --------------------
+#
+# The additive fixture root tests/fixtures/recursive-conflicts/items/ carries a
+# depth-≥3 tree with a decomposing child. Each recursive rule gets its own
+# labelled assertion so a single targeted mutation names the rule it trips.
+
+guard_collect "$RC_ITEMS"
+
+RC_ENTITIES="$(fixture_entities)"
+RC_RESOLUTION="$(fixture_resolution)"
+RC_UNRESOLVED="$(fixture_unresolved)"
+RC_DRIFT="$(fixture_drift)"
+RC_CONFLICTS="$(fixture_conflicts)"
+
+# --- AC23 recursive-fixture-existence ---------------------------------------
+
+if [ -d "$RC_ITEMS" ]; then
+  ok "AC23 recursive-fixture-existence: recursive-conflicts fixture tree exists"
+else
+  bad "AC23 recursive-fixture-existence: recursive-conflicts fixture tree missing at $RC_ITEMS"
+fi
+
+for rc_file in \
+  "$RC_ITEMS/9201-root-a/manifest.md" \
+  "$RC_ITEMS/9201-root-a/0001-nested/manifest.md" \
+  "$RC_ITEMS/9201-root-a/0003-legacy/manifest.md" \
+  "$RC_ITEMS/9201-root-a/0001-nested/0003-shipped/ship.md" \
+  "$RC_ITEMS/9210-surface-shared/design.md" \
+  "$RC_ITEMS/9211-names-shared/design.md"; do
+  if [ -f "$rc_file" ]; then
+    ok "AC23 recursive-fixture-existence: $rc_file exists"
+  else
+    bad "AC23 recursive-fixture-existence: $rc_file missing"
+  fi
+done
+
+# --- AC23 recursive-read-only-contract --------------------------------------
+
+if [ -d "$RC_ITEMS" ] && ! grep -rq 'work/' "$RC_ROOT" 2>/dev/null; then
+  ok "AC23 recursive-read-only-contract: recursive fixture references no live work/ path"
+else
+  bad "AC23 recursive-read-only-contract: recursive fixture references a live work/ path"
+fi
+
+# --- AC23 recursive-column-layout (AC9) -------------------------------------
+
+if [ -f "$RC_ITEMS/9201-root-a/manifest.md" ]; then
+  need "$RC_ITEMS/9201-root-a/manifest.md" "$GUARD_CANON_HEADER" \
+    "AC23 recursive-column-layout: 9201-root-a has the 6-column Children header"
+  need "$RC_ITEMS/9201-root-a/0001-nested/manifest.md" "$GUARD_CANON_HEADER" \
+    "AC23 recursive-column-layout: the depth-2 decomposing child has the 6-column Children header"
+  need "$RC_ITEMS/9201-root-a/0003-legacy/manifest.md" "$GUARD_LEGACY_HEADER" \
+    "AC23 recursive-column-layout: the depth-2 legacy manifest has the 5-column Children header"
+else
+  bad "AC23 recursive-column-layout: recursive fixture manifest missing"
+fi
+
+rc_hdr_line=""
+if [ -f "$RC_ITEMS/9201-root-a/0001-nested/manifest.md" ]; then
+  rc_hdr_line="$(grep -F -- "$GUARD_CANON_HEADER" "$RC_ITEMS/9201-root-a/0001-nested/manifest.md" | head -n1)"
+fi
+rc_parse="$(printf '%s' "$rc_hdr_line" | awk -F'|' '{ gsub(/^[ \t]+|[ \t]+$/, "", $5); gsub(/^[ \t]+|[ \t]+$/, "", $6); print $5 "|" $6 }')"
+if [ "$rc_parse" = "Depends on|conflicts-with" ]; then
+  ok "AC23 recursive-column-layout: depth-2 header places Depends on at pipe-field 5 and conflicts-with field 6"
+else
+  bad "AC23 recursive-column-layout: depth-2 header does not place Depends on at pipe-field 5 (got '$rc_parse')"
+fi
+
+guard_contains "$RC_ENTITIES" '9201-root-a/0003-legacy/0001-old|0' \
+  "AC23 recursive-column-layout: a 5-column legacy child is an entity from its parent row"
+if printf '%s\n' "$RC_RESOLUTION" | grep -q '^9201-root-a/0003-legacy/0001-old|'; then
+  bad "AC23 recursive-column-layout: a 5-column legacy row declared a target"
+else
+  ok "AC23 recursive-column-layout: a 5-column legacy row declares nothing"
+fi
+
+# --- AC23 recursive-traversal (AC3) -----------------------------------------
+
+EXP_RC_ENTITIES="$(cat <<'EOF'
+0002-grand|0
+0009-solo|0
+9201-root-a/0001-nested|0
+9201-root-a/0001-nested/0001-leaf|0
+9201-root-a/0001-nested/0002-grand|0
+9201-root-a/0001-nested/0003-shipped|1
+9201-root-a/0001-nested/0004-refs|0
+9201-root-a/0001-nested/0005-precedence|0
+9201-root-a/0001-nested/0006-bad|0
+9201-root-a/0002-sibling|0
+9201-root-a/0003-legacy|0
+9201-root-a/0003-legacy/0001-old|0
+9202-root-b/0001-namer|0
+9202-root-b/0002-grand|0
+9210-surface-shared|0
+9211-names-shared|0
+EOF
+)"
+
+if [ "$RC_ENTITIES" = "$EXP_RC_ENTITIES" ]; then
+  ok "AC23 recursive-traversal: compared-set entity stream matches the expected block"
+else
+  bad "AC23 recursive-traversal: compared-set entity stream diverged from the expected block"
+  guard_show_diff "$EXP_RC_ENTITIES" "$RC_ENTITIES"
+fi
+
+# The decomposing child is both an entity (from its parent's row) and the source
+# of further entities keyed by full canonical reference.
+guard_contains "$RC_ENTITIES" '9201-root-a/0001-nested|0' \
+  "AC23 recursive-traversal: the decomposing child is an entity from its parent row"
+guard_contains "$RC_ENTITIES" '9201-root-a/0001-nested/0001-leaf|0' \
+  "AC23 recursive-traversal: the decomposing child's own row is an entity at depth 3"
+
+# --- AC23 recursive-reference (AC1) -----------------------------------------
+
+rc_refs_resolution="$(printf '%s\n' "$RC_RESOLUTION" | awk -F'|' '$1=="9201-root-a/0001-nested/0004-refs"{ print }')"
+EXP_RC_REFS="$(cat <<'EOF'
+9201-root-a/0001-nested/0004-refs|9201-root-a/0001-nested/0001-leaf|resolved|item|9201-root-a/0001-nested/0001-leaf
+9201-root-a/0001-nested/0004-refs|9201-root-a/0001-nested/0003-shipped|resolved|item|9201-root-a/0001-nested/0003-shipped
+9201-root-a/0001-nested/0004-refs|tests/fixtures|resolved|surface|tests/fixtures
+EOF
+)"
+
+if [ "$rc_refs_resolution" = "$EXP_RC_REFS" ]; then
+  ok "AC23 recursive-reference: the depth-3 reference block matches the expected resolution"
+else
+  bad "AC23 recursive-reference: the depth-3 reference block diverged from the expected resolution"
+  guard_show_diff "$EXP_RC_REFS" "$rc_refs_resolution"
+fi
+
+# A multi-segment canonical reference is an item, never a surface path; a token
+# outside the recursive grammar is classified as a surface path.
+guard_contains "$RC_RESOLUTION" \
+  '9201-root-a/0001-nested/0004-refs|9201-root-a/0001-nested/0001-leaf|resolved|item|9201-root-a/0001-nested/0001-leaf' \
+  "AC23 recursive-reference: a three-segment reference resolves as an item"
+guard_contains "$RC_RESOLUTION" \
+  '9201-root-a/0001-nested/0004-refs|tests/fixtures|resolved|surface|tests/fixtures' \
+  "AC23 recursive-reference: a non-reference token resolves as a surface path"
+
+# --- AC23 recursive-sibling-precedence (AC2) --------------------------------
+
+rc_prec_resolution="$(printf '%s\n' "$RC_RESOLUTION" | awk -F'|' '$1=="9201-root-a/0001-nested/0005-precedence"{ print }')"
+EXP_RC_PREC="$(cat <<'EOF'
+9201-root-a/0001-nested/0005-precedence|0002-grand|resolved|item|9201-root-a/0001-nested/0002-grand
+9201-root-a/0001-nested/0005-precedence|0009-solo|resolved|item|0009-solo
+9201-root-a/0001-nested/0005-precedence|9203-shared|resolved|item|9203-shared
+EOF
+)"
+
+if [ "$rc_prec_resolution" = "$EXP_RC_PREC" ]; then
+  ok "AC23 recursive-sibling-precedence: the below-root resolution block matches the expected resolution"
+else
+  bad "AC23 recursive-sibling-precedence: the below-root resolution block diverged from the expected resolution"
+  guard_show_diff "$EXP_RC_PREC" "$rc_prec_resolution"
+fi
+
+guard_contains "$RC_RESOLUTION" \
+  '9201-root-a/0001-nested/0005-precedence|0002-grand|resolved|item|9201-root-a/0001-nested/0002-grand' \
+  "AC23 recursive-sibling-precedence: a bare MMMM-slug resolves to its sibling row first below the root"
+guard_absent "$RC_RESOLUTION" \
+  '9201-root-a/0001-nested/0005-precedence|0002-grand|resolved|item|0002-grand' \
+  "AC23 recursive-sibling-precedence: the sibling row wins over the same-named top-level decoy"
+guard_contains "$RC_RESOLUTION" \
+  '9201-root-a/0001-nested/0005-precedence|0009-solo|resolved|item|0009-solo' \
+  "AC23 recursive-sibling-precedence: a bare token matching no sibling row falls to the root fallback"
+
+# --- AC23 recursive-union (AC4) ---------------------------------------------
+
+rc_grand_resolution="$(printf '%s\n' "$RC_RESOLUTION" | awk -F'|' '$1=="9201-root-a/0001-nested/0002-grand"{ print }')"
+EXP_RC_GRAND="$(cat <<'EOF'
+9201-root-a/0001-nested/0002-grand|docs/customization.md|resolved|surface|docs/customization.md
+9201-root-a/0001-nested/0002-grand|docs/workflow.md|resolved|surface|docs/workflow.md
+EOF
+)"
+
+if [ "$rc_grand_resolution" = "$EXP_RC_GRAND" ]; then
+  ok "AC23 recursive-union: the own ∪ parent-cell union matches the expected resolution"
+else
+  bad "AC23 recursive-union: the own ∪ parent-cell union diverged from the expected resolution"
+  guard_show_diff "$EXP_RC_GRAND" "$rc_grand_resolution"
+fi
+
+guard_contains "$RC_RESOLUTION" \
+  '9201-root-a/0001-nested/0002-grand|docs/workflow.md|resolved|surface|docs/workflow.md' \
+  "AC23 recursive-union: the union includes the child's own declaration"
+guard_contains "$RC_RESOLUTION" \
+  '9201-root-a/0001-nested/0002-grand|docs/customization.md|resolved|surface|docs/customization.md' \
+  "AC23 recursive-union: the union includes the parent cell's declaration"
+# A one-sided record (only the parent cell) still declares its own targets.
+guard_contains "$RC_RESOLUTION" \
+  '9201-root-a/0001-nested/0003-shipped|docs/workflow.md|resolved|surface|docs/workflow.md' \
+  "AC23 recursive-union: a one-sided parent cell declares its target"
+
+# --- AC23 recursive-drift (AC5) ---------------------------------------------
+
+EXP_RC_DRIFT="$(cat <<'EOF'
+9201-root-a/0001-nested/0002-grand
+EOF
+)"
+
+if [ "$RC_DRIFT" = "$EXP_RC_DRIFT" ]; then
+  ok "AC23 recursive-drift: the drift set matches the expected block"
+else
+  bad "AC23 recursive-drift: the drift set diverged from the expected block"
+  guard_show_diff "$EXP_RC_DRIFT" "$RC_DRIFT"
+fi
+
+guard_contains "$RC_DRIFT" '9201-root-a/0001-nested/0002-grand' \
+  "AC23 recursive-drift: a both-present-unequal declaration at depth is reported"
+guard_absent "$RC_DRIFT" '9201-root-a/0001-nested/0003-shipped' \
+  "AC23 recursive-drift: a one-sided record is not reported as a discrepancy"
+
+# Edge (spec): both-present-and-equal at depth — an own declaration equal to its
+# parent cell declares the union with no discrepancy. The committed fixture only
+# carries the unequal case, so this drives guard_emit_entity directly with a
+# synthetic parent-cell value (the real design.md is read; nothing is written)
+# and asserts the equal set emits no D event while the unequal set still does.
+guard_saved_events2="$GUARD_EVENTS"
+GUARD_EVENTS=""
+guard_emit_entity "9201-root-a/0001-nested/0004-refs" \
+  "$RC_ITEMS/9201-root-a/0001-nested/0004-refs" "9201-root-a/0001-nested" "0004-refs" \
+  "0004-refs|—|9201-root-a/0001-nested/0001-leaf, tests/fixtures, 9201-root-a/0001-nested/0003-shipped"
+guard_equal_drift="$(fixture_drift)"
+GUARD_EVENTS=""
+guard_emit_entity "9201-root-a/0001-nested/0004-refs" \
+  "$RC_ITEMS/9201-root-a/0001-nested/0004-refs" "9201-root-a/0001-nested" "0004-refs" \
+  "0004-refs|—|tests/fixtures"
+guard_unequal_drift="$(fixture_drift)"
+GUARD_EVENTS="$guard_saved_events2"
+if [ -z "$guard_equal_drift" ] &&
+   [ "$guard_unequal_drift" = "9201-root-a/0001-nested/0004-refs" ]; then
+  ok "AC23 recursive-drift: a both-present-equal declaration is a no-drift union"
+else
+  bad "AC23 recursive-drift: a both-present-equal declaration was mismatched (equal drift='$guard_equal_drift', unequal drift='$guard_unequal_drift')"
+fi
+
+# --- AC23 recursive-pair (AC6) ----------------------------------------------
+
+EXP_RC_CONFLICTS="$(cat <<'EOF'
+0009-solo|9201-root-a/0001-nested/0005-precedence|(b)
+9201-root-a/0001-nested/0001-leaf|9201-root-a/0001-nested/0004-refs|(b)
+9201-root-a/0001-nested/0002-grand|9201-root-a/0001-nested/0005-precedence|(b)
+9201-root-a/0001-nested/0002-grand|9210-surface-shared|(a)
+9201-root-a/0001-nested/0005-precedence|9211-names-shared|(b)
+9202-root-b/0001-namer|9202-root-b/0002-grand|(b)
+EOF
+)"
+
+if [ "$RC_CONFLICTS" = "$EXP_RC_CONFLICTS" ]; then
+  ok "AC23 recursive-pair: cross-level declared conflict pairs match the expected block"
+else
+  bad "AC23 recursive-pair: cross-level declared conflict pairs diverged from the expected block"
+  guard_show_diff "$EXP_RC_CONFLICTS" "$RC_CONFLICTS"
+fi
+
+guard_contains "$RC_CONFLICTS" \
+  '9201-root-a/0001-nested/0002-grand|9210-surface-shared|(a)' \
+  "AC23 recursive-pair: a cross-level shared surface target is a class (a) conflict"
+guard_contains "$RC_CONFLICTS" \
+  '9201-root-a/0001-nested/0005-precedence|9211-names-shared|(b)' \
+  "AC23 recursive-pair: a cross-level shared item target is a class (b) conflict"
+guard_contains "$RC_CONFLICTS" \
+  '9201-root-a/0001-nested/0001-leaf|9201-root-a/0001-nested/0004-refs|(b)' \
+  "AC23 recursive-pair: one-sided naming of an otherwise silent counterpart is a conflict"
+guard_absent "$RC_CONFLICTS" \
+  '9201-root-a/0001-nested/0005-precedence|9202-root-b/0001-namer' \
+  "AC23 recursive-pair: equal text resolving to different items is not a shared target"
+
+# --- AC23 recursive-shipped (AC7) -------------------------------------------
+
+guard_contains "$RC_RESOLUTION" \
+  '9201-root-a/0001-nested/0004-refs|9201-root-a/0001-nested/0003-shipped|resolved|item|9201-root-a/0001-nested/0003-shipped' \
+  "AC23 recursive-shipped: a shipped target still resolves for the declaring entity"
+guard_absent "$RC_CONFLICTS" '9201-root-a/0001-nested/0003-shipped' \
+  "AC23 recursive-shipped: a shipped entity is excluded as a conflict counterpart"
+guard_contains "$RC_ENTITIES" '9201-root-a/0001-nested/0003-shipped|1' \
+  "AC23 recursive-shipped: the shipped entity carries the shipped signal"
+
+# --- AC23 recursive-unresolved (AC8) ----------------------------------------
+
+EXP_RC_UNRESOLVED="$(cat <<'EOF'
+9201-root-a/0001-nested/0006-bad|
+9201-root-a/0001-nested/0006-bad|../escape
+9201-root-a/0001-nested/0006-bad|/abs.md
+9201-root-a/0001-nested/0006-bad|9201-root-a/0001-nested/0006-bad
+9201-root-a/0001-nested/0006-bad|9999-nope
+9201-root-a/0001-nested/0006-bad|docs/*.md
+9201-root-a/0001-nested/0006-bad|docs/no-such-file.md
+EOF
+)"
+
+if [ "$RC_UNRESOLVED" = "$EXP_RC_UNRESOLVED" ]; then
+  ok "AC23 recursive-unresolved: the malformed/unresolved block matches the expected block"
+else
+  bad "AC23 recursive-unresolved: the malformed/unresolved block diverged from the expected block"
+  guard_show_diff "$EXP_RC_UNRESOLVED" "$RC_UNRESOLVED"
+fi
+
+for rc_bad in '' '../escape' '/abs.md' 'docs/*.md' '9999-nope' \
+              'docs/no-such-file.md' '9201-root-a/0001-nested/0006-bad'; do
+  guard_contains "$RC_UNRESOLVED" "9201-root-a/0001-nested/0006-bad|$rc_bad" \
+    "AC23 recursive-unresolved: the malformed/unresolved token '$rc_bad' is reported, not dropped"
+done
 
 # --- AC23 reporting-vocabulary (AC8) ----------------------------------------
 
