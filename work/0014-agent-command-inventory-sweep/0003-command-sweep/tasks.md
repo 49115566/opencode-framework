@@ -14,7 +14,7 @@ fixed in `design.md` → "Interfaces and data model"; no task requires a further
 design decision. One task ≈ one focused commit. Edits are prose-only: no
 frontmatter, `description:`/`Usage:` line, or `agent:` value changes.
 
-- [ ] **T1** — Replace the retired three-line item-ref boilerplate with the
+- [x] **T1** — Replace the retired three-line item-ref boilerplate with the
       canonical command sentence in **all seven** commands — `spec.md`,
       `plan.md`, `build.md`, `test.md`, `review.md`, `ship.md`, `visual.md` — using
       the exact four-line block in `design.md` → "The canonical command sentence",
@@ -28,7 +28,7 @@ frontmatter, `description:`/`Usage:` line, or `agent:` value changes.
       `grep -nF '(or the legacy `roadmap.md` artifact alias)' .opencode/command/plan.md`
       matches.
 
-- [ ] **T2** — Sweep `command/spec.md`'s nested-child allocation step (lines
+- [x] **T2** — Sweep `command/spec.md`'s nested-child allocation step (lines
       22–24) to the canonical recursive reference form fixed in `design.md` →
       "`spec.md` nested-child allocation step": "for a roadmap child, use the
       supplied `NNNN-slug/MMMM-slug` reference" becomes "for a nested child, use
@@ -40,7 +40,7 @@ frontmatter, `description:`/`Usage:` line, or `agent:` value changes.
       both match; `grep -nF 'for a roadmap child' .opencode/command/spec.md`
       returns nothing.
 
-- [ ] **T3** — Sweep `command/status.md`'s decomposing-node detection and
+- [x] **T3** — Sweep `command/status.md`'s decomposing-node detection and
       container phase (lines 15–20) per `design.md` → "`status.md`
       decomposing-node detection and container phase": detect by `manifest.md`
       (with `roadmap.md` named as the legacy alias) and derive the container phase
@@ -51,7 +51,7 @@ frontmatter, `description:`/`Usage:` line, or `agent:` value changes.
       `manifest` and no `roadmap`; `grep -nF 'presence of `roadmap.md`' .opencode/command/status.md`
       returns nothing.
 
-- [ ] **T4** — Pair the legacy stale token in `command/status.md` line 28 per
+- [x] **T4** — Pair the legacy stale token in `command/status.md` line 28 per
       `design.md` → "`status.md` legacy stale-token pairing": replace
       `Map a `stale: roadmap` token to `spec`` with a sentence mapping both
       `stale: manifest` and its retained legacy alias `stale: roadmap` to `spec`,
@@ -60,7 +60,7 @@ frontmatter, `description:`/`Usage:` line, or `agent:` value changes.
       `grep -nF 'stale: roadmap' .opencode/command/status.md` both match on the
       same sentence and both read as mapping to `spec`.
 
-- [ ] **T5** — Sweep `command/ship.md`'s reconcile re-check (lines 39–40) per
+- [x] **T5** — Sweep `command/ship.md`'s reconcile re-check (lines 39–40) per
       `design.md` → "`ship.md` reconcile re-check":
       `re-check the roadmap dependency graph` becomes
       `re-check the manifest's dependency graph`; leave the surrounding reconcile
@@ -69,7 +69,7 @@ frontmatter, `description:`/`Usage:` line, or `agent:` value changes.
       Verify: `grep -nF "re-check the manifest's" .opencode/command/ship.md`
       matches; `grep -nF 'roadmap' .opencode/command/ship.md` returns nothing.
 
-- [ ] **T6** — Audit the completed sweep for scope, legacy-alias discipline, and
+- [x] **T6** — Audit the completed sweep for scope, legacy-alias discipline, and
       no-restatement. Confirm `conflicts.md`, `fix.md`, `bootstrap.md`, and
       `doctor.md` are byte-identical; every remaining `roadmap` token in the eight
       swept commands is a clearly-labelled legacy alias (only `plan.md` line 32 and
@@ -89,7 +89,7 @@ frontmatter, `description:`/`Usage:` line, or `agent:` value changes.
       yields only the labelled `plan.md:32` alias and the two labelled
       `status.md` alias mentions.
 
-- [ ] **T7** — Verify the protected lines and the committed suite. Confirm
+- [x] **T7** — Verify the protected lines and the committed suite. Confirm
       `git diff` changes lie outside every command's frontmatter (including
       `description:`/`Usage:` and `agent:`), then run the repository's configured
       test command. [AC9, AC11] [depends: T6]
