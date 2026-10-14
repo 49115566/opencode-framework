@@ -12,7 +12,7 @@ parent: 0015-recursive-workflow-guards
 Ordered, dependency-aware. One task ≈ one focused commit. "full" means
 `spec.md`, `design.md`, `tasks.md` (all boxes checked), `verify.md`, `review.md`.
 
-- [ ] **T1** — Create the fixture root `tests/fixtures/recursive-status/items/` and
+- [x] **T1** — Create the fixture root `tests/fixtures/recursive-status/items/` and
       author the top-level decomposing node `9200-tree/manifest.md` (pure
       container, six-column `Children` table, `—` `conflicts-with` for every row)
       with its dependency-signal children at depth 2: `0002-shipped` (full +
@@ -28,7 +28,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. "full" means
       and `test -f tests/fixtures/recursive-status/items/9200-tree/0007-recalled/ship.md`
       and `grep -q 'reopened: build' tests/fixtures/recursive-status/items/9200-tree/0007-recalled/ship.md`
       and `test -f tests/fixtures/recursive-status/items/9201-decoy/0002-shipped/ship.md`.
-- [ ] **T2** — Author the hybrid subtree `9200-tree/0001-hybrid/`: its
+- [x] **T2** — Author the hybrid subtree `9200-tree/0001-hybrid/`: its
       `manifest.md` (hybrid) plus its own `spec.md` and `design.md`, and its
       depth-3 children `0001-empty-leaf/` (`.gitkeep`), `0002-approved-leaf/`
       (full + `review.md` `approve`), `0003-cyclic-a/` (`.gitkeep`, `Depends on:
@@ -40,7 +40,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. "full" means
       and `test -f tests/fixtures/recursive-status/items/9200-tree/0001-hybrid/spec.md`
       and `test -f tests/fixtures/recursive-status/items/9200-tree/0001-hybrid/0001-empty-leaf/.gitkeep`
       and `test -f tests/fixtures/recursive-status/items/9200-tree/0001-hybrid/0003-cyclic-a/.gitkeep`.
-- [ ] **T3** — Author the decomposing-target nodes and the overlay nodes under
+- [x] **T3** — Author the decomposing-target nodes and the overlay nodes under
       `9200-tree/`: `0009-decomposing-approved/` (hybrid: `manifest.md` + full +
       `review.md` `approve`) with `.gitkeep` child `0001-leaf/`;
       `0010-depends-decomposing/` (`spec.md`, `Depends on:
@@ -56,7 +56,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. "full" means
       and `test -f tests/fixtures/recursive-status/items/9200-tree/0013-stale-hybrid/spec.md`
       and `test -f tests/fixtures/recursive-status/items/9200-tree/0014-challenged-node/challenges.md`
       and `test -f tests/fixtures/recursive-status/items/9200-tree/0015-stale-and-challenged/challenges.md`.
-- [ ] **T4** — Author the guard skeleton `tests/checks/89-recursive-status-guards.sh`:
+- [x] **T4** — Author the guard skeleton `tests/checks/89-recursive-status-guards.sh`:
       the `AC27` header comment naming the sub-areas and the three referenced
       neighbour areas (`10-readiness`, `20-lifecycle`, `80-cycle-fixture`,
       `87-backtrack-guards`), the path constants (`RS_ROOT`, `RS_ITEMS`), the
@@ -70,7 +70,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. "full" means
       Verify: `FRAMEWORK_TEST_AREAS=89-recursive-status-guards bash tests/run.sh`
       exits 0 and prints `ok    AC27 fixture-existence`, `ok    AC27
       read-only-contract`, and `ok    AC27 no-duplication`.
-- [ ] **T5** — Implement the recursive readiness analyzer: `rs_satisfied`
+- [x] **T5** — Implement the recursive readiness analyzer: `rs_satisfied`
       (non-recalled `ship.md` presence takes precedence over a
       `request-changes` verdict; else `approve`) and `rs_ready_blocked`
       (sibling-only `Depends on` resolution against the parent's own rows; a
@@ -84,7 +84,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. "full" means
       `dependency-satisfaction`, `decomposing-target`, and `cycle-readiness`;
       temporarily flipping `0004-rejected/review.md` to `approve` then reverting
       makes `AC27 dependency-satisfaction` `FAIL`.
-- [ ] **T6** — Implement the recursive derived-phase analyzer `rs_derive`:
+- [x] **T6** — Implement the recursive derived-phase analyzer `rs_derive`:
       earliest `stale:` → `<token> (backtracked)`; `ship.md` `reopened:` →
       `<phase> (reopened)`; unshipped open challenge → `challenged (blocked)`;
       manifest with no own phase artifacts → `manifest`; otherwise the
@@ -95,7 +95,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. "full" means
       `overlay-precedence`; temporarily deleting
       `9200-tree/0001-hybrid/0001-empty-leaf/` then reverting makes `AC27
       derived-phase` `FAIL`.
-- [ ] **T7** — Implement `rs_summary` (`<node-ref>|<n>/<total> ready · phases:
+- [x] **T7** — Implement `rs_summary` (`<node-ref>|<n>/<total> ready · phases:
       <phase> <n>, ...`) with the reviewed `RS_SUMMARY` block for
       `9200-tree`, `9200-tree/0001-hybrid`, and `9201-decoy`; add the
       `determinism` assertion (derive readiness/phase/summary twice and assert
@@ -109,7 +109,7 @@ Ordered, dependency-aware. One task ≈ one focused commit. "full" means
       Verify: the same run prints `ok` for `decomposing-summary`, `determinism`,
       `no-stored-readiness`, and `status-render`; and `bash tests/run.sh` exits
       0 with the unchanged `TOTAL` failure count of 0.
-- [ ] **T8** — Verify the whole suite is green and the area is
+- [x] **T8** — Verify the whole suite is green and the area is
       mutation-sensitive, and confirm scope: `bash tests/run.sh` exits 0;
       `git status --porcelain` lists only `tests/checks/89-recursive-status-guards.sh`
       and `tests/fixtures/recursive-status/` (no production surface touched);
