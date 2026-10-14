@@ -40,7 +40,10 @@ Create or update exactly the artifact the caller specifies, using the format in
 </inputs>
 
 <process>
-1. Identify the target path (`work/<item-ref>/<file>`) and the artifact phase.
+1. Identify the target path (`work/<item-ref>/<file>`) and the artifact phase. The
+   `item-ref` is the item's canonical reference — `NNNN-slug` for a standalone
+   item, or a nested `NNNN-slug/MMMM-slug` at any depth, per
+   `docs/artifact-conventions.md` → "Work item references".
 2. If updating, read the existing file; note its frontmatter and structure.
 3. Assemble the content using the correct template.
 4. Write or edit the file. Preserve frontmatter; set `updated` to today.
