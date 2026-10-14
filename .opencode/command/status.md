@@ -12,12 +12,12 @@ Follow your Status agent instructions exactly. In particular:
   marker and, where present, the item's `backtracks.md` finding/resolution
   entries, its `challenges.md` challenge/response/withdrawal entries, and the
   `ship.md` `reopened:` marker.
-- Detect a **decomposing node** by the presence of `roadmap.md` — at any depth,
-  a pure container or a hybrid that also carries its own artifacts; treat
-  everything else as a single-feature item. Decide this before deriving any
-  phase. A decomposing node derives its phase from its own phase artifacts
-  first; only a manifest with no own phase artifacts derives the container phase
-  `roadmap`.
+- Detect a **decomposing node** by the presence of `manifest.md` (or the legacy
+  `roadmap.md` alias) — at any depth, a pure container or a hybrid that also
+  carries its own artifacts; treat everything else as a single-feature item.
+  Decide this before deriving any phase. A decomposing node derives its phase
+  from its own phase artifacts first; only a manifest with no own phase artifacts
+  derives the container phase `manifest`.
 - Derive each item's phase and derived condition using the "Derived state" table
   in `docs/workflow.md`, applying its precedence: the earliest `stale:` target
   `P` → `P (backtracked)`; a `reopened:` phase `P` on `ship.md` → `P (reopened)`;
@@ -25,7 +25,8 @@ Follow your Status agent instructions exactly. In particular:
   on an item that has no `ship.md` → `challenged (blocked)`; then the
   artifact-presence and verdict rows. A `ship.md`-present item is never reported
   `challenged` — its open challenge is surfaced as out-of-scope. Map a
-  `stale: roadmap` token to `spec`, and report the earliest outstanding backtrack
+  `stale: manifest` token — or its retained legacy alias `stale: roadmap` — to
+  `spec`, and report the earliest outstanding backtrack
   target without dropping a later open finding. Report a resolution recorded
   before its finding, or a response recorded before its challenge, as a plain
   integrity observation without reordering it or inventing a finding code. Base
