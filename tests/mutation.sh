@@ -120,6 +120,7 @@ stage_copy() {  # $1 = destination copy root
   cp -R "$REPO_ROOT/tests/fixtures/declared-conflicts" "$copy/tests/fixtures/declared-conflicts"
   cp -R "$REPO_ROOT/tests/fixtures/backtracking" "$copy/tests/fixtures/backtracking"
   cp -R "$REPO_ROOT/tests/fixtures/recursive-integrity" "$copy/tests/fixtures/recursive-integrity"
+  cp -R "$REPO_ROOT/tests/fixtures/recursive-structure" "$copy/tests/fixtures/recursive-structure"
 }
 
 # ---------------------------------------------------------------------------
