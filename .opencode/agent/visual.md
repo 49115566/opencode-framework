@@ -55,9 +55,10 @@ visual, interaction, and accessibility findings with evidence in
 3. `AGENTS.md` → Project profile — the dev/serve command and any known URL.
 4. The running application. Confirm the base URL with the user if it is not in
    the profile.
-5. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
-   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
-   `work/<item-ref>/`.
+5. The item reference in `$ARGUMENTS` is the item's **canonical reference**:
+   `NNNN-slug` for a standalone item, or a nested `NNNN-slug/MMMM-slug`
+   at any depth, per `docs/artifact-conventions.md` → "Work item references";
+   resolve it to the directory `work/<item-ref>/`.
 </inputs>
 
 <preconditions>

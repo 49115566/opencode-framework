@@ -45,17 +45,18 @@ report only — no files.
   a fresh clone, a teammate, and CI derive the same phase.
 - State is derived, never assumed. A phase comes from which artifacts exist and
   what they contain, not from `updated` timestamps or git history.
-- A directory containing `roadmap.md` is a **decomposing node** at any depth — a
+- A directory containing `manifest.md` is a **decomposing node** at any depth — a
   pure container, or a hybrid node that also carries its own artifacts, and a
-  nested child may itself decompose. Everything else is a single-feature item.
-  Decide this before deriving any phase.
+  nested child may itself decompose. `roadmap.md` is the recognized deprecated alias
+  for the manifest. Everything else is a single-feature item. Decide this before
+  deriving any phase.
 - A decomposing node derives its phase from **its own phase artifacts first**:
-  only a node with a manifest (`roadmap.md`) and no own phase artifacts derives
-  the container phase `roadmap`. Own artifacts take precedence over the manifest
-  at every depth.
+  only a node with a manifest (`manifest.md`, or the legacy `roadmap.md` alias)
+  and no own phase artifacts derives the container phase `manifest`. Own
+  artifacts take precedence over the manifest at every depth.
 - Readiness is derived live, never stored. Recompute each immediate child's
   readiness from the files on every run, independently at every level; never
-  trust a value written into `roadmap.md`.
+  trust a value written into `manifest.md`.
 - Read the artifacts, not just their names. `tasks.md` check boxes and
   `review.md` verdicts change the phase; `.gitkeep` is a placeholder, not a phase
   artifact.
@@ -87,10 +88,10 @@ report only — no files.
    enforcement points for the offline integrity report), and
    `## Declared-conflict check` (the canonical planning-time declaration
    comparison: compared set, pair predicate, and finding rendering).
-3. `docs/artifact-conventions.md` → "Work item references", the `roadmap.md`
-   template (the Children table contract), the `backtracks.md` and
-   `challenges.md` record shapes, and the `stale:`/`reopened:` frontmatter
-   markers.
+3. `docs/artifact-conventions.md` → "Work item references", the `manifest.md` template
+   (the Children table contract; `roadmap.md` is the retained legacy alias), the
+   `backtracks.md` and `challenges.md` record shapes, and the
+   `stale:`/`reopened:` frontmatter markers.
 4. `AGENTS.md` — the lifecycle and handoff contract, for the recommendation.
 5. `README.md` — its Layout counts (`# N role prompts`, `# N slash commands`,
    `# N knowledge skills`) and its Skills table — together with the on-disk
@@ -101,8 +102,9 @@ report only — no files.
 <process>
 1. List `work/`. If it is empty (only `.gitkeep`), report that no items exist
    and recommend `/spec <feature>`. Stop.
-2. Classify each top-level directory: a **decomposing node** if `roadmap.md`
-   exists, otherwise a **single-feature item**. A decomposing node's descendants
+2. Classify each top-level directory: a **decomposing node** if `manifest.md`
+   (or the legacy `roadmap.md` alias) exists, otherwise a **single-feature item**.
+   A decomposing node's descendants
    are not top-level items and must never be listed as if they were; a node may
    be a pure container or a hybrid that also carries its own artifacts, and a
    nested child may itself decompose.
@@ -116,17 +118,19 @@ report only — no files.
    in `docs/workflow.md`, applying its precedence: the earliest `stale:` target
    `P` → `P (backtracked)`; a `reopened:` phase `P` on `ship.md` →
    `P (reopened)`; an open challenge on an item that has no `ship.md` →
-   `challenged (blocked)`; then the artifact-presence and verdict rows. Map a
-   `stale: roadmap` token to `spec`. Report the earliest outstanding backtrack
-   target and do not drop a later open finding. When a backtrack and a live
+   `challenged (blocked)`; then the artifact-presence and verdict rows. Map both
+   `stale: manifest` and its retained legacy alias `stale: roadmap` to `spec`.
+   Report the earliest outstanding backtrack target and do not drop a later
+   open finding. When a backtrack and a live
    challenge are both open, the blocked `challenged (blocked)` label wins the
    Phase column while the Notes still carry the backtrack detail. Report a
    resolution recorded before its finding, or a response recorded before its
    challenge, as a plain integrity observation — never reorder it, and invent no
    finding code for it.
 4. For each decomposing node — at any depth, whether a pure container or a
-   hybrid that also carries its own artifacts — read its manifest (`roadmap.md`)
-   and parse the **Children** table: each row gives a local id, title, scope,
+   hybrid that also carries its own artifacts — read its manifest (`manifest.md`,
+   or the legacy `roadmap.md` alias) and parse the **Children** table: each row
+   gives a local id, title, scope,
    `Depends on` local ids, and a canonical reference. Resolve each row's child
    directory as `work/<node-ref>/<local-id>/` and recurse, deriving each
    descendant's phase exactly as a standalone item (a child holding only
@@ -241,7 +245,7 @@ class vocabulary, repeating the shared codes without changing them:
   without any dry-run merge.
 - `DANGLING-DEP` `(b)` — a declared `conflicts-with` target is malformed or
   resolves to no sibling row, no `work/<ref>/`, and no existing repository path.
-- `DRIFT-FACT` `(d)` — a roadmap child's own `design.md` declaration and its
+- `DRIFT-FACT` `(d)` — a nested child's own `design.md` declaration and its
   parent `Children` `conflicts-with` cell are both present and their target sets
   disagree.
 
@@ -262,7 +266,7 @@ it, and invent no finding code for it.
 - [ ] The tree is rendered to arbitrary depth, each node showing its derived
       phase and its readiness (`ready`/`blocked`).
 - [ ] A decomposing node derives its own phase from its own phase artifacts
-      first; only a manifest with no own phase artifacts derives `roadmap`.
+      first; only a manifest with no own phase artifacts derives `manifest`.
 - [ ] Each phase is justified by artifacts, not timestamps; a `.gitkeep`-only
       child is `not started`.
 - [ ] Task progress is shown as `checked/total`.
@@ -293,8 +297,8 @@ it, and invent no finding code for it.
 | Item                                   | Phase                | Progress            | Next command                          |
 | -------------------------------------- | -------------------- | ------------------- | ------------------------------------- |
 | 0001-add-dark-mode                     | build                | 2/5 tasks           | /build 0001-add-dark-mode             |
-| 0002-agentic-roadmaps                  | roadmap              | 1/3 ready           | /status 0002-agentic-roadmaps         |
-|   0001-roadmap-model                   | roadmap              | 1/2 ready           | /status 0002-agentic-roadmaps/0001-roadmap-model |
+| 0002-agentic-roadmaps                  | manifest             | 1/3 ready           | /status 0002-agentic-roadmaps         |
+|   0001-roadmap-model                   | manifest             | 1/2 ready           | /status 0002-agentic-roadmaps/0001-roadmap-model |
 |     0001-node-vocabulary               | test                 | 3/3 tasks           | /review 0002-agentic-roadmaps/0001-roadmap-model/0001-node-vocabulary |
 |     0002-depth-policy                  | not started          | blocked: 0001-node-vocabulary | /spec 0002-agentic-roadmaps/0001-roadmap-model/0002-depth-policy |
 |   0002-spec-phase                      | not started          | blocked: 0001-roadmap-model | /spec 0002-agentic-roadmaps/0002-spec-phase |
@@ -304,8 +308,8 @@ it, and invent no finding code for it.
 | 0005-ledger                            | challenged (blocked) | 1/3 tasks           | /status 0005-ledger                   |
 | 0006-reports                           | shipped              | 3/3 tasks           | /status 0006-reports                  |
 
-Roadmap 0002-agentic-roadmaps: 1/3 ready · phases: roadmap 1, not started 1, design 1
-Roadmap 0002-agentic-roadmaps/0001-roadmap-model: 1/2 ready · phases: test 1, not started 1
+Manifest 0002-agentic-roadmaps: 1/3 ready · phases: manifest 1, not started 1, design 1
+Manifest 0002-agentic-roadmaps/0001-roadmap-model: 1/2 ready · phases: test 1, not started 1
 
 Findings
 - [DANGLING-DEP] (b) 0002-agentic-roadmaps: "Depends on" names "0009-missing", which has no child directory or table row.
@@ -324,7 +328,7 @@ Notes
 ```
 
 Phase vocabulary: base phases `not started`, `spec`, `design`, `build`, `test`,
-`review`, `ship`, `shipped`, `roadmap`; derived labels `P (backtracked)`,
+`review`, `ship`, `shipped`, `manifest`; derived labels `P (backtracked)`,
 `P (reopened)`, `build (rework)`, `challenged (blocked)`.
 </output_format>
 
@@ -334,10 +338,10 @@ Phase vocabulary: base phases `not started`, `spec`, `design`, `build`, `test`,
   artifacts.
 - Do not open, run, or modify the application.
 - If `work/` contains directories without a `spec.md`, mark them `not started`
-  and recommend `/spec` — unless they are decomposing nodes (`roadmap.md`
-  present) or nested children of one at any depth, which are handled by the
-  recursive node rules.
-- Never write or refresh a readiness value into `roadmap.md`; readiness is
+  and recommend `/spec` — unless they are decomposing nodes (`manifest.md`, or
+  the legacy `roadmap.md` alias, present) or nested children of one at any depth,
+  which are handled by the recursive node rules.
+- Never write or refresh a readiness value into `manifest.md`; readiness is
   recomputed live every run and is never stored.
 - Report a dangling, missing, unlisted, or cyclic reference, a duplicate
   sequence number, or duplicated-fact drift as a finding; never fail the report
