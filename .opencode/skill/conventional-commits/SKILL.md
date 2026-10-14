@@ -77,16 +77,16 @@ The **same** flattened token names both branch kinds; only the prefix differs:
 | Canonical reference | `flatten(ref)` |
 | ------------------- | -------------- |
 | `0001-add-dark-mode` | `0001-add-dark-mode` |
-| `0002-agentic-roadmaps/0001-roadmap-model` | `0002-agentic-roadmaps+0001-roadmap-model` |
+| `0002-billing/0001-invoice-model` | `0002-billing+0001-invoice-model` |
 | `0001-a/0002-b/0003-c` | `0001-a+0002-b+0003-c` |
 
 Examples: `feat/0001-add-dark-mode`,
-`feat/0002-agentic-roadmaps+0001-roadmap-model`,
-`plan/0002-agentic-roadmaps+0001-roadmap-model`, `fix/login-timeout`,
+`feat/0002-billing+0001-invoice-model`,
+`plan/0002-billing+0001-invoice-model`, `fix/login-timeout`,
 `docs/update-readme`.
 
 **Superseded form.** An older rule joined a nested reference by replacing `/`
-with `-` (`0002-agentic-roadmaps-0001-roadmap-model`). Because `-` is legal
+with `-` (`0002-billing-0001-invoice-model`). Because `-` is legal
 **inside** a segment, that mapping was not injective: a nested child and a
 distinct top-level item literally named `NNNN-slug-MMMM-slug` could share one
 branch name. `flatten` above replaces it; a pre-existing, unmerged branch under

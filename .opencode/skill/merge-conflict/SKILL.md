@@ -77,7 +77,7 @@ pre-flights may run without interfering — they take no lock and write nothing.
      decomposing node at any depth the same way, scanning each node's own
      immediate children; the rule is stated once in `docs/workflow.md` →
      "Multiple work items".
-   - **Roadmap graph faults.** For each decomposing node at any depth — its
+   - **Manifest graph faults.** For each decomposing node at any depth — its
      `manifest.md`, or the legacy `roadmap.md` alias — resolve every `Depends on`
      local id in **its own** `Children` table and report each `dangling`
      reference (a dependency with no child directory or no table row), `missing`
@@ -118,10 +118,10 @@ The pre-flight vocabulary (canonical; the `status` agent repeats it) is:
 | Code | Class | Finding |
 | ---- | ----- | ------- |
 | `TEXTUAL-CONFLICT` | `(a)` or `(b)` | the dry-run merge would leave conflict markers on the named path |
-| `DANGLING-DEP` | `(b)` | a roadmap `Depends on` names a local id with no child directory or no table row |
+| `DANGLING-DEP` | `(b)` | a manifest `Depends on` names a local id with no child directory or no table row |
 | `MISSING-CHILD` | `(b)` | a Children-table row whose child directory is absent |
 | `UNLISTED-CHILD` | `(b)` | a child directory absent from the Children table |
-| `CYCLIC-DEP` | `(b)` | a cycle in a roadmap dependency graph |
+| `CYCLIC-DEP` | `(b)` | a cycle in a manifest dependency graph |
 | `DUPLICATE-PREFIX` | `(c)` | two different top-level `work/` references share an `NNNN` |
 | `DUPLICATE-CHILD` | `(c)` | two different per-parent child references share an `MMMM` |
 | `DRIFT-FACT` | `(d)` | a duplicated count/table fact disagrees with disk or the other branch |
@@ -138,7 +138,7 @@ above are unchanged and no code is added:
   one-sided naming of the other item for `(b)`.
 - `DANGLING-DEP` (`(b)`) — a declared `conflicts-with` target is malformed or
   resolves to no sibling row, no `work/<ref>/`, and no existing repository path.
-- `DRIFT-FACT` (`(d)`) — a roadmap child's own `design.md` declaration and its
+- `DRIFT-FACT` (`(d)`) — a decomposing child's own `design.md` declaration and its
   parent `Children` `conflicts-with` cell are both present and their target sets
   disagree.
 
@@ -217,7 +217,7 @@ escalate).
       branches rather than dropping one. For a class (b) `work/` path — and for a
       class (c) duplicate sequence number — run the `work/` artifact reconcile
       subsection below: it merges the colliding content preserving both branches'
-      records, re-checks the roadmap dependency graph, and applies
+      records, re-checks the manifest dependency graph, and applies
       `Renumbering after a parallel merge` in `docs/artifact-conventions.md`
       (`git mv`). Auto-resolve only `mechanical or structural` conflicts that
       `does not require choosing between competing intents`, subject to
@@ -255,7 +255,7 @@ escalate).
      framework file (`README.md`, `AGENTS.md`, `docs/*.md`,
      `.opencode/{agent,command,skill}/**`, `template/**`, `tests/checks/**`).
    - (b) `work/` artifact conflict — both branches edited the same committed
-     work artifact (roadmap `Children` / `Depends on` tables, artifact
+     work artifact (manifest `Children` / `Depends on` tables, artifact
      frontmatter, nested-child intersections).
    - (c) duplicate sequence number — both branches allocated the same `NNNN` or
      the same per-parent `MMMM`. Defer to "Renumbering after a parallel merge"
@@ -330,7 +330,7 @@ truncated, even for a large collision set.
 
 1. **Merge `work/` artifact content preserving both branches' records.** For a
    class (b) path, `preserve both branches' records` and `drop neither side`:
-   - **Roadmap `Children` rows** — take the union of both branches' rows. A
+   - **Manifest `Children` rows** — take the union of both branches' rows. A
      local id added by one branch survives; a row that both branches added
      identically is de-duplicated to one.
    - **`Depends on` cells** — never silently discard a branch's dependency:
@@ -346,7 +346,8 @@ truncated, even for a large collision set.
      `Children` row whose title/scope/intent differs, is a `judgment about
      intent`: never pick one silently — escalate to sub-step 1.9.
 
-2. **Re-check the roadmap dependency graph.** In every `roadmap.md`, each
+2. **Re-check the manifest dependency graph.** For every decomposing node at any depth
+   — its `manifest.md`, or the clearly-labelled legacy `roadmap.md` alias — each
    `Depends on` local id `resolves to an existing row and child directory`, and
    the stored graph is `acyclic`. Classify each fault as a `structural fault`
    (auto-repaired mechanically) or a `judgment about intent` (escalated to
