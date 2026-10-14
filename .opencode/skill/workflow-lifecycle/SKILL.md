@@ -22,10 +22,12 @@ never recorded separately.
 A **decomposing node** is a parent item holding its **manifest** at
 `work/<NNNN-slug>/manifest.md` (the legacy `roadmap.md` is the recognized
 deprecated alias), whose children are nested at
-`work/<NNNN-slug>/<MMMM-slug>/`. Address a child by its **canonical reference** —
-`NNNN-slug/MMMM-slug` — which resolves to `work/<NNNN-slug>/<MMMM-slug>/`. A
-one-segment reference (`NNNN-slug`) is a standalone item and behaves exactly as
-before.
+`work/<NNNN-slug>/<MMMM-slug>/`. A decomposing node and its descendants nest to
+**arbitrary depth**, and a child may itself decompose — any node may hold a
+manifest and its own children at once. Address a child by its **canonical
+reference** — `NNNN-slug/MMMM-slug`, with one further `/<MMMM-slug>` segment per
+nesting level — which resolves to `work/<item-ref>/`. A one-segment reference
+(`NNNN-slug`) is a standalone item and behaves exactly as before.
 
 ## Which command now?
 
