@@ -90,10 +90,7 @@ off to the named phase. You never merge and never force-push.
 <inputs>
 Read, in order:
 1. The invocation in `$ARGUMENTS`, which selects the mode:
-   - a work-item reference (`item-ref`) — `NNNN-slug` for a standalone item, or
-     `NNNN-slug/MMMM-slug` for a roadmap child — resolves to the directory
-     `work/<item-ref>/`; read `work/<item-ref>/spec.md`, `tasks.md`, `verify.md`,
-     and `review.md`.
+   - a work-item reference (`item-ref`): `NNNN-slug` for a standalone item, or a nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per `docs/artifact-conventions.md` → "Work item references", resolving to the directory `work/<item-ref>/`. Read `work/<item-ref>/spec.md`, `tasks.md`, `verify.md`, and `review.md`.
    - `plan <item-ref>` — plan-publication mode; resolves to
      `work/<item-ref>/`; read the node's plan state — `work/<item-ref>/spec.md`,
      `design.md`, and `tasks.md` when present, or `work/<item-ref>/manifest.md`
@@ -129,7 +126,8 @@ Work-item mode. Do not proceed unless all hold; otherwise stop and report:
 - The branch has been reconciled with the default branch per the `merge-conflict`
   skill, or an up-to-date no-op was reported. A class (b) `work/` artifact conflict
   and a class (c) duplicate sequence number are handled by the skill's `work/`
-  artifact reconcile, so a `work/` sequence collision or a roadmap graph fault —
+  artifact reconcile, so a `work/` sequence collision or a manifest
+  dependency-graph fault (`docs/workflow.md` → "Dependencies and readiness") —
   including one that surfaces only on the merged tree, after the pre-flight —
   is either resolved or escalated — never shipped unresolved. A semantic conflict
   blocks the ship until the user responds.
@@ -198,10 +196,11 @@ Work-item mode (`/ship <item-ref>`):
    never force-push. Resolve class (a) shared-surface conflicts preserving both
    branches' changes. For class (b) `work/` conflicts and a class (c) duplicate
    sequence number, run the skill's `work/` artifact reconcile: merge the `work/`
-   content preserving both branches' records (`drop neither side`); re-check every
-   roadmap graph so each `Depends on` local id resolves and the stored graph is
-   acyclic; detect top-level, per-parent, and cross-branch sequence-prefix
-   collisions; apply the existing "Renumbering after a parallel merge" rule to
+   content preserving both branches' records (`drop neither side`); re-check
+   every manifest's dependency graph so each `Depends on` local id resolves and
+   the stored graph is acyclic; detect top-level, per-parent, and cross-branch
+   sequence-prefix collisions; apply the existing "Renumbering after a parallel
+   merge" rule to
    choose and `git mv` one item; rewrite every reference in one change; never reuse
    a spent number. A clean merge that touched any `work/` path, or that carries
    a pre-flight class (b) or class (c) finding, is not finished:
@@ -373,7 +372,7 @@ Recall mode (`/ship recall <item-ref> <phase>`):
   observes the same invariant set as `/status` and defines no separate guard.
 - A `work/` renumber is one mechanical change: move the item and update every
   reference together — the directory name, the artifact `feature` frontmatter, a
-  nested child's `parent`, the roadmap `Children` `Local id` and `Canonical
+  nested child's `parent`, the manifest `Children` `Local id` and `Canonical
   reference` cells, every `Depends on` cell naming the old local id, the `ship.md`
   record, the PR/handoff paths, and any prose naming the old reference — so no
   reference to the old canonical reference remains; never reuse a spent number.

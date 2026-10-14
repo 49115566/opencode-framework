@@ -14,7 +14,7 @@ used by T1–T4 is the exact one-line string fixed in `design.md` → "Resolutio
 the spec's deferred open question"; insert it verbatim, unwrapped, with no
 internal newline.
 
-- [ ] **T1** — Sweep `product.md`: replace the `<inputs>` item 5 boilerplate with
+- [x] **T1** — Sweep `product.md`: replace the `<inputs>` item 5 boilerplate with
       the canonical sentence; in `<process>` step 6 change "nested roadmap child"
       to "nested child" and the parent `work/<NNNN-slug>/roadmap.md` to
       `work/<NNNN-slug>/manifest.md` (citing "`manifest.md` — the manifest of a
@@ -32,7 +32,7 @@ internal newline.
       shows the new wording and the canonical sentence appears on one line after
       "The item reference in `$ARGUMENTS`:".
 
-- [ ] **T2** — Sweep `shipper.md`: replace the `<inputs>` bullet 1 boilerplate
+- [x] **T2** — Sweep `shipper.md`: replace the `<inputs>` bullet 1 boilerplate
       with the canonical sentence, making it free-standing and starting "read
       `work/<item-ref>/spec.md`, `tasks.md`, `verify.md`, and `review.md`." as a
       new sentence; in the work-item precondition change "a `work/` sequence
@@ -48,7 +48,7 @@ internal newline.
       shows the new terms, and `grep -n 'manifest.md' .opencode/agent/shipper.md`
       still shows the plan/recall wording.
 
-- [ ] **T3** — Sweep `architect.md` and `builder.md`: replace each prompt's
+- [x] **T3** — Sweep `architect.md` and `builder.md`: replace each prompt's
       item-ref boilerplate (architect item 5, builder item 4) with the canonical
       sentence; keep `architect.md`'s existing labelled legacy alias
       "`… (or the legacy `roadmap.md` artifact alias)`" verbatim. Touch nothing
@@ -58,7 +58,7 @@ internal newline.
       `grep -n 'legacy `roadmap.md`' .opencode/agent/architect.md` shows it
       labelled `legacy`; the canonical sentence appears once in each file.
 
-- [ ] **T4** — Sweep `tester.md` and `reviewer.md`: replace each prompt's
+- [x] **T4** — Sweep `tester.md` and `reviewer.md`: replace each prompt's
       item-ref boilerplate with the canonical sentence, and add a final
       `<inputs>` item addressing a decomposing node — its `manifest.md`, its
       nested children by canonical reference, and a hybrid node's own
@@ -69,7 +69,7 @@ internal newline.
       prints nothing; `grep -n 'manifest.md' .opencode/agent/tester.md .opencode/agent/reviewer.md`
       shows the decomposing/hybrid coverage and the canonical sentence.
 
-- [ ] **T5** — Cross-prompt conformance check (no file edits beyond what the
+- [x] **T5** — Cross-prompt conformance check (no file edits beyond what the
       check reveals): extract the canonical sentence from each of the six inputs
       and confirm the six are byte-identical and free of "roadmap child"; confirm
       the token `roadmap` occurs exactly once across the six files, in
@@ -83,7 +83,7 @@ internal newline.
       shows no change to any `description`/`mode`/`permission` line or `<handoff>`
       block.
 
-- [ ] **T6** — Run the committed suite and confirm the inventory is unchanged.
+- [x] **T6** — Run the committed suite and confirm the inventory is unchanged.
       [AC8] [depends: T5]
       Verify: `bash tests/run.sh` exits `0`; `grep` the `README.md` Layout counts
       and Agents/Commands/Skills tables show 13 / 12 / 11.

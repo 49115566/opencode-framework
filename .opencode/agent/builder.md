@@ -66,9 +66,7 @@ Read, in order:
    the repository's real configuration; do not guess.
 3. The source files named in `design.md`, plus their neighbors and the existing
    tests for the area.
-4. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
-   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
-   `work/<item-ref>/`.
+4. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or a nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per `docs/artifact-conventions.md` → "Work item references", resolving to the directory `work/<item-ref>/`.
 </inputs>
 
 <process>
