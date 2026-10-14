@@ -12,7 +12,7 @@ conflicts-with: "tests/README.md, tests/mutation.sh"
 
 ## Summary
 
-Add one new fixture-based agreement area, `tests/checks/89-integrity-guard.sh`
+Add one new fixture-based agreement area, `tests/checks/91-integrity-guard.sh`
 (suite token `AC30`), plus its committed fixture root
 `tests/fixtures/recursive-integrity/`. The area reimplements, read-only, the
 merge-integrity invariant evaluation as a genuine recursive scan over the fixture
@@ -27,13 +27,16 @@ re-asserts none of them. One line is added to `tests/mutation.sh`'s staged-copy
 list so the opt-in whole-suite runs stay green, and
 `tests/checks/80-cycle-fixture.sh`'s AC13 whole-set `roadmap.md` assertion is
 narrowed to exclude the one documented deliberate drift alias so the committed
-migration guard stays green with the dual-spelling fixture present.
+migration guard stays green with the dual-spelling fixture present. The area is
+renamed off the collided `89-` numeric stem to the free `91-` stem so no two
+merged areas share a selector prefix; the `AC30` token and sub-area labels are
+unchanged (see "Renaming the area off the collided `89-` stem").
 
 ## Approach
 
 ### New agreement area
 
-- **File.** `tests/checks/89-integrity-guard.sh`, sourced by the existing
+- **File.** `tests/checks/91-integrity-guard.sh`, sourced by the existing
   `tests/run.sh` glob (no `run.sh` edit), never calling `exit`, Bash 3.2
   compatible (no associative arrays, no `mapfile`, no empty-array expansion under
   `set -u`). It mirrors the structure of `tests/checks/85-conflict-guards.sh`
@@ -189,6 +192,43 @@ registries (`tests/README.md`, `tests/mutation.sh`, `manifest.md:126`), which
 avoids a self-inflicted `DRIFT-FACT` and keeps the declared set semantically exact:
 the two registries are where sibling plans actually collide.
 
+### Renaming the area off the collided `89-` stem
+
+The merged default branch carries `tests/checks/89-recursive-status-guards.sh`
+(the `0002` readiness/status guard). Two distinct agreement areas sharing the
+`89-` prefix would make every prefix selector ambiguous — `tests/README.md` →
+"Area selection" defines a prefix matching two or more areas as a setup error —
+so this area takes the free stem `91-integrity-guard.sh` (verified against
+`origin/main:tests/checks`: no `91-` area exists, and the merged sibling guards
+occupy `81-`, `85-`, and `89-`). The rename keeps the suite token `AC30` and every
+sub-area label unchanged, so it is invisible to `0005-guard-registration-sweep`'s
+mapping and to any mutation job. This resolves the collision the review found
+rather than deferring it; the earlier "only an area-selector ambiguity, not a
+suite failure" acceptance was wrong, because the merged tree would leave the
+documented `FRAMEWORK_TEST_AREAS=89` selector a setup error.
+
+The rename sweeps **every** textual reference to the old stem — not only the
+three the review named. The complete set, each rewritten `89-integrity-guard` →
+`91-integrity-guard`:
+
+- the new check file's own name (`tests/checks/91-integrity-guard.sh`);
+- its `FIG_SELF="$FIG_CHECKS_DIR/91-integrity-guard.sh"` resolver;
+- its `read-only-contract` self-reference scan
+  (`grep -rqF '91-integrity-guard' .opencode/`);
+- its header comment naming the area;
+- the AC13 cross-reference in `tests/checks/80-cycle-fixture.sh` (the deliberate
+  dual-spelling exception's owning area, `80-cycle-fixture.sh:66`); and
+- the six fixture-prose references under `tests/fixtures/recursive-integrity/`
+  (`items/9201-clean/manifest.md`, `items/9220-renamed-parent/manifest.md`,
+  `items/9220-renamed-parent/0002-new/manifest.md`,
+  `items/9220-renamed-parent/0002-new/0001-leaf/spec.md`,
+  `items/9220-renamed-parent/0003-follower/design.md`, and
+  `items/9220-renamed-parent/0003-follower/ship.md`).
+
+`T4` owns the rename and this sweep; its `Verify:` runs the area under the new
+selector and asserts `grep -rF '89-integrity-guard' tests/` prints nothing, so a
+leftover reference cannot survive green.
+
 ## Alternatives considered
 
 - **A prose-only agreement check (pin the recursive authority phrases, no fixture
@@ -218,12 +258,21 @@ the two registries are where sibling plans actually collide.
   a blind spot for the relocated root. Rejected in favor of the scoped narrowing,
   which keeps the fixture in the canonical tree and the guard still sensitive to
   any *third* alias.
+- **Defer the area rename to `0005-guard-registration-sweep` instead of renaming
+  it here.** Pros: leaves this item's stated check filename unchanged and touches
+  one fewer path. Cons: `0005`'s scope (`manifest.md:127`) is only the
+  `tests/README.md` Checks row/paragraph and the mutation jobs — it does not
+  include renaming this area's check — so deferral would leave two distinct areas
+  sharing the `89-` stem in the merged tree and the documented
+  `FRAMEWORK_TEST_AREAS=89` selector a setup error, i.e. an unresolved collision,
+  not a handled one. Rejected: the owning plan renames its own area (see
+  "Renaming the area off the collided `89-` stem").
 
 ## Interfaces and data model
 
-- **New file** `tests/checks/89-integrity-guard.sh` — sourced, not executed; no
+- **New file** `tests/checks/91-integrity-guard.sh` — sourced, not executed; no
   `exit`; read-only; prints `ok`/`FAIL` lines labelled `AC30 <sub-area>`. Public
-  surface for `0005`: the area name `89-integrity-guard` and the sub-area labels.
+  surface for `0005`: the area name `91-integrity-guard` and the sub-area labels.
 - **New fixture root** `tests/fixtures/recursive-integrity/` — root-local
   `92xx` entity ids; item references resolve inside `items/`, never against live
   `work/`.
@@ -246,7 +295,7 @@ fixture…"). No other area, fixture, selector, or harness behavior changes, so
 
 ## Affected areas
 
-- `tests/checks/89-integrity-guard.sh` (new).
+- `tests/checks/91-integrity-guard.sh` (new).
 - `tests/fixtures/recursive-integrity/**` (new).
 - `tests/checks/80-cycle-fixture.sh` — the AC13 whole-set `roadmap.md` assertion
   narrowed to exclude the one documented deliberate drift alias (see "Reconciling
@@ -272,11 +321,19 @@ fixture…"). No other area, fixture, selector, or harness behavior changes, so
   stray alias still fails. T1's `Verify:` reintroduces a scratch third alias under
   `tests/fixtures/` and confirms `80` fails naming `unexpected roadmap.md fixture
   set`.
-- **Filename/prefix collision with a sibling guard authoring a check in
-  parallel.** — Likelihood medium / impact low / mitigation: the name
-  `89-integrity-guard.sh` is distinct; the two append-only registries are
-  declared conflicts and the registration child reconciles; a duplicate `89`
-  prefix is only an area-selector ambiguity, not a suite failure.
+- **Numeric-prefix collision with the merged sibling area.** — Likelihood low /
+  impact medium / mitigation: the area is renamed off the collided `89-` stem to
+  the free `91-integrity-guard.sh`, verified free against
+  `origin/main:tests/checks` (the sibling guards occupy `81-`, `85-`, and `89-`);
+  no two areas then share a numeric stem, so every prefix selector resolves
+  uniquely. The `AC30` token and sub-area labels are unchanged, and the two
+  append-only registries (`tests/README.md`, `tests/mutation.sh`) stay declared
+  conflicts reconciled by `0005`.
+- **A leftover `89-integrity-guard` reference survives the rename.** —
+  Likelihood low / impact low / mitigation: `T4` sweeps every enumerated site
+  (see "Renaming the area off the collided `89-` stem") and its `Verify:` asserts
+  `grep -rF '89-integrity-guard' tests/` prints nothing, so a stale reference
+  cannot survive green.
 - **Fixture/analyzer not Bash 3.2 compatible.** — Likelihood low / impact high /
   mitigation: no associative arrays, no `mapfile`, no empty-array expansion under
   `set -u`; mirror the shipped `85`/`87` helpers.
