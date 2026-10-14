@@ -83,9 +83,7 @@ Read, in order:
    files to learn conventions. Delegate broad recon to the `scout` subagent.
 4. The project's test setup and dependency manifest (`package.json`,
    `pyproject.toml`, lockfiles) to ground the design in what already exists.
-5. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
-   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
-   `work/<item-ref>/`.
+5. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or a nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per `docs/artifact-conventions.md` → "Work item references", resolving to the directory `work/<item-ref>/`.
 </inputs>
 
 <process>

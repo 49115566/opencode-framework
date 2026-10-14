@@ -52,9 +52,7 @@ Read, in order, and stop when you have enough:
    Delegate broad or multi-area recon to the `scout` subagent to keep your own
    context small; read files directly when the scope is narrow.
 4. `work/` — list existing items so you do not collide with or duplicate one.
-5. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
-   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
-   `work/<item-ref>/`.
+5. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or a nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per `docs/artifact-conventions.md` → "Work item references", resolving to the directory `work/<item-ref>/`.
 </inputs>
 
 <process>
@@ -74,8 +72,10 @@ Read, in order, and stop when you have enough:
    batched round with the question tool, offering concrete options and marking
    your recommendation. Do not ask what the repository already answers.
 5. Draft the spec using the template in `docs/artifact-conventions.md`.
-6. If the reference is a nested roadmap child (`NNNN-slug/MMMM-slug`), resolve
-   its parent `work/<NNNN-slug>/roadmap.md`, run the readiness algorithm in
+6. If the reference is a nested child (`NNNN-slug/MMMM-slug`), resolve
+   its parent `work/<NNNN-slug>/manifest.md` (see
+   `docs/artifact-conventions.md` → "`manifest.md` — the manifest of a
+   decomposing node"), run the readiness algorithm in
    `docs/workflow.md` → "Dependencies and readiness", and if the child is
    blocked, report the specific blocking children and stop before writing
    `spec.md`. Proceed only on an explicit user override; when you do, record the
@@ -84,7 +84,7 @@ Read, in order, and stop when you have enough:
 7. Allocate the canonical reference: `NNNN` (the greatest 4-digit prefix ever
    committed under `work/`, plus one — see `docs/artifact-conventions.md` →
    "Sequence allocation") and a 2–4 word kebab slug for a standalone item, or
-   use the supplied `NNNN-slug/MMMM-slug` for a roadmap child. Write
+   use the supplied `NNNN-slug/MMMM-slug` for a nested child. Write
    `work/<item-ref>/spec.md`
    with complete frontmatter.
 8. Run the quality bar below. Fix every gap, then set `status: final`.
@@ -113,15 +113,15 @@ Every line must hold, or revise the spec:
   multiple work items and ask the user to choose before writing.
 - If the user delegates design decisions to you ("you decide"), still record the
   decision and its rationale in the spec rather than leaving it implicit.
-- If recon finds the **parent roadmap** wrong — a child mis-scoped, a needed
+- If recon finds the **parent's manifest** wrong — a child mis-scoped, a needed
   feature missing, a withdrawn feature still listed, or a dependency sequenced
-  forward — name the sanctioned `/roadmap revise <parent-ref>` route in your
-  report, and record the finding in the item's `work/<item-ref>/backtracks.md`
-  (item-level backtrack state, not a phase artifact): detecting phase `/spec`,
-  target phase `roadmap`, affected `work/<parent-ref>/roadmap.md`, the observable
-  evidence, and `status: open`, per `docs/workflow.md` → "Phase reversal
-  (backtracking)" and "Revising a roadmap". Never edit the parent `roadmap.md`
-  yourself; only the roadmap owner writes it.
+  forward — name the sanctioned `/plan <parent-ref>` route in your report, and
+  record the finding in the item's `work/<item-ref>/backtracks.md` (item-level
+  backtrack state, not a phase artifact): detecting phase `/spec`, target phase
+  `manifest`, affected `work/<parent-ref>/manifest.md`, the observable evidence,
+  and `status: open`, per `docs/workflow.md` → "Phase reversal (backtracking)"
+  and "Revising a decomposition". Never edit the parent `manifest.md` yourself;
+  only the planning step (its owner) writes it.
 - **Read-only guard.** Your bash allowlist is a best-effort guard, not a sandbox:
   opencode matches bash rules by command prefix and cannot stop shell redirection
   or output-to-file flags. Never use bash to create, write, move, or delete a

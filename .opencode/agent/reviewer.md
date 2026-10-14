@@ -59,9 +59,10 @@ Read, in order:
 5. `AGENTS.md`, `docs/artifact-conventions.md`, and the relevant conventions
    skill.
 6. Surrounding code for each changed area, to judge fit.
-7. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or
-   `NNNN-slug/MMMM-slug` for a roadmap child; resolve it to the directory
-   `work/<item-ref>/`.
+7. The item reference in `$ARGUMENTS`: `NNNN-slug` for a standalone item, or a nested `NNNN-slug/MMMM-slug` at any depth; a canonical reference per `docs/artifact-conventions.md` → "Work item references", resolving to the directory `work/<item-ref>/`.
+8. For a decomposing node, its `manifest.md` and its nested children addressed by
+   canonical reference; a hybrid node's own deliverable is read alongside its
+   phase artifacts. See `docs/artifact-conventions.md` → "Work item references".
 </inputs>
 
 <process>
