@@ -59,13 +59,21 @@ else
 fi
 
 # (i-b) AC3 (negative): the migration moved every other decomposing-node fixture
-# to `manifest.md`, so the retained cyclic alias must be the only `roadmap.md`
-# left under tests/fixtures/. A manifest-first resolver masks a stray duplicate,
-# so the fixture set is pinned explicitly; this names no migrated fixture's old
-# path (AC5), only the retained legacy alias the migration deliberately keeps.
-legacy_fixtures="$(find tests/fixtures -name roadmap.md 2>/dev/null | LC_ALL=C sort)"
+# to `manifest.md`, so the retained cyclic alias must be the only *stray*
+# `roadmap.md` left under tests/fixtures/ — excluding the single documented
+# deliberate exception, tests/fixtures/recursive-integrity/items/9203-spelling-both/roadmap.md,
+# a dual-spelling drift fixture owned by the recursive-integrity guard
+# (tests/checks/91-integrity-guard.sh, AC30). A manifest-first resolver masks a
+# stray duplicate, so the stray-alias set is pinned explicitly: it drops only that
+# one documented path and its remainder must still equal the retained legacy alias,
+# so any third/stray alias still fails. This names no migrated fixture's old path
+# (AC5), only the retained legacy alias the migration keeps and the deliberate
+# exception the integrity guard owns.
+DELIBERATE_ALIAS='tests/fixtures/recursive-integrity/items/9203-spelling-both/roadmap.md'
+legacy_fixtures="$(find tests/fixtures -name roadmap.md 2>/dev/null \
+  | grep -vxF -- "$DELIBERATE_ALIAS" | LC_ALL=C sort)"
 if [ "$legacy_fixtures" = "tests/fixtures/cyclic-roadmap/roadmap.md" ]; then
-  ok "AC13 the retained cyclic alias is the only roadmap.md fixture (AC3)"
+  ok "AC13 the retained cyclic alias is the only stray roadmap.md fixture (AC3)"
 else
   bad "AC13 unexpected roadmap.md fixture set (AC3): $(printf '%s' "$legacy_fixtures" | tr '\n' ' ')"
 fi
